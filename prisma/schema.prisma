@@ -1,0 +1,67 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  COMPANY
+  CREATOR
+  ADMIN
+}
+
+enum ContentStatus {
+  DRAFT
+  PUBLISHED
+}
+
+enum EditingSkill {
+  HIGH
+  MEDIUM
+  LOW
+}
+
+model Member {
+  id             Int              @id @default(autoincrement())
+  email          String           @unique
+  password       String
+  name           String
+  role           Role
+  createdAt      DateTime         @default(now()) @map("created_at")
+  updatedAt      DateTime         @updatedAt @map("updated_at")
+  contents       Content[]
+  creatorProfile CreatorProfile?
+
+  @@map("members")
+}
+
+model CreatorProfile {
+  id            Int          @id @default(autoincrement())
+  memberId      Int          @unique @map("member_id")
+  member        Member       @relation(fields: [memberId], references: [id])
+  canEdit       Boolean      @default(false) @map("can_edit")
+  editingSkill  EditingSkill @default(LOW) @map("editing_skill")
+  faceExposure  Boolean      @default(false) @map("face_exposure")
+  profileImage  String?      @map("profile_image")
+  instagramId   String?      @map("instagram_id")
+  createdAt     DateTime     @default(now()) @map("created_at")
+  updatedAt     DateTime     @updatedAt @map("updated_at")
+
+  @@map("creator_profiles")
+}
+
+model Content {
+  id        Int           @id @default(autoincrement())
+  title     String
+  body      String?
+  status    ContentStatus @default(DRAFT)
+  authorId  Int           @map("author_id")
+  author    Member        @relation(fields: [authorId], references: [id])
+  createdAt DateTime      @default(now()) @map("created_at")
+  updatedAt DateTime      @updatedAt @map("updated_at")
+
+  @@map("contents")
+}

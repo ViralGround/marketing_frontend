@@ -2,9 +2,20 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useAuthStore } from "@/store/useAuthStore";
+import { removeTokens } from "@/lib/auth";
 
 export default function LandingHeader() {
+  const { user, isAuthenticated, logout } = useAuthStore();
+  const router = useRouter();
   const [scrolled, setScrolled] = useState(false);
+
+  const handleLogout = () => {
+    removeTokens();
+    logout();
+    router.push("/login");
+  };
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -25,18 +36,43 @@ export default function LandingHeader() {
           Viral Ground
         </Link>
         <nav className="flex items-center gap-3">
-          <Link
-            href="/login"
-            className="rounded-lg px-4 py-2 text-sm font-medium text-foreground hover:text-primary transition-colors"
-          >
-            로그인
-          </Link>
-          <Link
-            href="/signup/creator"
-            className="rounded-lg bg-primary px-5 py-2 text-sm font-medium text-white hover:bg-primary-dark transition-colors"
-          >
-            시작하기
-          </Link>
+          {isAuthenticated ? (
+            <>
+              <Link
+                href={
+                  user?.role === "ADMIN"
+                    ? "/admin/members"
+                    : user?.role === "COMPANY"
+                      ? "/company/dashboard"
+                      : "/creator/dashboard"
+                }
+                className="rounded-lg px-4 py-2 text-sm font-medium text-foreground hover:text-primary transition-colors"
+              >
+                대시보드
+              </Link>
+              <button
+                onClick={handleLogout}
+                className="rounded-lg bg-primary px-5 py-2 text-sm font-medium text-white hover:bg-primary-dark transition-colors"
+              >
+                로그아웃
+              </button>
+            </>
+          ) : (
+            <>
+              <Link
+                href="/login"
+                className="rounded-lg px-4 py-2 text-sm font-medium text-foreground hover:text-primary transition-colors"
+              >
+                로그인
+              </Link>
+              <Link
+                href="/signup/creator"
+                className="rounded-lg bg-primary px-5 py-2 text-sm font-medium text-white hover:bg-primary-dark transition-colors"
+              >
+                시작하기
+              </Link>
+            </>
+          )}
         </nav>
       </div>
     </header>

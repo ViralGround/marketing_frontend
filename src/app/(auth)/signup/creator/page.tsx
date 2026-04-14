@@ -11,7 +11,7 @@ export default function CreatorSignupPage() {
         <SignupForm role="CREATOR" />
         <p className="text-center text-sm text-gray-500">
           기업이신가요?{" "}
-          <Link href="/signup/company" className="text-gray-900 underline">
+          <Link href="/signup/company" className="text-primary underline">
             기업으로 가입하기
           </Link>
         </p>

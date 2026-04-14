@@ -16,13 +16,13 @@ export default function Header() {
   };
 
   return (
-    <header className="border-b border-gray-200 bg-white">
+    <header className="border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-[#0a0a0a]">
       <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4">
-        <Link href="/" className="text-xl font-bold text-gray-900">
+        <Link href="/" className="text-xl font-bold text-primary">
           Viral Ground
         </Link>
         <nav className="flex items-center gap-4">
-          <Link href="/contents" className="text-gray-600 hover:text-gray-900">
+          <Link href="/contents" className="text-gray-600 dark:text-gray-400 hover:text-primary">
             콘텐츠
           </Link>
           {isAuthenticated ? (
@@ -35,14 +35,14 @@ export default function Header() {
                       ? "/company/dashboard"
                       : "/creator/dashboard"
                 }
-                className="text-gray-600 hover:text-gray-900"
+                className="text-gray-600 dark:text-gray-400 hover:text-primary"
               >
                 {user?.role === "ADMIN" ? "관리자" : "대시보드"}
               </Link>
               {user?.role !== "ADMIN" && (
                 <Link
                   href="/contents/new"
-                  className="text-gray-600 hover:text-gray-900"
+                  className="text-gray-600 dark:text-gray-400 hover:text-primary"
                 >
                   새 글
                 </Link>
@@ -60,7 +60,7 @@ export default function Header() {
           ) : (
             <Link
               href="/login"
-              className="rounded bg-gray-900 px-4 py-2 text-sm text-white hover:bg-gray-700"
+              className="rounded-lg bg-primary px-4 py-2 text-sm text-white hover:bg-primary-dark"
             >
               로그인
             </Link>

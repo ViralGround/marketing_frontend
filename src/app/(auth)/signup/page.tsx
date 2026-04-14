@@ -11,20 +11,20 @@ export default function SignupPage() {
         <div className="grid grid-cols-2 gap-4">
           <Link
             href="/signup/company"
-            className="flex flex-col items-center gap-3 rounded border border-gray-200 p-6 hover:border-gray-400 transition-colors"
+            className="flex flex-col items-center gap-3 rounded-xl border border-gray-200 dark:border-gray-700 p-6 hover:border-primary hover:shadow-md transition-all"
           >
             <span className="text-3xl">🏢</span>
-            <span className="text-lg font-semibold text-gray-900">기업</span>
+            <span className="text-lg font-semibold text-foreground">기업</span>
             <span className="text-sm text-gray-500 text-center">
               크리에이터를 찾고 캠페인을 관리하세요
             </span>
           </Link>
           <Link
             href="/signup/creator"
-            className="flex flex-col items-center gap-3 rounded border border-gray-200 p-6 hover:border-gray-400 transition-colors"
+            className="flex flex-col items-center gap-3 rounded-xl border border-gray-200 dark:border-gray-700 p-6 hover:border-primary hover:shadow-md transition-all"
           >
             <span className="text-3xl">🎨</span>
-            <span className="text-lg font-semibold text-gray-900">크리에이터</span>
+            <span className="text-lg font-semibold text-foreground">크리에이터</span>
             <span className="text-sm text-gray-500 text-center">
               작업물을 보여주고 기회를 얻으세요
             </span>
@@ -32,7 +32,7 @@ export default function SignupPage() {
         </div>
         <p className="text-center text-sm text-gray-500">
           이미 계정이 있으신가요?{" "}
-          <Link href="/login" className="text-gray-900 underline">
+          <Link href="/login" className="text-primary underline">
             로그인
           </Link>
         </p>

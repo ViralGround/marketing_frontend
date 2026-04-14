@@ -65,7 +65,7 @@ export default function LoginForm() {
         </div>
       )}
       <div>
-        <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+        <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
           이메일
         </label>
         <input
@@ -75,11 +75,11 @@ export default function LoginForm() {
           placeholder="example@email.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="mt-1 block w-full rounded border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-gray-500 focus:outline-none"
+          className="mt-1 block w-full rounded-lg border border-gray-300 dark:border-gray-700 px-3 py-2 text-foreground bg-white dark:bg-[#111] placeholder-gray-400 focus:border-primary focus:outline-none"
         />
       </div>
       <div>
-        <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+        <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
           비밀번호
         </label>
         <input
@@ -88,13 +88,13 @@ export default function LoginForm() {
           required
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="mt-1 block w-full rounded border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-gray-500 focus:outline-none"
+          className="mt-1 block w-full rounded-lg border border-gray-300 dark:border-gray-700 px-3 py-2 text-foreground bg-white dark:bg-[#111] placeholder-gray-400 focus:border-primary focus:outline-none"
         />
       </div>
       <button
         type="submit"
         disabled={loading}
-        className="w-full rounded bg-gray-900 py-2 text-white hover:bg-gray-700 disabled:opacity-50"
+        className="w-full rounded-lg bg-primary py-2.5 text-white font-medium hover:bg-primary-dark disabled:opacity-50 transition-colors"
       >
         {loading ? "로그인 중..." : "로그인"}
       </button>

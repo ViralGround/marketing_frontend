@@ -75,7 +75,7 @@ export default function ProfileSetupPage() {
                 onClick={() => setCanEdit(true)}
                 className={`flex-1 rounded border px-4 py-2 text-sm transition-colors ${
                   canEdit === true
-                    ? "border-gray-900 bg-gray-900 text-white"
+                    ? "border-primary bg-primary text-white"
                     : "border-gray-300 text-gray-700 hover:bg-gray-50"
                 }`}
               >
@@ -86,7 +86,7 @@ export default function ProfileSetupPage() {
                 onClick={() => setCanEdit(false)}
                 className={`flex-1 rounded border px-4 py-2 text-sm transition-colors ${
                   canEdit === false
-                    ? "border-gray-900 bg-gray-900 text-white"
+                    ? "border-primary bg-primary text-white"
                     : "border-gray-300 text-gray-700 hover:bg-gray-50"
                 }`}
               >
@@ -112,7 +112,7 @@ export default function ProfileSetupPage() {
                   onClick={() => setEditingSkill(option.value)}
                   className={`flex-1 rounded border px-4 py-2 text-sm transition-colors ${
                     editingSkill === option.value
-                      ? "border-gray-900 bg-gray-900 text-white"
+                      ? "border-primary bg-primary text-white"
                       : "border-gray-300 text-gray-700 hover:bg-gray-50"
                   }`}
                 >
@@ -136,7 +136,7 @@ export default function ProfileSetupPage() {
                 onClick={() => setFaceExposure(true)}
                 className={`flex-1 rounded border px-4 py-2 text-sm transition-colors ${
                   faceExposure === true
-                    ? "border-gray-900 bg-gray-900 text-white"
+                    ? "border-primary bg-primary text-white"
                     : "border-gray-300 text-gray-700 hover:bg-gray-50"
                 }`}
               >
@@ -147,7 +147,7 @@ export default function ProfileSetupPage() {
                 onClick={() => setFaceExposure(false)}
                 className={`flex-1 rounded border px-4 py-2 text-sm transition-colors ${
                   faceExposure === false
-                    ? "border-gray-900 bg-gray-900 text-white"
+                    ? "border-primary bg-primary text-white"
                     : "border-gray-300 text-gray-700 hover:bg-gray-50"
                 }`}
               >
@@ -180,7 +180,7 @@ export default function ProfileSetupPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded bg-gray-900 py-2.5 text-white hover:bg-gray-700 disabled:opacity-50"
+            className="w-full rounded-lg bg-primary py-2.5 text-white font-medium hover:bg-primary-dark disabled:opacity-50 transition-colors"
           >
             {loading ? "저장 중..." : "프로필 완성하기"}
           </button>

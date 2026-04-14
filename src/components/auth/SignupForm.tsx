@@ -91,7 +91,7 @@ export default function SignupForm({ role }: { role: UserRole }) {
       <button
         type="submit"
         disabled={loading}
-        className="w-full rounded bg-gray-900 py-2 text-white hover:bg-gray-700 disabled:opacity-50"
+        className="w-full rounded-lg bg-primary py-2.5 text-white font-medium hover:bg-primary-dark disabled:opacity-50 transition-colors"
       >
         {loading ? "가입 중..." : role === "CREATOR" ? "크리에이터로 가입하기" : "기업으로 가입하기"}
       </button>

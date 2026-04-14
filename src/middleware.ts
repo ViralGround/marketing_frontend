@@ -23,6 +23,13 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
+  // Admin-only paths
+  if (pathname.startsWith("/admin")) {
+    if (!token) return NextResponse.redirect(new URL("/login", request.url));
+    const role = extractRoleFromJwt(token);
+    if (role !== "ADMIN") return NextResponse.redirect(new URL("/", request.url));
+  }
+
   // Company-only paths
   if (pathname.startsWith("/company")) {
     if (!token) return NextResponse.redirect(new URL("/login", request.url));
@@ -41,5 +48,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/contents/new", "/contents/:id/edit", "/company/:path*", "/creator/:path*", "/profile/setup"],
+  matcher: ["/contents/new", "/contents/:id/edit", "/admin/:path*", "/company/:path*", "/creator/:path*", "/profile/setup"],
 };

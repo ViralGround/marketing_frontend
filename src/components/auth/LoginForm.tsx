@@ -37,8 +37,10 @@ export default function LoginForm() {
         role,
       });
 
-      // 크리에이터: 프로필 작성 여부 확인 후 리다이렉트
-      if (role === "CREATOR") {
+      // 역할별 리다이렉트
+      if (role === "ADMIN") {
+        router.push("/admin/members");
+      } else if (role === "CREATOR") {
         const { data: profileData } = await api.get("/profile");
         if (profileData.hasProfile) {
           router.push("/creator/dashboard");

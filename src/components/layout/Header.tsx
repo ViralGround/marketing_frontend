@@ -28,19 +28,27 @@ export default function Header() {
           {isAuthenticated ? (
             <>
               <Link
-                href={user?.role === "COMPANY" ? "/company/dashboard" : "/creator/dashboard"}
+                href={
+                  user?.role === "ADMIN"
+                    ? "/admin/members"
+                    : user?.role === "COMPANY"
+                      ? "/company/dashboard"
+                      : "/creator/dashboard"
+                }
                 className="text-gray-600 hover:text-gray-900"
               >
-                대시보드
+                {user?.role === "ADMIN" ? "관리자" : "대시보드"}
               </Link>
-              <Link
-                href="/contents/new"
-                className="text-gray-600 hover:text-gray-900"
-              >
-                새 글
-              </Link>
+              {user?.role !== "ADMIN" && (
+                <Link
+                  href="/contents/new"
+                  className="text-gray-600 hover:text-gray-900"
+                >
+                  새 글
+                </Link>
+              )}
               <span className="text-sm text-gray-500">
-                {user?.name} ({user?.role === "COMPANY" ? "기업" : "크리에이터"})
+                {user?.name} ({user?.role === "COMPANY" ? "기업" : user?.role === "CREATOR" ? "크리에이터" : "관리자"})
               </span>
               <button
                 onClick={handleLogout}

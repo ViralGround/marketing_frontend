@@ -16,7 +16,7 @@ export default function ContentCard({ content }: { content: Content }) {
               : "bg-yellow-100 text-yellow-700"
           }`}
         >
-          {content.status}
+          {content.status === "PUBLISHED" ? "게시됨" : "임시저장"}
         </span>
       </div>
       <p className="text-sm text-gray-600 line-clamp-2">{content.body}</p>

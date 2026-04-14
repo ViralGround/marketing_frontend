@@ -20,16 +20,16 @@ export default function ContentsPage() {
   if (loading) {
     return (
       <div className="mx-auto max-w-3xl px-4 py-12 text-center text-gray-500">
-        Loading...
+        불러오는 중...
       </div>
     );
   }
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-8">
-      <h1 className="mb-6 text-2xl font-bold text-gray-900">Contents</h1>
+      <h1 className="mb-6 text-2xl font-bold text-gray-900">콘텐츠</h1>
       {contents.length === 0 ? (
-        <p className="text-gray-500">No content yet.</p>
+        <p className="text-gray-500">아직 콘텐츠가 없습니다.</p>
       ) : (
         <div className="space-y-4">
           {contents.map((c) => (

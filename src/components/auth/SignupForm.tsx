@@ -93,7 +93,7 @@ export default function SignupForm({ role }: { role: UserRole }) {
         disabled={loading}
         className="w-full rounded bg-gray-900 py-2 text-white hover:bg-gray-700 disabled:opacity-50"
       >
-        {loading ? "가입 중..." : "크리에이터로 가입하기"}
+        {loading ? "가입 중..." : role === "CREATOR" ? "크리에이터로 가입하기" : "기업으로 가입하기"}
       </button>
     </form>
   );

@@ -35,7 +35,7 @@ export default function ContentForm({ initialData, mode }: ContentFormProps) {
       }
       router.push("/contents");
     } catch {
-      setError(mode === "create" ? "Failed to create content" : "Failed to update content");
+      setError(mode === "create" ? "콘텐츠 생성에 실패했습니다" : "콘텐츠 수정에 실패했습니다");
     } finally {
       setLoading(false);
     }
@@ -50,7 +50,7 @@ export default function ContentForm({ initialData, mode }: ContentFormProps) {
       )}
       <div>
         <label htmlFor="title" className="block text-sm font-medium text-gray-700">
-          Title
+          제목
         </label>
         <input
           id="title"
@@ -63,7 +63,7 @@ export default function ContentForm({ initialData, mode }: ContentFormProps) {
       </div>
       <div>
         <label htmlFor="body" className="block text-sm font-medium text-gray-700">
-          Body
+          내용
         </label>
         <textarea
           id="body"
@@ -75,7 +75,7 @@ export default function ContentForm({ initialData, mode }: ContentFormProps) {
       </div>
       <div>
         <label htmlFor="status" className="block text-sm font-medium text-gray-700">
-          Status
+          상태
         </label>
         <select
           id="status"
@@ -83,8 +83,8 @@ export default function ContentForm({ initialData, mode }: ContentFormProps) {
           onChange={(e) => setStatus(e.target.value as "DRAFT" | "PUBLISHED")}
           className="mt-1 block w-full rounded border border-gray-300 px-3 py-2 text-gray-900 focus:border-gray-500 focus:outline-none"
         >
-          <option value="DRAFT">Draft</option>
-          <option value="PUBLISHED">Published</option>
+          <option value="DRAFT">임시저장</option>
+          <option value="PUBLISHED">게시</option>
         </select>
       </div>
       <div className="flex gap-3">
@@ -93,14 +93,14 @@ export default function ContentForm({ initialData, mode }: ContentFormProps) {
           disabled={loading}
           className="rounded bg-gray-900 px-6 py-2 text-white hover:bg-gray-700 disabled:opacity-50"
         >
-          {loading ? "Saving..." : mode === "create" ? "Create" : "Update"}
+          {loading ? "저장 중..." : mode === "create" ? "작성하기" : "수정하기"}
         </button>
         <button
           type="button"
           onClick={() => router.back()}
           className="rounded border border-gray-300 px-6 py-2 text-gray-700 hover:bg-gray-50"
         >
-          Cancel
+          취소
         </button>
       </div>
     </form>

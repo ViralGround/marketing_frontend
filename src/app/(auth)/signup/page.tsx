@@ -5,18 +5,18 @@ export default function SignupPage() {
     <div className="flex min-h-[calc(100vh-65px)] items-center justify-center">
       <div className="w-full max-w-lg space-y-6 p-8">
         <h1 className="text-center text-2xl font-bold text-gray-900">
-          Sign Up
+          회원가입
         </h1>
-        <p className="text-center text-gray-500">Choose your account type</p>
+        <p className="text-center text-gray-500">계정 유형을 선택해주세요</p>
         <div className="grid grid-cols-2 gap-4">
           <Link
             href="/signup/company"
             className="flex flex-col items-center gap-3 rounded border border-gray-200 p-6 hover:border-gray-400 transition-colors"
           >
             <span className="text-3xl">🏢</span>
-            <span className="text-lg font-semibold text-gray-900">Company</span>
+            <span className="text-lg font-semibold text-gray-900">기업</span>
             <span className="text-sm text-gray-500 text-center">
-              Find creators and manage campaigns
+              크리에이터를 찾고 캠페인을 관리하세요
             </span>
           </Link>
           <Link
@@ -24,16 +24,16 @@ export default function SignupPage() {
             className="flex flex-col items-center gap-3 rounded border border-gray-200 p-6 hover:border-gray-400 transition-colors"
           >
             <span className="text-3xl">🎨</span>
-            <span className="text-lg font-semibold text-gray-900">Creator</span>
+            <span className="text-lg font-semibold text-gray-900">크리에이터</span>
             <span className="text-sm text-gray-500 text-center">
-              Showcase your work and get opportunities
+              작업물을 보여주고 기회를 얻으세요
             </span>
           </Link>
         </div>
         <p className="text-center text-sm text-gray-500">
-          Already have an account?{" "}
+          이미 계정이 있으신가요?{" "}
           <Link href="/login" className="text-gray-900 underline">
-            Login
+            로그인
           </Link>
         </p>
       </div>

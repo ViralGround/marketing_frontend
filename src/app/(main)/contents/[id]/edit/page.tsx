@@ -23,14 +23,14 @@ export default function EditContentPage() {
   if (loading || !content) {
     return (
       <div className="mx-auto max-w-3xl px-4 py-12 text-center text-gray-500">
-        Loading...
+        불러오는 중...
       </div>
     );
   }
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-8">
-      <h1 className="mb-6 text-2xl font-bold text-gray-900">Edit Content</h1>
+      <h1 className="mb-6 text-2xl font-bold text-gray-900">콘텐츠 수정</h1>
       <ContentForm initialData={content} mode="edit" />
     </div>
   );

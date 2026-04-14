@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Marketing Platform",
-  description: "Marketing content management platform",
+  title: "Viral Ground",
+  description: "크리에이터와 기업을 연결하는 마케팅 플랫폼",
 };
 
 export default function RootLayout({

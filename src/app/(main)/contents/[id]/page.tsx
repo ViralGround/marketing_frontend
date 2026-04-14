@@ -23,19 +23,19 @@ export default function ContentDetailPage() {
   }, [id, router]);
 
   const handleDelete = async () => {
-    if (!confirm("Are you sure you want to delete this content?")) return;
+    if (!confirm("이 콘텐츠를 삭제하시겠습니까?")) return;
     try {
       await api.delete(`/contents/${id}`);
       router.push("/contents");
     } catch {
-      alert("Failed to delete");
+      alert("삭제에 실패했습니다");
     }
   };
 
   if (loading || !content) {
     return (
       <div className="mx-auto max-w-3xl px-4 py-12 text-center text-gray-500">
-        Loading...
+        불러오는 중...
       </div>
     );
   }
@@ -52,7 +52,7 @@ export default function ContentDetailPage() {
               : "bg-yellow-100 text-yellow-700"
           }`}
         >
-          {content.status}
+          {content.status === "PUBLISHED" ? "게시됨" : "임시저장"}
         </span>
         {isAuthor && (
           <div className="flex gap-2">
@@ -60,13 +60,13 @@ export default function ContentDetailPage() {
               href={`/contents/${id}/edit`}
               className="rounded border border-gray-300 px-3 py-1 text-sm text-gray-700 hover:bg-gray-50"
             >
-              Edit
+              수정
             </Link>
             <button
               onClick={handleDelete}
               className="rounded border border-red-300 px-3 py-1 text-sm text-red-600 hover:bg-red-50"
             >
-              Delete
+              삭제
             </button>
           </div>
         )}

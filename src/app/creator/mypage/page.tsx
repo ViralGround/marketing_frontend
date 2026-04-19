@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import api from "@/lib/api";
+import { removeTokens } from "@/lib/auth";
 import { useAuthStore } from "@/store/useAuthStore";
 import StatCards from "@/components/creator/StatCards";
 import ApplicationStatusBadge from "@/components/campaign/ApplicationStatusBadge";
@@ -42,7 +44,8 @@ const FILTER_LABEL: Record<Filter, string> = {
 };
 
 export default function CreatorMyPage() {
-  const { user } = useAuthStore();
+  const { user, logout } = useAuthStore();
+  const router = useRouter();
   const [stats, setStats] = useState<Stats | null>(null);
   const [statsLoading, setStatsLoading] = useState(true);
   const [applications, setApplications] = useState<ApplicationItem[]>([]);
@@ -54,6 +57,9 @@ export default function CreatorMyPage() {
   const [submitUrl, setSubmitUrl] = useState("");
   const [submitError, setSubmitError] = useState("");
   const [submitLoading, setSubmitLoading] = useState(false);
+  const [withdrawModal, setWithdrawModal] = useState(false);
+  const [withdrawLoading, setWithdrawLoading] = useState(false);
+  const [withdrawError, setWithdrawError] = useState("");
 
   const loadStats = () => {
     setStatsLoading(true);
@@ -88,6 +94,23 @@ export default function CreatorMyPage() {
     setSubmitModal({ id, campaignTitle });
     setSubmitUrl("");
     setSubmitError("");
+  };
+
+  const handleWithdraw = async () => {
+    setWithdrawError("");
+    setWithdrawLoading(true);
+    try {
+      await api.delete("/me");
+      removeTokens();
+      logout();
+      router.push("/");
+    } catch (err: unknown) {
+      const msg =
+        (err as { response?: { data?: { message?: string } } }).response?.data?.message ||
+        "탈퇴에 실패했습니다";
+      setWithdrawError(msg);
+      setWithdrawLoading(false);
+    }
   };
 
   const handleSubmitUrl = async () => {
@@ -252,6 +275,46 @@ export default function CreatorMyPage() {
           </div>
         )}
       </section>
+
+      {/* 계정 탈퇴 */}
+      <section className="mt-16 border-t border-gray-200 pt-8">
+        <h2 className="mb-1 text-sm font-semibold text-gray-500">계정 관리</h2>
+        <p className="mb-4 text-sm text-gray-400">탈퇴 시 모든 지원 내역이 삭제되며 복구할 수 없습니다.</p>
+        <button
+          onClick={() => { setWithdrawModal(true); setWithdrawError(""); }}
+          className="rounded border border-red-300 px-4 py-2 text-sm text-red-500 hover:bg-red-50"
+        >
+          회원 탈퇴
+        </button>
+      </section>
+
+      {/* 탈퇴 확인 모달 */}
+      {withdrawModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="w-full max-w-sm rounded-xl bg-white p-6">
+            <h3 className="mb-2 text-lg font-semibold text-gray-900">정말 탈퇴하시겠어요?</h3>
+            <p className="mb-1 text-sm text-gray-500">탈퇴하면 모든 지원 내역과 계정 정보가 영구 삭제됩니다.</p>
+            <p className="mb-4 text-sm text-red-500">이 작업은 되돌릴 수 없습니다.</p>
+            {withdrawError && <p className="mb-3 text-sm text-red-600">{withdrawError}</p>}
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={() => setWithdrawModal(false)}
+                disabled={withdrawLoading}
+                className="rounded border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+              >
+                취소
+              </button>
+              <button
+                onClick={handleWithdraw}
+                disabled={withdrawLoading}
+                className="rounded bg-red-500 px-3 py-1.5 text-sm text-white hover:bg-red-600 disabled:opacity-50"
+              >
+                {withdrawLoading ? "처리 중..." : "탈퇴하기"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 제출 모달 */}
       {submitModal && (

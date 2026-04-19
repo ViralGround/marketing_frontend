@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 
-type Gender = "MALE" | "FEMALE" | "OTHER";
+type Gender = "MALE" | "FEMALE";
 type EditingTool =
   | "CAPCUT"
   | "PREMIERE"
@@ -25,7 +25,6 @@ const EDITING_TOOL_OPTIONS: { value: EditingTool; label: string }[] = [
 const GENDER_OPTIONS: { value: Gender; label: string }[] = [
   { value: "FEMALE", label: "여성" },
   { value: "MALE", label: "남성" },
-  { value: "OTHER", label: "기타" },
 ];
 
 export default function CreatorSignupForm() {
@@ -40,7 +39,7 @@ export default function CreatorSignupForm() {
 
   // 설문
   const [gender, setGender] = useState<Gender | "">("");
-  const [age, setAge] = useState("");
+  const [birthYear, setBirthYear] = useState("");
   const [faceExposure, setFaceExposure] = useState<"" | "YES" | "NO">("");
   const [editingTool, setEditingTool] = useState<EditingTool | "">("");
   const [instagramId, setInstagramId] = useState("");
@@ -52,7 +51,7 @@ export default function CreatorSignupForm() {
     setError("");
 
     if (!gender) return setError("성별을 선택해주세요");
-    if (!age) return setError("나이를 입력해주세요");
+    if (!birthYear) return setError("출생연도를 선택해주세요");
     if (!faceExposure) return setError("얼굴 공개 여부를 선택해주세요");
     if (!editingTool) return setError("주로 사용하는 편집 툴을 선택해주세요");
 
@@ -64,7 +63,7 @@ export default function CreatorSignupForm() {
         name,
         role: "CREATOR",
         gender,
-        age: Number(age),
+        age: new Date().getFullYear() - Number(birthYear),
         faceExposure: faceExposure === "YES",
         editingTool,
         instagramId: instagramId.trim() || null,
@@ -179,20 +178,22 @@ export default function CreatorSignupForm() {
         </div>
 
         <div>
-          <label htmlFor="age" className="block text-sm font-medium text-gray-700">
-            나이
+          <label htmlFor="birthYear" className="block text-sm font-medium text-gray-700">
+            출생연도
           </label>
-          <input
-            id="age"
-            type="number"
-            min={10}
-            max={100}
-            required
-            placeholder="예: 24"
-            value={age}
-            onChange={(e) => setAge(e.target.value)}
-            className="mt-1 block w-full rounded border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-gray-500 focus:outline-none"
-          />
+          <select
+            id="birthYear"
+            value={birthYear}
+            onChange={(e) => setBirthYear(e.target.value)}
+            className="mt-1 block w-full rounded border border-gray-300 px-3 py-2 text-gray-900 focus:border-gray-500 focus:outline-none"
+          >
+            <option value="">몇년생인지 선택해주세요</option>
+            {Array.from({ length: 51 }, (_, i) => 2010 - i).map((y) => (
+              <option key={y} value={y}>
+                {y}년생
+              </option>
+            ))}
+          </select>
         </div>
 
         <div>

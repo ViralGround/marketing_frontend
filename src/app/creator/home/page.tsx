@@ -127,7 +127,6 @@ export default function CreatorHomePage() {
               ? `"${search}" 로 검색된 캠페인이 없습니다.`
               : "현재 모집 중인 캠페인이 없습니다."}
           </p>
-          <p className="mt-1 text-sm text-gray-400">새 캠페인이 열리면 이메일로 알려드릴게요.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">

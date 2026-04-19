@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import Link from "next/link";
 import LoginForm from "@/components/auth/LoginForm";
 
@@ -40,7 +40,9 @@ export default function LoginPage() {
           {tab === "CREATOR" ? "크리에이터 로그인" : "기업 로그인"}
         </h1>
 
-        <LoginForm />
+        <Suspense fallback={<div className="h-40" />}>
+          <LoginForm />
+        </Suspense>
 
         <div className="space-y-2 text-center text-sm text-gray-500">
           <p>

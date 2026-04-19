@@ -20,6 +20,7 @@ export async function GET(
         email: true,
         name: true,
         role: true,
+        status: true,
         createdAt: true,
         updatedAt: true,
         creatorProfile: true,
@@ -68,8 +69,8 @@ export async function PUT(
 
     const member = await prisma.member.update({
       where: { id: Number(id) },
-      data: { role },
-      select: { id: true, email: true, name: true, role: true },
+      data: role === "COMPANY" ? { role, status: "APPROVED" } : { role },
+      select: { id: true, email: true, name: true, role: true, status: true },
     });
 
     return NextResponse.json(member);

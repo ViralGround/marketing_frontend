@@ -4,22 +4,45 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import api from "@/lib/api";
 
+type MemberStatus = "PENDING" | "APPROVED" | "REJECTED";
+
 interface MemberDetail {
   id: number;
   email: string;
   name: string;
   role: "COMPANY" | "CREATOR";
+  status: MemberStatus;
   createdAt: string;
   updatedAt: string;
   contentCount: number;
   creatorProfile: {
     canEdit: boolean;
     editingSkill: "HIGH" | "MEDIUM" | "LOW";
+    editingTool: "CAPCUT" | "PREMIERE" | "FINAL_CUT" | "VN" | "OTHER" | "NONE" | null;
+    gender: "MALE" | "FEMALE" | "OTHER" | null;
+    age: number | null;
     faceExposure: boolean;
     instagramId: string | null;
+    tiktokId: string | null;
+    youtubeId: string | null;
     profileImage: string | null;
   } | null;
 }
+
+const EDITING_TOOL_LABEL: Record<string, string> = {
+  CAPCUT: "캡컷",
+  PREMIERE: "프리미어 프로",
+  FINAL_CUT: "파이널 컷",
+  VN: "VN",
+  OTHER: "기타",
+  NONE: "편집 경험 없음",
+};
+
+const GENDER_LABEL: Record<string, string> = {
+  MALE: "남성",
+  FEMALE: "여성",
+  OTHER: "기타",
+};
 
 export default function AdminMemberDetailPage() {
   const { id } = useParams();
@@ -27,13 +50,18 @@ export default function AdminMemberDetailPage() {
   const [member, setMember] = useState<MemberDetail | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  const fetchMember = () => {
     api
       .get(`/admin/members/${id}`)
       .then((res) => setMember(res.data))
       .catch(() => router.push("/admin/members"))
       .finally(() => setLoading(false));
-  }, [id, router]);
+  };
+
+  useEffect(() => {
+    fetchMember();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
 
   const handleRoleChange = async (newRole: "COMPANY" | "CREATOR") => {
     if (!confirm(`역할을 "${newRole === "COMPANY" ? "기업" : "크리에이터"}"(으)로 변경하시겠습니까?`))
@@ -43,6 +71,18 @@ export default function AdminMemberDetailPage() {
       setMember((prev) => (prev ? { ...prev, role: newRole } : null));
     } catch {
       alert("역할 변경에 실패했습니다");
+    }
+  };
+
+  const handleStatusChange = async (status: "APPROVED" | "REJECTED" | "PENDING") => {
+    const label =
+      status === "APPROVED" ? "승인" : status === "REJECTED" ? "거절" : "대기 상태로 변경";
+    if (!confirm(`"${member?.name}" 회원을 ${label}하시겠습니까?`)) return;
+    try {
+      await api.patch(`/admin/members/${id}/status`, { status });
+      setMember((prev) => (prev ? { ...prev, status } : null));
+    } catch {
+      alert(`${label}에 실패했습니다`);
     }
   };
 
@@ -61,11 +101,14 @@ export default function AdminMemberDetailPage() {
     return <p className="text-gray-500">불러오는 중...</p>;
   }
 
-  const skillLabel = (skill: string) => {
-    if (skill === "HIGH") return "상";
-    if (skill === "MEDIUM") return "중";
-    return "하";
-  };
+  const statusLabel = (s: MemberStatus) =>
+    s === "PENDING" ? "승인 대기" : s === "APPROVED" ? "승인" : "거절";
+  const statusClass = (s: MemberStatus) =>
+    s === "PENDING"
+      ? "bg-yellow-100 text-yellow-800"
+      : s === "APPROVED"
+        ? "bg-green-100 text-green-700"
+        : "bg-red-100 text-red-700";
 
   return (
     <div>
@@ -77,7 +120,12 @@ export default function AdminMemberDetailPage() {
       </button>
 
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">{member.name}</h1>
+        <div className="flex items-center gap-3">
+          <h1 className="text-2xl font-bold text-gray-900">{member.name}</h1>
+          <span className={`rounded px-2 py-0.5 text-xs ${statusClass(member.status)}`}>
+            {statusLabel(member.status)}
+          </span>
+        </div>
         <button
           onClick={handleDelete}
           className="rounded border border-red-300 px-4 py-2 text-sm text-red-600 hover:bg-red-50"
@@ -121,29 +169,73 @@ export default function AdminMemberDetailPage() {
         </dl>
       </div>
 
-      {/* 크리에이터 프로필 */}
+      {/* 승인 관리 */}
+      {member.role === "CREATOR" && (
+        <div className="mb-6 rounded border border-gray-200 p-6">
+          <h2 className="mb-4 text-lg font-semibold text-gray-900">승인 관리</h2>
+          <p className="mb-4 text-sm text-gray-500">
+            현재 상태:{" "}
+            <span className={`rounded px-2 py-0.5 text-xs ${statusClass(member.status)}`}>
+              {statusLabel(member.status)}
+            </span>
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => handleStatusChange("APPROVED")}
+              disabled={member.status === "APPROVED"}
+              className="rounded bg-green-600 px-4 py-2 text-sm text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              승인
+            </button>
+            <button
+              onClick={() => handleStatusChange("REJECTED")}
+              disabled={member.status === "REJECTED"}
+              className="rounded border border-red-300 px-4 py-2 text-sm text-red-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              거절
+            </button>
+            <button
+              onClick={() => handleStatusChange("PENDING")}
+              disabled={member.status === "PENDING"}
+              className="rounded border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              대기로 되돌리기
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* 크리에이터 프로필 / 설문 응답 */}
       {member.creatorProfile && (
         <div className="mb-6 rounded border border-gray-200 p-6">
-          <h2 className="mb-4 text-lg font-semibold text-gray-900">
-            크리에이터 프로필
-          </h2>
+          <h2 className="mb-4 text-lg font-semibold text-gray-900">설문 응답</h2>
           <dl className="grid grid-cols-2 gap-4 text-sm">
             <div>
-              <dt className="text-gray-500">편집 가능 여부</dt>
+              <dt className="text-gray-500">성별</dt>
               <dd className="mt-1 text-gray-900">
-                {member.creatorProfile.canEdit ? "예" : "아니요"}
+                {member.creatorProfile.gender
+                  ? GENDER_LABEL[member.creatorProfile.gender]
+                  : "-"}
               </dd>
             </div>
             <div>
-              <dt className="text-gray-500">편집 실력</dt>
+              <dt className="text-gray-500">나이</dt>
               <dd className="mt-1 text-gray-900">
-                {skillLabel(member.creatorProfile.editingSkill)}
+                {member.creatorProfile.age ?? "-"}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-gray-500">주 사용 편집 툴</dt>
+              <dd className="mt-1 text-gray-900">
+                {member.creatorProfile.editingTool
+                  ? EDITING_TOOL_LABEL[member.creatorProfile.editingTool]
+                  : "-"}
               </dd>
             </div>
             <div>
               <dt className="text-gray-500">얼굴 공개</dt>
               <dd className="mt-1 text-gray-900">
-                {member.creatorProfile.faceExposure ? "예" : "아니요"}
+                {member.creatorProfile.faceExposure ? "가능" : "불가능"}
               </dd>
             </div>
             <div>
@@ -151,6 +243,22 @@ export default function AdminMemberDetailPage() {
               <dd className="mt-1 text-gray-900">
                 {member.creatorProfile.instagramId
                   ? `@${member.creatorProfile.instagramId}`
+                  : "-"}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-gray-500">틱톡</dt>
+              <dd className="mt-1 text-gray-900">
+                {member.creatorProfile.tiktokId
+                  ? `@${member.creatorProfile.tiktokId}`
+                  : "-"}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-gray-500">유튜브</dt>
+              <dd className="mt-1 text-gray-900">
+                {member.creatorProfile.youtubeId
+                  ? `@${member.creatorProfile.youtubeId}`
                   : "-"}
               </dd>
             </div>

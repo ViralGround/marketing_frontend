@@ -8,9 +8,10 @@ const REFRESH_TOKEN_EXPIRY = "7d";
 export async function signAccessToken(
   memberId: number,
   email: string,
-  role: string
+  role: string,
+  name: string
 ) {
-  return new SignJWT({ sub: String(memberId), email, role })
+  return new SignJWT({ sub: String(memberId), email, role, name })
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
     .setExpirationTime(ACCESS_TOKEN_EXPIRY)

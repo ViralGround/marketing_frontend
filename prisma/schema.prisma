@@ -13,6 +13,27 @@ enum Role {
   ADMIN
 }
 
+enum MemberStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum EditingTool {
+  CAPCUT
+  PREMIERE
+  FINAL_CUT
+  VN
+  OTHER
+  NONE
+}
+
 enum ContentStatus {
   DRAFT
   PUBLISHED
@@ -30,6 +51,7 @@ model Member {
   password       String
   name           String
   role           Role
+  status         MemberStatus     @default(APPROVED)
   createdAt      DateTime         @default(now()) @map("created_at")
   updatedAt      DateTime         @updatedAt @map("updated_at")
   contents       Content[]
@@ -44,9 +66,14 @@ model CreatorProfile {
   member        Member       @relation(fields: [memberId], references: [id])
   canEdit       Boolean      @default(false) @map("can_edit")
   editingSkill  EditingSkill @default(LOW) @map("editing_skill")
+  editingTool   EditingTool? @map("editing_tool")
+  gender        Gender?
+  age           Int?
   faceExposure  Boolean      @default(false) @map("face_exposure")
   profileImage  String?      @map("profile_image")
   instagramId   String?      @map("instagram_id")
+  tiktokId      String?      @map("tiktok_id")
+  youtubeId     String?      @map("youtube_id")
   createdAt     DateTime     @default(now()) @map("created_at")
   updatedAt     DateTime     @updatedAt @map("updated_at")
 

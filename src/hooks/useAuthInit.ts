@@ -16,7 +16,7 @@ export function useAuthInit() {
       setUser({
         id: Number(payload.sub),
         email: payload.email,
-        name: payload.email,
+        name: payload.name ?? payload.email,
         role: payload.role,
       });
     } catch {

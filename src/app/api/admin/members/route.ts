@@ -12,6 +12,7 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const role = searchParams.get("role");
+    const status = searchParams.get("status");
     const search = searchParams.get("search");
 
     const where: Prisma.MemberWhereInput = {
@@ -22,6 +23,10 @@ export async function GET(request: NextRequest) {
       where.role = role as Prisma.EnumRoleFilter<"Member">;
     }
 
+    if (status && status !== "ALL") {
+      where.status = status as Prisma.EnumMemberStatusFilter<"Member">;
+    }
+
     if (search) {
       where.OR = [
         { name: { contains: search, mode: "insensitive" } },
@@ -29,45 +34,50 @@ export async function GET(request: NextRequest) {
       ];
     }
 
-    // 통계
-    const [total, companyCount, creatorCount, todayCount, weekCount, members] =
-      await Promise.all([
-        prisma.member.count({ where: { role: { not: "ADMIN" } } }),
-        prisma.member.count({ where: { role: "COMPANY" } }),
-        prisma.member.count({ where: { role: "CREATOR" } }),
-        prisma.member.count({
-          where: {
-            role: { not: "ADMIN" },
-            createdAt: {
-              gte: new Date(new Date().setHours(0, 0, 0, 0)),
-            },
+    const [
+      total,
+      companyCount,
+      creatorCount,
+      pendingCount,
+      todayCount,
+      weekCount,
+      members,
+    ] = await Promise.all([
+      prisma.member.count({ where: { role: { not: "ADMIN" } } }),
+      prisma.member.count({ where: { role: "COMPANY" } }),
+      prisma.member.count({ where: { role: "CREATOR" } }),
+      prisma.member.count({
+        where: { role: { not: "ADMIN" }, status: "PENDING" },
+      }),
+      prisma.member.count({
+        where: {
+          role: { not: "ADMIN" },
+          createdAt: { gte: new Date(new Date().setHours(0, 0, 0, 0)) },
+        },
+      }),
+      prisma.member.count({
+        where: {
+          role: { not: "ADMIN" },
+          createdAt: { gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) },
+        },
+      }),
+      prisma.member.findMany({
+        where,
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          role: true,
+          status: true,
+          createdAt: true,
+          creatorProfile: {
+            select: { instagramId: true },
           },
-        }),
-        prisma.member.count({
-          where: {
-            role: { not: "ADMIN" },
-            createdAt: {
-              gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
-            },
-          },
-        }),
-        prisma.member.findMany({
-          where,
-          select: {
-            id: true,
-            email: true,
-            name: true,
-            role: true,
-            createdAt: true,
-            creatorProfile: {
-              select: { instagramId: true },
-            },
-          },
-          orderBy: { createdAt: "desc" },
-        }),
-      ]);
+        },
+        orderBy: [{ status: "asc" }, { createdAt: "desc" }],
+      }),
+    ]);
 
-    // 콘텐츠 통계
     const [contentTotal, contentPublished, contentDraft] = await Promise.all([
       prisma.content.count(),
       prisma.content.count({ where: { status: "PUBLISHED" } }),
@@ -79,6 +89,7 @@ export async function GET(request: NextRequest) {
         total,
         companyCount,
         creatorCount,
+        pendingCount,
         todayCount,
         weekCount,
         contentTotal,
@@ -90,11 +101,13 @@ export async function GET(request: NextRequest) {
         email: m.email,
         name: m.name,
         role: m.role,
+        status: m.status,
         createdAt: m.createdAt,
         instagramId: m.creatorProfile?.instagramId || null,
       })),
     });
-  } catch {
+  } catch (err) {
+    console.error("[admin:list] error:", err);
     return NextResponse.json(
       { message: "서버 오류가 발생했습니다" },
       { status: 500 }

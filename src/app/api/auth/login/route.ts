@@ -30,7 +30,27 @@ export async function POST(request: Request) {
       );
     }
 
-    const accessToken = await signAccessToken(member.id, member.email, member.role);
+    if (member.status === "PENDING") {
+      return NextResponse.json(
+        {
+          message: "관리자 승인 대기 중입니다. 승인 후 로그인할 수 있어요.",
+          code: "PENDING_APPROVAL",
+        },
+        { status: 403 }
+      );
+    }
+
+    if (member.status === "REJECTED") {
+      return NextResponse.json(
+        {
+          message: "가입이 거절되었습니다. 문의는 관리자에게 연락해주세요.",
+          code: "REJECTED",
+        },
+        { status: 403 }
+      );
+    }
+
+    const accessToken = await signAccessToken(member.id, member.email, member.role, member.name);
     const refreshToken = await signRefreshToken(member.id);
 
     return NextResponse.json({ accessToken, refreshToken });

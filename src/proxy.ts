@@ -9,11 +9,27 @@ function extractRoleFromJwt(token: string): string | null {
   }
 }
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const token = request.cookies.get("access_token")?.value;
   const { pathname } = request.nextUrl;
 
-  // Auth-protected paths (any authenticated user)
+  // 루트 `/` — 비로그인은 랜딩 통과, 로그인은 역할별 홈으로 이동
+  if (pathname === "/") {
+    if (!token) return NextResponse.next();
+    const role = extractRoleFromJwt(token);
+    if (role === "ADMIN") {
+      return NextResponse.redirect(new URL("/admin/members", request.url));
+    }
+    if (role === "CREATOR") {
+      return NextResponse.redirect(new URL("/creator/home", request.url));
+    }
+    if (role === "COMPANY") {
+      return NextResponse.redirect(new URL("/company/dashboard", request.url));
+    }
+    return NextResponse.next();
+  }
+
+  // 인증 필수 경로
   const authProtectedPaths = ["/contents/new", "/profile/setup"];
   const isAuthProtected =
     authProtectedPaths.includes(pathname) ||
@@ -23,21 +39,18 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
-  // Admin-only paths
   if (pathname.startsWith("/admin")) {
     if (!token) return NextResponse.redirect(new URL("/login", request.url));
     const role = extractRoleFromJwt(token);
     if (role !== "ADMIN") return NextResponse.redirect(new URL("/", request.url));
   }
 
-  // Company-only paths
   if (pathname.startsWith("/company")) {
     if (!token) return NextResponse.redirect(new URL("/login", request.url));
     const role = extractRoleFromJwt(token);
     if (role !== "COMPANY") return NextResponse.redirect(new URL("/", request.url));
   }
 
-  // Creator-only paths
   if (pathname.startsWith("/creator")) {
     if (!token) return NextResponse.redirect(new URL("/login", request.url));
     const role = extractRoleFromJwt(token);
@@ -48,5 +61,13 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/contents/new", "/contents/:id/edit", "/admin/:path*", "/company/:path*", "/creator/:path*", "/profile/setup"],
+  matcher: [
+    "/",
+    "/contents/new",
+    "/contents/:id/edit",
+    "/admin/:path*",
+    "/company/:path*",
+    "/creator/:path*",
+    "/profile/setup",
+  ],
 };

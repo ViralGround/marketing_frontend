@@ -23,9 +23,14 @@ export async function GET(request: Request) {
       profile: {
         canEdit: profile.canEdit,
         editingSkill: profile.editingSkill,
+        editingTool: profile.editingTool,
+        gender: profile.gender,
+        age: profile.age,
         faceExposure: profile.faceExposure,
         profileImage: profile.profileImage,
         instagramId: profile.instagramId,
+        tiktokId: profile.tiktokId,
+        youtubeId: profile.youtubeId,
       },
     });
   } catch {

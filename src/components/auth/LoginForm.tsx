@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import api from "@/lib/api";
 import { setTokens } from "@/lib/auth";
 import { useAuthStore } from "@/store/useAuthStore";
@@ -11,13 +11,22 @@ export default function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [info, setInfo] = useState("");
   const [loading, setLoading] = useState(false);
   const { setUser } = useAuthStore();
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    if (searchParams.get("pending") === "1") {
+      setInfo("가입 신청이 접수되었습니다. 관리자 승인 후 로그인할 수 있어요.");
+    }
+  }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setInfo("");
     setLoading(true);
 
     try {
@@ -27,31 +36,37 @@ export default function LoginForm() {
       });
       setTokens(data.accessToken, data.refreshToken);
 
-      // Decode JWT payload to get user info
       const payload = JSON.parse(atob(data.accessToken.split(".")[1]));
       const role = payload.role as UserRole;
       setUser({
         id: Number(payload.sub),
         email: payload.email,
-        name: payload.email,
+        name: payload.name ?? payload.email,
         role,
       });
 
-      // 역할별 리다이렉트
       if (role === "ADMIN") {
         router.push("/admin/members");
       } else if (role === "CREATOR") {
-        const { data: profileData } = await api.get("/profile");
-        if (profileData.hasProfile) {
-          router.push("/creator/dashboard");
-        } else {
-          router.push("/profile/setup");
-        }
+        router.push("/creator/home");
       } else if (role === "COMPANY") {
         router.push("/company/dashboard");
       }
-    } catch {
-      setError("이메일 또는 비밀번호가 올바르지 않습니다");
+    } catch (err: unknown) {
+      const response =
+        typeof err === "object" && err !== null && "response" in err
+          ? (err as { response?: { status?: number; data?: { code?: string; message?: string } } }).response
+          : undefined;
+      const status = response?.status;
+      const code = response?.data?.code;
+
+      if (status === 403 && code === "PENDING_APPROVAL") {
+        setError("아직 관리자 승인이 완료되지 않았습니다. 승인되면 이메일로 알려드릴게요.");
+      } else if (status === 403 && code === "REJECTED") {
+        setError("가입이 거절되었습니다. 자세한 문의는 관리자에게 연락해주세요.");
+      } else {
+        setError("이메일 또는 비밀번호가 올바르지 않습니다");
+      }
     } finally {
       setLoading(false);
     }
@@ -59,6 +74,9 @@ export default function LoginForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      {info && !error && (
+        <div className="rounded bg-blue-50 p-3 text-sm text-blue-700">{info}</div>
+      )}
       {error && (
         <div className="rounded bg-red-50 p-3 text-sm text-red-600">
           {error}

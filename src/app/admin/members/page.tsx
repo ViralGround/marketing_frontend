@@ -10,7 +10,6 @@ interface MemberItem {
   id: number;
   email: string;
   name: string;
-  role: "COMPANY" | "CREATOR";
   status: MemberStatus;
   createdAt: string;
   instagramId: string | null;
@@ -18,24 +17,19 @@ interface MemberItem {
 
 interface Stats {
   total: number;
-  companyCount: number;
-  creatorCount: number;
   pendingCount: number;
+  approvedCount: number;
+  rejectedCount: number;
   todayCount: number;
   weekCount: number;
-  contentTotal: number;
-  contentPublished: number;
-  contentDraft: number;
 }
 
-type RoleFilter = "ALL" | "COMPANY" | "CREATOR";
 type StatusFilter = "ALL" | "PENDING" | "APPROVED" | "REJECTED";
 
 export default function AdminMembersPage() {
   const [members, setMembers] = useState<MemberItem[]>([]);
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
-  const [roleFilter, setRoleFilter] = useState<RoleFilter>("ALL");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("ALL");
   const [search, setSearch] = useState("");
   const [searchInput, setSearchInput] = useState("");
@@ -43,7 +37,6 @@ export default function AdminMembersPage() {
   const fetchMembers = () => {
     setLoading(true);
     const params = new URLSearchParams();
-    if (roleFilter !== "ALL") params.set("role", roleFilter);
     if (statusFilter !== "ALL") params.set("status", statusFilter);
     if (search) params.set("search", search);
 
@@ -60,7 +53,7 @@ export default function AdminMembersPage() {
   useEffect(() => {
     fetchMembers();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [roleFilter, statusFilter, search]);
+  }, [statusFilter, search]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -68,7 +61,7 @@ export default function AdminMembersPage() {
   };
 
   const handleDelete = async (id: number, name: string) => {
-    if (!confirm(`"${name}" 회원을 삭제하시겠습니까? 관련된 모든 콘텐츠와 프로필도 함께 삭제됩니다.`))
+    if (!confirm(`"${name}" 회원을 삭제하시겠습니까? 관련된 모든 데이터가 함께 삭제됩니다.`))
       return;
     try {
       await api.delete(`/admin/members/${id}`);
@@ -89,9 +82,6 @@ export default function AdminMembersPage() {
     }
   };
 
-  const roleLabel = (role: string) =>
-    role === "COMPANY" ? "기업" : "크리에이터";
-
   const statusLabel = (status: MemberStatus) =>
     status === "PENDING" ? "대기" : status === "APPROVED" ? "승인" : "거절";
 
@@ -104,97 +94,56 @@ export default function AdminMembersPage() {
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-bold text-gray-900">회원 관리</h1>
+      <h1 className="mb-6 text-2xl font-bold text-gray-900">크리에이터 관리</h1>
 
-      {/* 통계 카드 */}
       {stats && (
-        <div className="mb-8 grid grid-cols-2 gap-4 md:grid-cols-4">
+        <div className="mb-8 grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6">
           <div className="rounded border border-gray-200 p-4">
-            <p className="text-sm text-gray-500">전체 회원</p>
+            <p className="text-sm text-gray-500">전체</p>
             <p className="text-2xl font-bold text-gray-900">{stats.total}명</p>
           </div>
           <div className="rounded border border-yellow-200 bg-yellow-50 p-4">
             <p className="text-sm text-yellow-700">승인 대기</p>
-            <p className="text-2xl font-bold text-yellow-800">
-              {stats.pendingCount}명
-            </p>
+            <p className="text-2xl font-bold text-yellow-800">{stats.pendingCount}명</p>
           </div>
           <div className="rounded border border-gray-200 p-4">
-            <p className="text-sm text-gray-500">기업</p>
-            <p className="text-2xl font-bold text-gray-900">
-              {stats.companyCount}명
-            </p>
+            <p className="text-sm text-gray-500">승인 완료</p>
+            <p className="text-2xl font-bold text-gray-900">{stats.approvedCount}명</p>
           </div>
           <div className="rounded border border-gray-200 p-4">
-            <p className="text-sm text-gray-500">크리에이터</p>
-            <p className="text-2xl font-bold text-gray-900">
-              {stats.creatorCount}명
-            </p>
+            <p className="text-sm text-gray-500">거절</p>
+            <p className="text-2xl font-bold text-gray-900">{stats.rejectedCount}명</p>
           </div>
           <div className="rounded border border-gray-200 p-4">
             <p className="text-sm text-gray-500">오늘 가입</p>
-            <p className="text-2xl font-bold text-gray-900">
-              {stats.todayCount}명
-            </p>
+            <p className="text-2xl font-bold text-gray-900">{stats.todayCount}명</p>
           </div>
           <div className="rounded border border-gray-200 p-4">
             <p className="text-sm text-gray-500">이번 주 가입</p>
-            <p className="text-2xl font-bold text-gray-900">
-              {stats.weekCount}명
-            </p>
-          </div>
-          <div className="rounded border border-gray-200 p-4">
-            <p className="text-sm text-gray-500">전체 콘텐츠</p>
-            <p className="text-2xl font-bold text-gray-900">
-              {stats.contentTotal}건
-            </p>
-          </div>
-          <div className="rounded border border-gray-200 p-4">
-            <p className="text-sm text-gray-500">게시된 콘텐츠</p>
-            <p className="text-2xl font-bold text-gray-900">
-              {stats.contentPublished}건
-            </p>
+            <p className="text-2xl font-bold text-gray-900">{stats.weekCount}명</p>
           </div>
         </div>
       )}
 
-      {/* 상태 필터 */}
-      <div className="mb-3 flex gap-1">
-        {(["ALL", "PENDING", "APPROVED", "REJECTED"] as StatusFilter[]).map((s) => (
-          <button
-            key={s}
-            onClick={() => setStatusFilter(s)}
-            className={`rounded px-3 py-1.5 text-sm ${
-              statusFilter === s
-                ? "bg-gray-900 text-white"
-                : "border border-gray-300 text-gray-600 hover:bg-gray-50"
-            }`}
-          >
-            {s === "ALL"
-              ? "전체 상태"
-              : s === "PENDING"
-                ? `대기${stats ? ` (${stats.pendingCount})` : ""}`
-                : s === "APPROVED"
-                  ? "승인"
-                  : "거절"}
-          </button>
-        ))}
-      </div>
-
-      {/* 검색 + 역할 필터 */}
       <div className="mb-4 flex flex-wrap items-center gap-3">
         <div className="flex gap-1">
-          {(["ALL", "COMPANY", "CREATOR"] as RoleFilter[]).map((r) => (
+          {(["ALL", "PENDING", "APPROVED", "REJECTED"] as StatusFilter[]).map((s) => (
             <button
-              key={r}
-              onClick={() => setRoleFilter(r)}
+              key={s}
+              onClick={() => setStatusFilter(s)}
               className={`rounded px-3 py-1.5 text-sm ${
-                roleFilter === r
+                statusFilter === s
                   ? "bg-gray-900 text-white"
                   : "border border-gray-300 text-gray-600 hover:bg-gray-50"
               }`}
             >
-              {r === "ALL" ? "전체 역할" : r === "COMPANY" ? "기업" : "크리에이터"}
+              {s === "ALL"
+                ? "전체"
+                : s === "PENDING"
+                  ? `대기${stats ? ` (${stats.pendingCount})` : ""}`
+                  : s === "APPROVED"
+                    ? "승인"
+                    : "거절"}
             </button>
           ))}
         </div>
@@ -215,7 +164,6 @@ export default function AdminMembersPage() {
         </form>
       </div>
 
-      {/* 회원 테이블 */}
       {loading ? (
         <p className="text-gray-500">불러오는 중...</p>
       ) : members.length === 0 ? (
@@ -227,7 +175,6 @@ export default function AdminMembersPage() {
               <tr>
                 <th className="px-4 py-3">이름</th>
                 <th className="px-4 py-3">이메일</th>
-                <th className="px-4 py-3">역할</th>
                 <th className="px-4 py-3">상태</th>
                 <th className="px-4 py-3">인스타그램</th>
                 <th className="px-4 py-3">가입일</th>
@@ -238,25 +185,11 @@ export default function AdminMembersPage() {
               {members.map((m) => (
                 <tr key={m.id} className="hover:bg-gray-50">
                   <td className="px-4 py-3 font-medium text-gray-900">
-                    <Link
-                      href={`/admin/members/${m.id}`}
-                      className="hover:underline"
-                    >
+                    <Link href={`/admin/members/${m.id}`} className="hover:underline">
                       {m.name}
                     </Link>
                   </td>
                   <td className="px-4 py-3 text-gray-600">{m.email}</td>
-                  <td className="px-4 py-3">
-                    <span
-                      className={`rounded px-2 py-0.5 text-xs ${
-                        m.role === "COMPANY"
-                          ? "bg-blue-100 text-blue-700"
-                          : "bg-purple-100 text-purple-700"
-                      }`}
-                    >
-                      {roleLabel(m.role)}
-                    </span>
-                  </td>
                   <td className="px-4 py-3">
                     <span className={`rounded px-2 py-0.5 text-xs ${statusClass(m.status)}`}>
                       {statusLabel(m.status)}

@@ -11,17 +11,12 @@ export async function GET(request: NextRequest) {
     }
 
     const { searchParams } = new URL(request.url);
-    const role = searchParams.get("role");
     const status = searchParams.get("status");
     const search = searchParams.get("search");
 
     const where: Prisma.MemberWhereInput = {
-      role: { not: "ADMIN" },
+      role: "CREATOR",
     };
-
-    if (role && role !== "ALL") {
-      where.role = role as Prisma.EnumRoleFilter<"Member">;
-    }
 
     if (status && status !== "ALL") {
       where.status = status as Prisma.EnumMemberStatusFilter<"Member">;
@@ -36,28 +31,26 @@ export async function GET(request: NextRequest) {
 
     const [
       total,
-      companyCount,
-      creatorCount,
       pendingCount,
+      approvedCount,
+      rejectedCount,
       todayCount,
       weekCount,
       members,
     ] = await Promise.all([
-      prisma.member.count({ where: { role: { not: "ADMIN" } } }),
-      prisma.member.count({ where: { role: "COMPANY" } }),
       prisma.member.count({ where: { role: "CREATOR" } }),
-      prisma.member.count({
-        where: { role: { not: "ADMIN" }, status: "PENDING" },
-      }),
+      prisma.member.count({ where: { role: "CREATOR", status: "PENDING" } }),
+      prisma.member.count({ where: { role: "CREATOR", status: "APPROVED" } }),
+      prisma.member.count({ where: { role: "CREATOR", status: "REJECTED" } }),
       prisma.member.count({
         where: {
-          role: { not: "ADMIN" },
+          role: "CREATOR",
           createdAt: { gte: new Date(new Date().setHours(0, 0, 0, 0)) },
         },
       }),
       prisma.member.count({
         where: {
-          role: { not: "ADMIN" },
+          role: "CREATOR",
           createdAt: { gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) },
         },
       }),
@@ -78,23 +71,14 @@ export async function GET(request: NextRequest) {
       }),
     ]);
 
-    const [contentTotal, contentPublished, contentDraft] = await Promise.all([
-      prisma.content.count(),
-      prisma.content.count({ where: { status: "PUBLISHED" } }),
-      prisma.content.count({ where: { status: "DRAFT" } }),
-    ]);
-
     return NextResponse.json({
       stats: {
         total,
-        companyCount,
-        creatorCount,
         pendingCount,
+        approvedCount,
+        rejectedCount,
         todayCount,
         weekCount,
-        contentTotal,
-        contentPublished,
-        contentDraft,
       },
       members: members.map((m) => ({
         id: m.id,

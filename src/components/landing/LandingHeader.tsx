@@ -39,16 +39,10 @@ export default function LandingHeader() {
           {isAuthenticated ? (
             <>
               <Link
-                href={
-                  user?.role === "ADMIN"
-                    ? "/admin/members"
-                    : user?.role === "COMPANY"
-                      ? "/company/dashboard"
-                      : "/creator/dashboard"
-                }
+                href={user?.role === "ADMIN" ? "/admin/members" : "/creator/home"}
                 className="rounded-lg px-4 py-2 text-sm font-medium text-foreground hover:text-primary transition-colors"
               >
-                대시보드
+                {user?.role === "ADMIN" ? "관리자" : "홈"}
               </Link>
               <button
                 onClick={handleLogout}

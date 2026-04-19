@@ -23,9 +23,6 @@ export function proxy(request: NextRequest) {
     if (role === "CREATOR") {
       return NextResponse.redirect(new URL("/creator/home", request.url));
     }
-    if (role === "COMPANY") {
-      return NextResponse.redirect(new URL("/company/dashboard", request.url));
-    }
     return NextResponse.next();
   }
 
@@ -45,12 +42,6 @@ export function proxy(request: NextRequest) {
     if (role !== "ADMIN") return NextResponse.redirect(new URL("/", request.url));
   }
 
-  if (pathname.startsWith("/company")) {
-    if (!token) return NextResponse.redirect(new URL("/login", request.url));
-    const role = extractRoleFromJwt(token);
-    if (role !== "COMPANY") return NextResponse.redirect(new URL("/", request.url));
-  }
-
   if (pathname.startsWith("/creator")) {
     if (!token) return NextResponse.redirect(new URL("/login", request.url));
     const role = extractRoleFromJwt(token);
@@ -66,7 +57,6 @@ export const config = {
     "/contents/new",
     "/contents/:id/edit",
     "/admin/:path*",
-    "/company/:path*",
     "/creator/:path*",
     "/profile/setup",
   ],

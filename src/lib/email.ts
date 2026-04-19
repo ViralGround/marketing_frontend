@@ -88,6 +88,98 @@ export async function notifyAdminsOfNewCreator(
   }
 }
 
+export interface NewApplicationNotification {
+  applicationId: number;
+  campaignId: number;
+  campaignTitle: string;
+  brandName: string;
+  creatorName: string;
+  creatorEmail: string;
+  message: string | null;
+}
+
+export async function notifyAdminsOfNewApplication(
+  data: NewApplicationNotification,
+): Promise<void> {
+  try {
+    if (!resend) return;
+    const recipients = getAdminRecipients();
+    if (recipients.length === 0) return;
+
+    const from = process.env.EMAIL_FROM ?? "onboarding@resend.dev";
+    const appUrl = process.env.APP_URL ?? "http://localhost:3000";
+    const detailUrl = `${appUrl}/admin/campaigns/${data.campaignId}`;
+
+    const html = `
+      <div style="font-family:system-ui,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#111;">
+        <h2 style="margin:0 0 16px;">새 캠페인 지원 신청</h2>
+        <p style="color:#444;margin:0 0 12px;">캠페인에 새로운 지원자가 등록되었습니다.</p>
+        <table style="border-collapse:collapse;width:100%;font-size:14px;margin-bottom:20px;">
+          <tr><td style="padding:6px 12px;color:#666;border-bottom:1px solid #eee;">캠페인</td><td style="padding:6px 12px;border-bottom:1px solid #eee;">${escape(data.campaignTitle)}</td></tr>
+          <tr><td style="padding:6px 12px;color:#666;border-bottom:1px solid #eee;">브랜드</td><td style="padding:6px 12px;border-bottom:1px solid #eee;">${escape(data.brandName)}</td></tr>
+          <tr><td style="padding:6px 12px;color:#666;border-bottom:1px solid #eee;">지원자</td><td style="padding:6px 12px;border-bottom:1px solid #eee;">${escape(data.creatorName)} (${escape(data.creatorEmail)})</td></tr>
+          <tr><td style="padding:6px 12px;color:#666;">지원 메시지</td><td style="padding:6px 12px;">${escape(data.message)}</td></tr>
+        </table>
+        <a href="${detailUrl}" style="display:inline-block;background:#111;color:#fff;padding:10px 18px;border-radius:6px;text-decoration:none;font-size:14px;">지원자 검토하기</a>
+      </div>
+    `;
+
+    await resend.emails.send({
+      from,
+      to: recipients,
+      subject: `[캠페인 지원] ${data.campaignTitle} — ${data.creatorName}`,
+      html,
+    });
+  } catch (err) {
+    console.error("[email] Failed to send new-application notification:", err);
+  }
+}
+
+export async function notifyCreatorOfApplicationStatusChange(
+  to: string,
+  name: string,
+  campaignTitle: string,
+  status: "APPROVED" | "REJECTED" | "SETTLED",
+  rewardAmount?: number | null,
+): Promise<void> {
+  try {
+    if (!resend) return;
+    const from = process.env.EMAIL_FROM ?? "onboarding@resend.dev";
+    const appUrl = process.env.APP_URL ?? "http://localhost:3000";
+
+    const statusText =
+      status === "APPROVED"
+        ? "참여가 승인되었습니다"
+        : status === "REJECTED"
+          ? "지원이 거절되었습니다"
+          : "정산이 완료되었습니다";
+
+    const bodyText =
+      status === "APPROVED"
+        ? `${escape(name)} 님의 "${escape(campaignTitle)}" 캠페인 참여가 승인되었습니다. 지금 영상 제작을 시작해주세요.`
+        : status === "REJECTED"
+          ? `${escape(name)} 님의 "${escape(campaignTitle)}" 캠페인 지원이 거절되었습니다. 다른 캠페인도 확인해보세요.`
+          : `${escape(name)} 님의 "${escape(campaignTitle)}" 캠페인 보상 ${rewardAmount ? `₩${rewardAmount.toLocaleString("ko-KR")}` : ""}이(가) 정산되었습니다.`;
+
+    const html = `
+      <div style="font-family:system-ui,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#111;">
+        <h2 style="margin:0 0 16px;">${statusText}</h2>
+        <p style="color:#444;margin:0 0 16px;">${bodyText}</p>
+        <a href="${appUrl}/creator/applications" style="display:inline-block;background:#111;color:#fff;padding:10px 18px;border-radius:6px;text-decoration:none;font-size:14px;">내 지원 현황 보기</a>
+      </div>
+    `;
+
+    await resend.emails.send({
+      from,
+      to,
+      subject: `[${campaignTitle}] ${statusText}`,
+      html,
+    });
+  } catch (err) {
+    console.error("[email] Failed to send application status email:", err);
+  }
+}
+
 export async function notifyCreatorOfStatusChange(
   to: string,
   name: string,

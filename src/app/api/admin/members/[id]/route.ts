@@ -47,41 +47,6 @@ export async function GET(
   }
 }
 
-export async function PUT(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    const user = await getAuthUser(request);
-    if (!user || user.role !== "ADMIN") {
-      return NextResponse.json({ message: "권한이 없습니다" }, { status: 403 });
-    }
-
-    const { id } = await params;
-    const { role } = await request.json();
-
-    if (role !== "COMPANY" && role !== "CREATOR") {
-      return NextResponse.json(
-        { message: "역할은 COMPANY 또는 CREATOR만 가능합니다" },
-        { status: 400 }
-      );
-    }
-
-    const member = await prisma.member.update({
-      where: { id: Number(id) },
-      data: role === "COMPANY" ? { role, status: "APPROVED" } : { role },
-      select: { id: true, email: true, name: true, role: true, status: true },
-    });
-
-    return NextResponse.json(member);
-  } catch {
-    return NextResponse.json(
-      { message: "서버 오류가 발생했습니다" },
-      { status: 500 }
-    );
-  }
-}
-
 export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ id: string }> }

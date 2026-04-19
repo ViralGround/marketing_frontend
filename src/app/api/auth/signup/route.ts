@@ -33,22 +33,43 @@ export async function POST(request: Request) {
       );
     }
 
-    if (role === "ADMIN") {
+    if (role !== "CREATOR") {
       return NextResponse.json(
         { message: "허용되지 않는 역할입니다" },
         { status: 400 }
       );
     }
 
-    if (role !== "COMPANY" && role !== "CREATOR") {
+    // 크리에이터 설문 필드 검증
+    const { gender, age, faceExposure, editingTool, instagramId, tiktokId, youtubeId } = body;
+
+    if (!gender || !ALLOWED_GENDERS.includes(gender)) {
       return NextResponse.json(
-        { message: "역할은 COMPANY 또는 CREATOR만 가능합니다" },
+        { message: "성별을 선택해주세요" },
+        { status: 400 }
+      );
+    }
+    const ageNum = Number(age);
+    if (!Number.isInteger(ageNum) || ageNum < 10 || ageNum > 100) {
+      return NextResponse.json(
+        { message: "나이를 올바르게 입력해주세요" },
+        { status: 400 }
+      );
+    }
+    if (typeof faceExposure !== "boolean") {
+      return NextResponse.json(
+        { message: "얼굴 공개 여부를 선택해주세요" },
+        { status: 400 }
+      );
+    }
+    if (!editingTool || !ALLOWED_TOOLS.includes(editingTool)) {
+      return NextResponse.json(
+        { message: "편집 툴을 선택해주세요" },
         { status: 400 }
       );
     }
 
-    // 크리에이터 설문 필드 검증
-    let survey: {
+    const survey: {
       gender: Gender;
       age: number;
       faceExposure: boolean;
@@ -56,47 +77,15 @@ export async function POST(request: Request) {
       instagramId: string | null;
       tiktokId: string | null;
       youtubeId: string | null;
-    } | null = null;
-
-    if (role === "CREATOR") {
-      const { gender, age, faceExposure, editingTool, instagramId, tiktokId, youtubeId } = body;
-
-      if (!gender || !ALLOWED_GENDERS.includes(gender)) {
-        return NextResponse.json(
-          { message: "성별을 선택해주세요" },
-          { status: 400 }
-        );
-      }
-      const ageNum = Number(age);
-      if (!Number.isInteger(ageNum) || ageNum < 10 || ageNum > 100) {
-        return NextResponse.json(
-          { message: "나이를 올바르게 입력해주세요" },
-          { status: 400 }
-        );
-      }
-      if (typeof faceExposure !== "boolean") {
-        return NextResponse.json(
-          { message: "얼굴 공개 여부를 선택해주세요" },
-          { status: 400 }
-        );
-      }
-      if (!editingTool || !ALLOWED_TOOLS.includes(editingTool)) {
-        return NextResponse.json(
-          { message: "편집 툴을 선택해주세요" },
-          { status: 400 }
-        );
-      }
-
-      survey = {
-        gender,
-        age: ageNum,
-        faceExposure,
-        editingTool,
-        instagramId: instagramId?.trim() || null,
-        tiktokId: tiktokId?.trim() || null,
-        youtubeId: youtubeId?.trim() || null,
-      };
-    }
+    } = {
+      gender,
+      age: ageNum,
+      faceExposure,
+      editingTool,
+      instagramId: instagramId?.trim() || null,
+      tiktokId: tiktokId?.trim() || null,
+      youtubeId: youtubeId?.trim() || null,
+    };
 
     const existing = await prisma.member.findUnique({ where: { email } });
     if (existing) {
@@ -114,44 +103,40 @@ export async function POST(request: Request) {
           email,
           password: hashedPassword,
           name,
-          role,
-          status: role === "CREATOR" ? "PENDING" : "APPROVED",
+          role: "CREATOR",
+          status: "PENDING",
         },
       });
-      if (survey) {
-        await tx.creatorProfile.create({
-          data: {
-            memberId: m.id,
-            gender: survey.gender,
-            age: survey.age,
-            faceExposure: survey.faceExposure,
-            editingTool: survey.editingTool,
-            canEdit: survey.editingTool !== "NONE",
-            instagramId: survey.instagramId,
-            tiktokId: survey.tiktokId,
-            youtubeId: survey.youtubeId,
-          },
-        });
-      }
+      await tx.creatorProfile.create({
+        data: {
+          memberId: m.id,
+          gender: survey.gender,
+          age: survey.age,
+          faceExposure: survey.faceExposure,
+          editingTool: survey.editingTool,
+          canEdit: survey.editingTool !== "NONE",
+          instagramId: survey.instagramId,
+          tiktokId: survey.tiktokId,
+          youtubeId: survey.youtubeId,
+        },
+      });
       return m;
     });
 
-    if (role === "CREATOR" && survey) {
-      // 응답 반환 후 백그라운드에서 관리자 알림 이메일 발송
-      const notification = {
-        memberId: member.id,
-        name: member.name,
-        email: member.email,
-        gender: survey.gender,
-        age: survey.age,
-        editingTool: survey.editingTool,
-        faceExposure: survey.faceExposure,
-        instagramId: survey.instagramId,
-        tiktokId: survey.tiktokId,
-        youtubeId: survey.youtubeId,
-      };
-      after(() => notifyAdminsOfNewCreator(notification));
-    }
+    // 응답 반환 후 백그라운드에서 관리자 알림 이메일 발송
+    const notification = {
+      memberId: member.id,
+      name: member.name,
+      email: member.email,
+      gender: survey.gender,
+      age: survey.age,
+      editingTool: survey.editingTool,
+      faceExposure: survey.faceExposure,
+      instagramId: survey.instagramId,
+      tiktokId: survey.tiktokId,
+      youtubeId: survey.youtubeId,
+    };
+    after(() => notifyAdminsOfNewCreator(notification));
 
     return NextResponse.json(
       {

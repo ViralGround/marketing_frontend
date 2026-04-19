@@ -8,7 +8,6 @@ datasource db {
 }
 
 enum Role {
-  COMPANY
   CREATOR
   ADMIN
 }
@@ -45,17 +44,33 @@ enum EditingSkill {
   LOW
 }
 
+enum CampaignStatus {
+  OPEN
+  CLOSED
+  ARCHIVED
+}
+
+enum ApplicationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  SUBMITTED
+  SETTLED
+}
+
 model Member {
-  id             Int              @id @default(autoincrement())
-  email          String           @unique
-  password       String
-  name           String
-  role           Role
-  status         MemberStatus     @default(APPROVED)
-  createdAt      DateTime         @default(now()) @map("created_at")
-  updatedAt      DateTime         @updatedAt @map("updated_at")
-  contents       Content[]
-  creatorProfile CreatorProfile?
+  id                   Int                   @id @default(autoincrement())
+  email                String                @unique
+  password             String
+  name                 String
+  role                 Role
+  status               MemberStatus          @default(APPROVED)
+  createdAt            DateTime              @default(now()) @map("created_at")
+  updatedAt            DateTime              @updatedAt @map("updated_at")
+  contents             Content[]
+  creatorProfile       CreatorProfile?
+  campaignsCreated     Campaign[]            @relation("CampaignAuthor")
+  applications         CampaignApplication[] @relation("CreatorApplications")
 
   @@map("members")
 }
@@ -91,4 +106,44 @@ model Content {
   updatedAt DateTime      @updatedAt @map("updated_at")
 
   @@map("contents")
+}
+
+model Campaign {
+  id              Int                    @id @default(autoincrement())
+  title           String
+  description     String
+  brandName       String                 @map("brand_name")
+  rewardAmount    Int                    @map("reward_amount")
+  thumbnailUrl    String?                @map("thumbnail_url")
+  requirements    String?
+  deadline        DateTime?
+  maxParticipants Int                    @map("max_participants")
+  status          CampaignStatus         @default(OPEN)
+  createdById     Int                    @map("created_by_id")
+  createdBy       Member                 @relation("CampaignAuthor", fields: [createdById], references: [id])
+  applications    CampaignApplication[]
+  createdAt       DateTime               @default(now()) @map("created_at")
+  updatedAt       DateTime               @updatedAt @map("updated_at")
+
+  @@map("campaigns")
+}
+
+model CampaignApplication {
+  id               Int               @id @default(autoincrement())
+  campaignId       Int               @map("campaign_id")
+  campaign         Campaign          @relation(fields: [campaignId], references: [id])
+  creatorId        Int               @map("creator_id")
+  creator          Member            @relation("CreatorApplications", fields: [creatorId], references: [id])
+  status           ApplicationStatus @default(PENDING)
+  message          String?
+  submissionUrl    String?           @map("submission_url")
+  rewardPaidAmount Int?              @map("reward_paid_amount")
+  appliedAt        DateTime          @default(now()) @map("applied_at")
+  reviewedAt       DateTime?         @map("reviewed_at")
+  submittedAt      DateTime?         @map("submitted_at")
+  settledAt        DateTime?         @map("settled_at")
+  updatedAt        DateTime          @updatedAt @map("updated_at")
+
+  @@unique([campaignId, creatorId])
+  @@map("campaign_applications")
 }

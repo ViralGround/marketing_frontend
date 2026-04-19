@@ -20,9 +20,6 @@ export default function Footer() {
             <Link href="/signup/creator" className="hover:text-primary transition-colors">
               크리에이터 가입
             </Link>
-            <Link href="/signup/company" className="hover:text-primary transition-colors">
-              기업 가입
-            </Link>
             <Link href="/contents" className="hover:text-primary transition-colors">
               콘텐츠
             </Link>

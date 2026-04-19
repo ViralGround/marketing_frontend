@@ -30,6 +30,12 @@ export default function AdminLayout({
           >
             회원 관리
           </Link>
+          <Link
+            href="/admin/campaigns"
+            className="block rounded px-3 py-2 text-sm text-gray-700 hover:bg-gray-200"
+          >
+            캠페인 관리
+          </Link>
         </nav>
         <div className="mt-8 border-t border-gray-200 pt-4">
           <button

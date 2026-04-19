@@ -47,10 +47,8 @@ export default function LoginForm() {
 
       if (role === "ADMIN") {
         router.push("/admin/members");
-      } else if (role === "CREATOR") {
+      } else {
         router.push("/creator/home");
-      } else if (role === "COMPANY") {
-        router.push("/company/dashboard");
       }
     } catch (err: unknown) {
       const response =

@@ -38,12 +38,6 @@ export default function HeroSection() {
           >
             지금 크리에이터로 시작하기
           </Link>
-          <Link
-            href="/signup/company"
-            className="w-full sm:w-auto rounded-xl border border-gray-200 dark:border-gray-700 px-8 py-4 text-lg font-semibold text-foreground hover:border-primary hover:text-primary transition-all duration-300"
-          >
-            기업으로 시작하기
-          </Link>
         </div>
 
         {/* 부가 정보 */}

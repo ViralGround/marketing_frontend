@@ -10,7 +10,7 @@ interface MemberDetail {
   id: number;
   email: string;
   name: string;
-  role: "COMPANY" | "CREATOR";
+  role: "CREATOR";
   status: MemberStatus;
   createdAt: string;
   updatedAt: string;
@@ -62,17 +62,6 @@ export default function AdminMemberDetailPage() {
     fetchMember();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
-
-  const handleRoleChange = async (newRole: "COMPANY" | "CREATOR") => {
-    if (!confirm(`역할을 "${newRole === "COMPANY" ? "기업" : "크리에이터"}"(으)로 변경하시겠습니까?`))
-      return;
-    try {
-      await api.put(`/admin/members/${id}`, { role: newRole });
-      setMember((prev) => (prev ? { ...prev, role: newRole } : null));
-    } catch {
-      alert("역할 변경에 실패했습니다");
-    }
-  };
 
   const handleStatusChange = async (status: "APPROVED" | "REJECTED" | "PENDING") => {
     const label =
@@ -143,20 +132,6 @@ export default function AdminMemberDetailPage() {
             <dd className="mt-1 text-gray-900">{member.email}</dd>
           </div>
           <div>
-            <dt className="text-gray-500">역할</dt>
-            <dd className="mt-1">
-              <span
-                className={`rounded px-2 py-0.5 text-xs ${
-                  member.role === "COMPANY"
-                    ? "bg-blue-100 text-blue-700"
-                    : "bg-purple-100 text-purple-700"
-                }`}
-              >
-                {member.role === "COMPANY" ? "기업" : "크리에이터"}
-              </span>
-            </dd>
-          </div>
-          <div>
             <dt className="text-gray-500">가입일</dt>
             <dd className="mt-1 text-gray-900">
               {new Date(member.createdAt).toLocaleString("ko-KR")}
@@ -170,40 +145,38 @@ export default function AdminMemberDetailPage() {
       </div>
 
       {/* 승인 관리 */}
-      {member.role === "CREATOR" && (
-        <div className="mb-6 rounded border border-gray-200 p-6">
-          <h2 className="mb-4 text-lg font-semibold text-gray-900">승인 관리</h2>
-          <p className="mb-4 text-sm text-gray-500">
-            현재 상태:{" "}
-            <span className={`rounded px-2 py-0.5 text-xs ${statusClass(member.status)}`}>
-              {statusLabel(member.status)}
-            </span>
-          </p>
-          <div className="flex flex-wrap gap-2">
-            <button
-              onClick={() => handleStatusChange("APPROVED")}
-              disabled={member.status === "APPROVED"}
-              className="rounded bg-green-600 px-4 py-2 text-sm text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              승인
-            </button>
-            <button
-              onClick={() => handleStatusChange("REJECTED")}
-              disabled={member.status === "REJECTED"}
-              className="rounded border border-red-300 px-4 py-2 text-sm text-red-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              거절
-            </button>
-            <button
-              onClick={() => handleStatusChange("PENDING")}
-              disabled={member.status === "PENDING"}
-              className="rounded border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              대기로 되돌리기
-            </button>
-          </div>
+      <div className="mb-6 rounded border border-gray-200 p-6">
+        <h2 className="mb-4 text-lg font-semibold text-gray-900">승인 관리</h2>
+        <p className="mb-4 text-sm text-gray-500">
+          현재 상태:{" "}
+          <span className={`rounded px-2 py-0.5 text-xs ${statusClass(member.status)}`}>
+            {statusLabel(member.status)}
+          </span>
+        </p>
+        <div className="flex flex-wrap gap-2">
+          <button
+            onClick={() => handleStatusChange("APPROVED")}
+            disabled={member.status === "APPROVED"}
+            className="rounded bg-green-600 px-4 py-2 text-sm text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            승인
+          </button>
+          <button
+            onClick={() => handleStatusChange("REJECTED")}
+            disabled={member.status === "REJECTED"}
+            className="rounded border border-red-300 px-4 py-2 text-sm text-red-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            거절
+          </button>
+          <button
+            onClick={() => handleStatusChange("PENDING")}
+            disabled={member.status === "PENDING"}
+            className="rounded border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            대기로 되돌리기
+          </button>
         </div>
-      )}
+      </div>
 
       {/* 크리에이터 프로필 / 설문 응답 */}
       {member.creatorProfile && (
@@ -266,34 +239,6 @@ export default function AdminMemberDetailPage() {
         </div>
       )}
 
-      {/* 역할 변경 */}
-      <div className="rounded border border-gray-200 p-6">
-        <h2 className="mb-4 text-lg font-semibold text-gray-900">역할 변경</h2>
-        <div className="flex gap-3">
-          <button
-            onClick={() => handleRoleChange("COMPANY")}
-            disabled={member.role === "COMPANY"}
-            className={`rounded px-4 py-2 text-sm ${
-              member.role === "COMPANY"
-                ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                : "border border-gray-300 text-gray-700 hover:bg-gray-50"
-            }`}
-          >
-            기업으로 변경
-          </button>
-          <button
-            onClick={() => handleRoleChange("CREATOR")}
-            disabled={member.role === "CREATOR"}
-            className={`rounded px-4 py-2 text-sm ${
-              member.role === "CREATOR"
-                ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                : "border border-gray-300 text-gray-700 hover:bg-gray-50"
-            }`}
-          >
-            크리에이터로 변경
-          </button>
-        </div>
-      </div>
     </div>
   );
 }

@@ -1,0 +1,221 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import api from "@/lib/api";
+
+export interface CampaignFormInitial {
+  id?: number;
+  title?: string;
+  description?: string;
+  brandName?: string;
+  rewardAmount?: number;
+  thumbnailUrl?: string | null;
+  requirements?: string | null;
+  deadline?: string | null;
+  maxParticipants?: number;
+}
+
+export default function CampaignForm({
+  mode,
+  initial,
+}: {
+  mode: "create" | "edit";
+  initial?: CampaignFormInitial;
+}) {
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const [title, setTitle] = useState(initial?.title ?? "");
+  const [description, setDescription] = useState(initial?.description ?? "");
+  const [brandName, setBrandName] = useState(initial?.brandName ?? "");
+  const [rewardAmount, setRewardAmount] = useState(
+    initial?.rewardAmount?.toString() ?? "30000",
+  );
+  const [thumbnailUrl, setThumbnailUrl] = useState(initial?.thumbnailUrl ?? "");
+  const [requirements, setRequirements] = useState(initial?.requirements ?? "");
+  const [deadline, setDeadline] = useState(
+    initial?.deadline ? initial.deadline.slice(0, 10) : "",
+  );
+  const [maxParticipants, setMaxParticipants] = useState(
+    initial?.maxParticipants?.toString() ?? "10",
+  );
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+
+    const payload = {
+      title: title.trim(),
+      description: description.trim(),
+      brandName: brandName.trim(),
+      rewardAmount: Number(rewardAmount),
+      thumbnailUrl: thumbnailUrl.trim() || null,
+      requirements: requirements.trim() || null,
+      deadline: deadline || null,
+      maxParticipants: Number(maxParticipants),
+    };
+
+    try {
+      if (mode === "create") {
+        const { data } = await api.post("/admin/campaigns", payload);
+        router.push(`/admin/campaigns/${data.id}`);
+      } else if (initial?.id) {
+        await api.put(`/admin/campaigns/${initial.id}`, payload);
+        router.push(`/admin/campaigns/${initial.id}`);
+      }
+    } catch (err: unknown) {
+      const msg =
+        typeof err === "object" &&
+        err !== null &&
+        "response" in err &&
+        (err as { response?: { data?: { message?: string } } }).response?.data?.message;
+      setError(msg || "저장에 실패했습니다");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-5">
+      {error && (
+        <div className="rounded bg-red-50 p-3 text-sm text-red-600">{error}</div>
+      )}
+
+      <div>
+        <label htmlFor="title" className="block text-sm font-medium text-gray-700">
+          캠페인 제목
+        </label>
+        <input
+          id="title"
+          required
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder="예: 신제품 바디워시 리뷰 영상"
+          className="mt-1 block w-full rounded border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-gray-500 focus:outline-none"
+        />
+      </div>
+
+      <div>
+        <label htmlFor="brandName" className="block text-sm font-medium text-gray-700">
+          브랜드명
+        </label>
+        <input
+          id="brandName"
+          required
+          value={brandName}
+          onChange={(e) => setBrandName(e.target.value)}
+          placeholder="예: ABC 코스메틱"
+          className="mt-1 block w-full rounded border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-gray-500 focus:outline-none"
+        />
+      </div>
+
+      <div>
+        <label htmlFor="description" className="block text-sm font-medium text-gray-700">
+          설명
+        </label>
+        <textarea
+          id="description"
+          required
+          rows={4}
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          placeholder="캠페인 상세 설명"
+          className="mt-1 block w-full rounded border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-gray-500 focus:outline-none"
+        />
+      </div>
+
+      <div>
+        <label htmlFor="requirements" className="block text-sm font-medium text-gray-700">
+          요구사항/가이드라인 <span className="text-gray-400">(선택)</span>
+        </label>
+        <textarea
+          id="requirements"
+          rows={3}
+          value={requirements}
+          onChange={(e) => setRequirements(e.target.value)}
+          placeholder="예: 30초 이상 세로형 영상, 얼굴 공개 필요, 지정 해시태그 포함"
+          className="mt-1 block w-full rounded border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-gray-500 focus:outline-none"
+        />
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label htmlFor="rewardAmount" className="block text-sm font-medium text-gray-700">
+            보상 금액 (원)
+          </label>
+          <input
+            id="rewardAmount"
+            type="number"
+            required
+            min={0}
+            step={1000}
+            value={rewardAmount}
+            onChange={(e) => setRewardAmount(e.target.value)}
+            className="mt-1 block w-full rounded border border-gray-300 px-3 py-2 text-gray-900 focus:border-gray-500 focus:outline-none"
+          />
+        </div>
+        <div>
+          <label htmlFor="maxParticipants" className="block text-sm font-medium text-gray-700">
+            최대 참여자 수
+          </label>
+          <input
+            id="maxParticipants"
+            type="number"
+            required
+            min={1}
+            value={maxParticipants}
+            onChange={(e) => setMaxParticipants(e.target.value)}
+            className="mt-1 block w-full rounded border border-gray-300 px-3 py-2 text-gray-900 focus:border-gray-500 focus:outline-none"
+          />
+        </div>
+      </div>
+
+      <div>
+        <label htmlFor="deadline" className="block text-sm font-medium text-gray-700">
+          마감일 <span className="text-gray-400">(선택)</span>
+        </label>
+        <input
+          id="deadline"
+          type="date"
+          value={deadline}
+          onChange={(e) => setDeadline(e.target.value)}
+          className="mt-1 block w-full rounded border border-gray-300 px-3 py-2 text-gray-900 focus:border-gray-500 focus:outline-none"
+        />
+      </div>
+
+      <div>
+        <label htmlFor="thumbnailUrl" className="block text-sm font-medium text-gray-700">
+          썸네일 이미지 URL <span className="text-gray-400">(선택)</span>
+        </label>
+        <input
+          id="thumbnailUrl"
+          type="url"
+          value={thumbnailUrl}
+          onChange={(e) => setThumbnailUrl(e.target.value)}
+          placeholder="https://..."
+          className="mt-1 block w-full rounded border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-gray-500 focus:outline-none"
+        />
+      </div>
+
+      <div className="flex gap-2">
+        <button
+          type="submit"
+          disabled={loading}
+          className="rounded bg-gray-900 px-4 py-2 text-sm text-white hover:bg-gray-700 disabled:opacity-50"
+        >
+          {loading ? "저장 중..." : mode === "create" ? "캠페인 생성" : "수정 저장"}
+        </button>
+        <button
+          type="button"
+          onClick={() => router.back()}
+          className="rounded border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+        >
+          취소
+        </button>
+      </div>
+    </form>
+  );
+}

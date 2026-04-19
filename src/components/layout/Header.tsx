@@ -22,24 +22,30 @@ export default function Header() {
           Viral Ground
         </Link>
         <nav className="flex items-center gap-4">
-          <Link href="/contents" className="text-gray-600 dark:text-gray-400 hover:text-primary">
-            콘텐츠
-          </Link>
           {isAuthenticated ? (
             <>
-              <Link
-                href={user?.role === "ADMIN" ? "/admin/members" : "/creator/home"}
-                className="text-gray-600 dark:text-gray-400 hover:text-primary"
-              >
-                {user?.role === "ADMIN" ? "관리자" : "홈"}
-              </Link>
-              {user?.role === "CREATOR" && (
+              {user?.role === "ADMIN" ? (
                 <Link
-                  href="/creator/campaigns"
+                  href="/admin/members"
                   className="text-gray-600 dark:text-gray-400 hover:text-primary"
                 >
-                  캠페인
+                  관리자
                 </Link>
+              ) : (
+                <>
+                  <Link
+                    href="/creator/home"
+                    className="text-gray-600 dark:text-gray-400 hover:text-primary"
+                  >
+                    홈
+                  </Link>
+                  <Link
+                    href="/creator/mypage"
+                    className="text-gray-600 dark:text-gray-400 hover:text-primary"
+                  >
+                    마이페이지
+                  </Link>
+                </>
               )}
               <span className="text-sm text-gray-500">
                 {user?.name} ({user?.role === "ADMIN" ? "관리자" : "크리에이터"})

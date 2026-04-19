@@ -1,161 +1,169 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
-import { useAuthStore } from "@/store/useAuthStore";
 import api from "@/lib/api";
-import StatCards from "@/components/creator/StatCards";
+import CampaignCard from "@/components/campaign/CampaignCard";
 import ApplicationStatusBadge from "@/components/campaign/ApplicationStatusBadge";
 
 type AppStatus = "PENDING" | "APPROVED" | "REJECTED" | "SUBMITTED" | "SETTLED";
+type SortKey = "recent" | "reward" | "deadline";
 
-interface RecentApplication {
+interface CampaignItem {
   id: number;
-  status: AppStatus;
-  appliedAt: string;
-  rewardPaidAmount: number | null;
-  campaign: {
-    id: number;
-    title: string;
-    brandName: string;
-    thumbnailUrl: string | null;
-    rewardAmount: number;
-  };
+  title: string;
+  brandName: string;
+  rewardAmount: number;
+  thumbnailUrl: string | null;
+  deadline: string | null;
+  maxParticipants: number;
+  createdAt: string;
+  applicationCount: number;
+  myApplication: { id: number; status: AppStatus } | null;
 }
 
-interface StatsResponse {
-  totalEarned: number;
-  completedCount: number;
-  activeCount: number;
-  recentApplications: RecentApplication[];
-}
+const SORT_LABEL: Record<SortKey, string> = {
+  recent: "최신순",
+  reward: "보상 높은 순",
+  deadline: "마감 임박순",
+};
+
+const NEW_WINDOW_MS = 3 * 24 * 60 * 60 * 1000;
+const URGENT_WINDOW_MS = 3 * 24 * 60 * 60 * 1000;
 
 export default function CreatorHomePage() {
-  const { user } = useAuthStore();
-  const [stats, setStats] = useState<StatsResponse | null>(null);
+  const [campaigns, setCampaigns] = useState<CampaignItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [sort, setSort] = useState<SortKey>("recent");
+  const [searchInput, setSearchInput] = useState("");
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
+    const params = new URLSearchParams();
+    params.set("sort", sort);
+    if (search) params.set("search", search);
+
     api
-      .get<StatsResponse>("/me/stats")
-      .then((res) => setStats(res.data))
+      .get(`/campaigns?${params.toString()}`)
+      .then((res) => setCampaigns(res.data.campaigns))
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, []);
+  }, [sort, search]);
+
+  const changeSort = (s: SortKey) => {
+    setLoading(true);
+    setSort(s);
+  };
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setSearch(searchInput.trim());
+  };
+
+  const [now] = useState(() => Date.now());
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-10">
-      <div className="mb-8">
-        <p className="text-sm text-gray-500">환영합니다</p>
-        <h1 className="mt-1 text-3xl font-bold text-gray-900">
-          {user?.name ?? "크리에이터"} 님, 오늘도 좋은 콘텐츠를 만들어봐요.
+    <div className="mx-auto max-w-5xl px-4 py-8">
+      <div className="mb-6">
+        <p className="text-sm text-gray-500">참여 가능한 캠페인</p>
+        <h1 className="mt-1 text-2xl font-bold text-gray-900">
+          지금 모집 중인 캠페인
         </h1>
       </div>
 
-      {/* 스탯 카드 */}
-      <div className="mb-10">
-        {loading || !stats ? (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            {[0, 1, 2].map((i) => (
-              <div key={i} className="h-32 animate-pulse rounded-xl bg-gray-100" />
-            ))}
-          </div>
-        ) : (
-          <StatCards
-            totalEarned={stats.totalEarned}
-            completedCount={stats.completedCount}
-            activeCount={stats.activeCount}
-          />
-        )}
-      </div>
-
-      {/* 빠른 이동 */}
-      <div className="mb-10 grid grid-cols-1 gap-4 md:grid-cols-3">
-        <Link
-          href="/creator/campaigns"
-          className="group rounded-xl border border-gray-200 p-6 transition hover:border-gray-400 hover:shadow-sm"
-        >
-          <h2 className="mb-1 text-lg font-semibold text-gray-900">캠페인 탐색</h2>
-          <p className="text-sm text-gray-500">참여 가능한 새 광고 보기</p>
-          <p className="mt-4 text-sm text-primary group-hover:underline">
-            탐색하기 →
-          </p>
-        </Link>
-        <Link
-          href="/creator/applications"
-          className="group rounded-xl border border-gray-200 p-6 transition hover:border-gray-400 hover:shadow-sm"
-        >
-          <h2 className="mb-1 text-lg font-semibold text-gray-900">내 지원 현황</h2>
-          <p className="text-sm text-gray-500">승인·제출·정산 상태 확인</p>
-          <p className="mt-4 text-sm text-primary group-hover:underline">
-            확인하기 →
-          </p>
-        </Link>
-        <Link
-          href="/profile/setup"
-          className="group rounded-xl border border-gray-200 p-6 transition hover:border-gray-400 hover:shadow-sm"
-        >
-          <h2 className="mb-1 text-lg font-semibold text-gray-900">프로필 관리</h2>
-          <p className="text-sm text-gray-500">활동 정보와 채널 업데이트</p>
-          <p className="mt-4 text-sm text-primary group-hover:underline">
-            수정하기 →
-          </p>
-        </Link>
-      </div>
-
-      {/* 최근 지원 */}
-      <section>
-        <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-gray-900">최근 지원</h2>
-          <Link
-            href="/creator/applications"
-            className="text-sm text-gray-500 hover:text-gray-900"
-          >
-            전체 보기 →
-          </Link>
+      {/* 정렬 + 검색 */}
+      <div className="mb-6 flex flex-wrap items-center gap-3">
+        <div className="flex gap-1">
+          {(["recent", "reward", "deadline"] as SortKey[]).map((s) => (
+            <button
+              key={s}
+              onClick={() => changeSort(s)}
+              className={`rounded px-3 py-1.5 text-sm ${
+                sort === s
+                  ? "bg-gray-900 text-white"
+                  : "border border-gray-300 text-gray-600 hover:bg-gray-50"
+              }`}
+            >
+              {SORT_LABEL[s]}
+            </button>
+          ))}
         </div>
-        {loading || !stats ? (
-          <div className="h-24 animate-pulse rounded-xl bg-gray-100" />
-        ) : stats.recentApplications.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-gray-300 p-8 text-center text-sm text-gray-500">
-            아직 지원한 캠페인이 없어요.{" "}
-            <Link href="/creator/campaigns" className="text-primary underline">
-              첫 캠페인 탐색하기
-            </Link>
-          </div>
-        ) : (
-          <div className="space-y-2">
-            {stats.recentApplications.map((a) => (
-              <Link
-                key={a.id}
-                href={`/creator/campaigns/${a.campaign.id}`}
-                className="flex items-center gap-3 rounded-xl border border-gray-200 bg-white p-3 transition hover:border-gray-400"
-              >
-                <div className="h-14 w-20 shrink-0 overflow-hidden rounded bg-gray-100">
-                  {a.campaign.thumbnailUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={a.campaign.thumbnailUrl}
-                      alt={a.campaign.title}
-                      className="h-full w-full object-cover"
-                    />
-                  ) : null}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs text-gray-500">{a.campaign.brandName}</p>
-                  <p className="truncate text-sm font-medium text-gray-900">
-                    {a.campaign.title}
-                  </p>
-                  <div className="mt-1 flex items-center gap-2 text-xs text-gray-500">
-                    <ApplicationStatusBadge status={a.status} />
-                    <span>{new Date(a.appliedAt).toLocaleDateString("ko-KR")}</span>
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
-        )}
-      </section>
+        <form onSubmit={handleSearch} className="flex gap-2">
+          <input
+            type="text"
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            placeholder="캠페인 제목·브랜드 검색"
+            className="rounded border border-gray-300 px-3 py-1.5 text-sm text-gray-900 placeholder-gray-400 focus:border-gray-500 focus:outline-none"
+          />
+          <button
+            type="submit"
+            className="rounded bg-gray-900 px-3 py-1.5 text-sm text-white hover:bg-gray-700"
+          >
+            검색
+          </button>
+          {search && (
+            <button
+              type="button"
+              onClick={() => {
+                setLoading(true);
+                setSearchInput("");
+                setSearch("");
+              }}
+              className="text-sm text-gray-500 hover:text-gray-900"
+            >
+              초기화
+            </button>
+          )}
+        </form>
+      </div>
+
+      {loading ? (
+        <p className="text-gray-500">불러오는 중...</p>
+      ) : campaigns.length === 0 ? (
+        <div className="rounded-xl border border-dashed border-gray-300 p-12 text-center">
+          <p className="text-gray-500">
+            {search
+              ? `"${search}" 로 검색된 캠페인이 없습니다.`
+              : "현재 모집 중인 캠페인이 없습니다."}
+          </p>
+          <p className="mt-1 text-sm text-gray-400">새 캠페인이 열리면 이메일로 알려드릴게요.</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {campaigns.map((c) => {
+            const createdMs = new Date(c.createdAt).getTime();
+            const isNew = now - createdMs < NEW_WINDOW_MS;
+            const deadlineMs = c.deadline ? new Date(c.deadline).getTime() : null;
+            const isUrgent =
+              deadlineMs !== null &&
+              deadlineMs >= now &&
+              deadlineMs - now <= URGENT_WINDOW_MS;
+            return (
+              <CampaignCard
+                key={c.id}
+                href={`/creator/campaigns/${c.id}`}
+                title={c.title}
+                brandName={c.brandName}
+                rewardAmount={c.rewardAmount}
+                thumbnailUrl={c.thumbnailUrl}
+                deadline={c.deadline}
+                isNew={isNew}
+                isUrgent={isUrgent}
+                rightSlot={
+                  c.myApplication ? (
+                    <ApplicationStatusBadge status={c.myApplication.status} />
+                  ) : (
+                    <span className="text-xs text-gray-500">
+                      지원 {c.applicationCount} / {c.maxParticipants}
+                    </span>
+                  )
+                }
+              />
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

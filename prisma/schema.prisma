@@ -33,11 +33,6 @@ enum EditingTool {
   NONE
 }
 
-enum ContentStatus {
-  DRAFT
-  PUBLISHED
-}
-
 enum EditingSkill {
   HIGH
   MEDIUM
@@ -67,7 +62,6 @@ model Member {
   status               MemberStatus          @default(APPROVED)
   createdAt            DateTime              @default(now()) @map("created_at")
   updatedAt            DateTime              @updatedAt @map("updated_at")
-  contents             Content[]
   creatorProfile       CreatorProfile?
   campaignsCreated     Campaign[]            @relation("CampaignAuthor")
   applications         CampaignApplication[] @relation("CreatorApplications")
@@ -93,19 +87,6 @@ model CreatorProfile {
   updatedAt     DateTime     @updatedAt @map("updated_at")
 
   @@map("creator_profiles")
-}
-
-model Content {
-  id        Int           @id @default(autoincrement())
-  title     String
-  body      String?
-  status    ContentStatus @default(DRAFT)
-  authorId  Int           @map("author_id")
-  author    Member        @relation(fields: [authorId], references: [id])
-  createdAt DateTime      @default(now()) @map("created_at")
-  updatedAt DateTime      @updatedAt @map("updated_at")
-
-  @@map("contents")
 }
 
 model Campaign {

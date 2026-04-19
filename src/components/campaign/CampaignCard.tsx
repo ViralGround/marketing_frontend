@@ -7,6 +7,8 @@ interface CampaignCardProps {
   rewardAmount: number;
   thumbnailUrl?: string | null;
   deadline?: string | Date | null;
+  isNew?: boolean;
+  isUrgent?: boolean;
   rightSlot?: React.ReactNode;
 }
 
@@ -17,6 +19,8 @@ export default function CampaignCard({
   rewardAmount,
   thumbnailUrl,
   deadline,
+  isNew,
+  isUrgent,
   rightSlot,
 }: CampaignCardProps) {
   const deadlineText = deadline
@@ -31,7 +35,7 @@ export default function CampaignCard({
       href={href}
       className="group overflow-hidden rounded-xl border border-gray-200 bg-white transition hover:border-gray-400 hover:shadow-sm"
     >
-      <div className="aspect-video w-full overflow-hidden bg-gray-100">
+      <div className="relative aspect-video w-full overflow-hidden bg-gray-100">
         {thumbnailUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -44,6 +48,20 @@ export default function CampaignCard({
             썸네일 없음
           </div>
         )}
+
+        {/* 뱃지 */}
+        <div className="absolute top-2 left-2 flex gap-1">
+          {isNew && (
+            <span className="rounded bg-blue-600 px-2 py-0.5 text-xs font-semibold text-white shadow">
+              NEW
+            </span>
+          )}
+          {isUrgent && (
+            <span className="rounded bg-red-500 px-2 py-0.5 text-xs font-semibold text-white shadow">
+              마감 임박
+            </span>
+          )}
+        </div>
       </div>
       <div className="p-4">
         <p className="text-xs text-gray-500">{brandName}</p>

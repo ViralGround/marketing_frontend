@@ -7,16 +7,6 @@ export interface Member {
   role: UserRole;
 }
 
-export interface Content {
-  id: number;
-  title: string;
-  body: string;
-  status: "DRAFT" | "PUBLISHED";
-  author: Member;
-  createdAt: string;
-  updatedAt: string;
-}
-
 export interface LoginRequest {
   email: string;
   password: string;
@@ -32,10 +22,4 @@ export interface SignupRequest {
 export interface TokenResponse {
   accessToken: string;
   refreshToken: string;
-}
-
-export interface ContentRequest {
-  title: string;
-  body: string;
-  status: "DRAFT" | "PUBLISHED";
 }

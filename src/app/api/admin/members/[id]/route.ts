@@ -24,7 +24,7 @@ export async function GET(
         createdAt: true,
         updatedAt: true,
         creatorProfile: true,
-        _count: { select: { contents: true } },
+        _count: { select: { applications: true } },
       },
     });
 
@@ -37,7 +37,7 @@ export async function GET(
 
     return NextResponse.json({
       ...member,
-      contentCount: member._count.contents,
+      applicationCount: member._count.applications,
     });
   } catch {
     return NextResponse.json(
@@ -68,8 +68,8 @@ export async function DELETE(
       );
     }
 
-    // 관련 데이터 삭제 (콘텐츠, 프로필)
-    await prisma.content.deleteMany({ where: { authorId: memberId } });
+    // 관련 데이터 삭제 (지원 내역, 프로필)
+    await prisma.campaignApplication.deleteMany({ where: { creatorId: memberId } });
     await prisma.creatorProfile.deleteMany({ where: { memberId } });
     await prisma.member.delete({ where: { id: memberId } });
 

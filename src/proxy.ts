@@ -27,12 +27,7 @@ export function proxy(request: NextRequest) {
   }
 
   // 인증 필수 경로
-  const authProtectedPaths = ["/contents/new", "/profile/setup"];
-  const isAuthProtected =
-    authProtectedPaths.includes(pathname) ||
-    /^\/contents\/\d+\/edit$/.test(pathname);
-
-  if (isAuthProtected && !token) {
+  if (pathname === "/profile/setup" && !token) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
@@ -54,8 +49,6 @@ export function proxy(request: NextRequest) {
 export const config = {
   matcher: [
     "/",
-    "/contents/new",
-    "/contents/:id/edit",
     "/admin/:path*",
     "/creator/:path*",
     "/profile/setup",

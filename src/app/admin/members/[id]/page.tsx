@@ -14,7 +14,7 @@ interface MemberDetail {
   status: MemberStatus;
   createdAt: string;
   updatedAt: string;
-  contentCount: number;
+  applicationCount: number;
   creatorProfile: {
     canEdit: boolean;
     editingSkill: "HIGH" | "MEDIUM" | "LOW";
@@ -138,8 +138,8 @@ export default function AdminMemberDetailPage() {
             </dd>
           </div>
           <div>
-            <dt className="text-gray-500">작성한 콘텐츠</dt>
-            <dd className="mt-1 text-gray-900">{member.contentCount}건</dd>
+            <dt className="text-gray-500">캠페인 지원</dt>
+            <dd className="mt-1 text-gray-900">{member.applicationCount}건</dd>
           </div>
         </dl>
       </div>

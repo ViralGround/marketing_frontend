@@ -83,7 +83,7 @@ export async function PUT(
     if (deadline !== undefined) data.deadline = deadline ? new Date(deadline) : null;
     if (maxParticipants !== undefined) data.maxParticipants = Number(maxParticipants);
     if (status !== undefined) {
-      if (!["OPEN", "CLOSED", "ARCHIVED"].includes(status)) {
+      if (!["OPEN", "CLOSED"].includes(status)) {
         return NextResponse.json({ message: "상태값이 올바르지 않습니다" }, { status: 400 });
       }
       data.status = status;

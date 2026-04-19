@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
+import AlertModal from "@/components/ui/AlertModal";
 
 export interface CampaignFormInitial {
   id?: number;
@@ -19,13 +20,16 @@ export interface CampaignFormInitial {
 export default function CampaignForm({
   mode,
   initial,
+  onSuccess,
 }: {
   mode: "create" | "edit";
   initial?: CampaignFormInitial;
+  onSuccess?: () => void;
 }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [warning, setWarning] = useState("");
 
   const [title, setTitle] = useState(initial?.title ?? "");
   const [description, setDescription] = useState(initial?.description ?? "");
@@ -42,20 +46,49 @@ export default function CampaignForm({
     initial?.maxParticipants?.toString() ?? "10",
   );
 
+  const trimmedThumb = thumbnailUrl.trim();
+  const thumbnailUrlValid = useMemo(() => {
+    if (!trimmedThumb) return null;
+    try {
+      const u = new URL(trimmedThumb);
+      return u.protocol === "http:" || u.protocol === "https:";
+    } catch {
+      return false;
+    }
+  }, [trimmedThumb]);
+  const [thumbBroken, setThumbBroken] = useState(false);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+
+    const reward = Number(rewardAmount);
+    const maxP = Number(maxParticipants);
+
+    if (!title.trim()) return setWarning("캠페인 제목을 입력해주세요");
+    if (!brandName.trim()) return setWarning("브랜드명을 입력해주세요");
+    if (!description.trim()) return setWarning("설명을 입력해주세요");
+    if (!Number.isInteger(reward) || reward < 0) {
+      return setWarning("보상 금액은 0 이상의 정수여야 합니다");
+    }
+    if (!Number.isInteger(maxP) || maxP < 1) {
+      return setWarning("최대 참여자 수는 1 이상의 정수여야 합니다");
+    }
+    if (trimmedThumb && thumbnailUrlValid === false) {
+      return setWarning("썸네일 URL 형식이 올바르지 않습니다");
+    }
+
     setLoading(true);
 
     const payload = {
       title: title.trim(),
       description: description.trim(),
       brandName: brandName.trim(),
-      rewardAmount: Number(rewardAmount),
-      thumbnailUrl: thumbnailUrl.trim() || null,
+      rewardAmount: reward,
+      thumbnailUrl: trimmedThumb || null,
       requirements: requirements.trim() || null,
       deadline: deadline || null,
-      maxParticipants: Number(maxParticipants),
+      maxParticipants: maxP,
     };
 
     try {
@@ -64,7 +97,8 @@ export default function CampaignForm({
         router.push(`/admin/campaigns/${data.id}`);
       } else if (initial?.id) {
         await api.put(`/admin/campaigns/${initial.id}`, payload);
-        router.push(`/admin/campaigns/${initial.id}`);
+        if (onSuccess) onSuccess();
+        else router.push(`/admin/campaigns/${initial.id}`);
       }
     } catch (err: unknown) {
       const msg =
@@ -90,7 +124,6 @@ export default function CampaignForm({
         </label>
         <input
           id="title"
-          required
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="예: 신제품 바디워시 리뷰 영상"
@@ -104,7 +137,6 @@ export default function CampaignForm({
         </label>
         <input
           id="brandName"
-          required
           value={brandName}
           onChange={(e) => setBrandName(e.target.value)}
           placeholder="예: ABC 코스메틱"
@@ -118,7 +150,6 @@ export default function CampaignForm({
         </label>
         <textarea
           id="description"
-          required
           rows={4}
           value={description}
           onChange={(e) => setDescription(e.target.value)}
@@ -149,9 +180,7 @@ export default function CampaignForm({
           <input
             id="rewardAmount"
             type="number"
-            required
             min={0}
-            step={1000}
             value={rewardAmount}
             onChange={(e) => setRewardAmount(e.target.value)}
             className="mt-1 block w-full rounded border border-gray-300 px-3 py-2 text-gray-900 focus:border-gray-500 focus:outline-none"
@@ -164,7 +193,6 @@ export default function CampaignForm({
           <input
             id="maxParticipants"
             type="number"
-            required
             min={1}
             value={maxParticipants}
             onChange={(e) => setMaxParticipants(e.target.value)}
@@ -192,12 +220,37 @@ export default function CampaignForm({
         </label>
         <input
           id="thumbnailUrl"
-          type="url"
+          type="text"
           value={thumbnailUrl}
-          onChange={(e) => setThumbnailUrl(e.target.value)}
+          onChange={(e) => {
+            setThumbnailUrl(e.target.value);
+            setThumbBroken(false);
+          }}
           placeholder="https://..."
           className="mt-1 block w-full rounded border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-gray-500 focus:outline-none"
         />
+        {trimmedThumb && thumbnailUrlValid === false && (
+          <p className="mt-1 text-xs text-red-600">
+            올바른 URL 이어야 합니다 (http:// 또는 https://)
+          </p>
+        )}
+        {trimmedThumb && thumbnailUrlValid && !thumbBroken && (
+          <div className="mt-2">
+            <p className="mb-1 text-xs text-gray-500">미리보기</p>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={trimmedThumb}
+              alt="썸네일 미리보기"
+              className="max-h-48 rounded border border-gray-200"
+              onError={() => setThumbBroken(true)}
+            />
+          </div>
+        )}
+        {trimmedThumb && thumbnailUrlValid && thumbBroken && (
+          <p className="mt-1 text-xs text-red-600">
+            이미지를 불러올 수 없는 URL 입니다
+          </p>
+        )}
       </div>
 
       <div className="flex gap-2">
@@ -216,6 +269,13 @@ export default function CampaignForm({
           취소
         </button>
       </div>
+
+      <AlertModal
+        open={!!warning}
+        title="입력값을 확인해주세요"
+        message={warning}
+        onClose={() => setWarning("")}
+      />
     </form>
   );
 }

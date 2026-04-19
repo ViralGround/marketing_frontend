@@ -17,7 +17,7 @@ interface CampaignDetail {
   requirements: string | null;
   deadline: string | null;
   maxParticipants: number;
-  status: "OPEN" | "CLOSED" | "ARCHIVED";
+  status: "OPEN" | "CLOSED";
   applicationCount: number;
   myApplication: {
     id: number;

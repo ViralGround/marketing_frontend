@@ -17,8 +17,8 @@ export async function POST(request: Request) {
     const member = await prisma.member.findUnique({ where: { email } });
     if (!member) {
       return NextResponse.json(
-        { message: "이메일 또는 비밀번호가 올바르지 않습니다" },
-        { status: 401 }
+        { message: "존재하지 않는 계정입니다", code: "USER_NOT_FOUND" },
+        { status: 404 }
       );
     }
 

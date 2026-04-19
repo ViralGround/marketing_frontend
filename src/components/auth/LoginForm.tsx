@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import api from "@/lib/api";
 import { setTokens } from "@/lib/auth";
 import { useAuthStore } from "@/store/useAuthStore";
+import AlertModal from "@/components/ui/AlertModal";
 import type { TokenResponse, UserRole } from "@/types";
 
 export default function LoginForm() {
@@ -12,6 +13,7 @@ export default function LoginForm() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [info, setInfo] = useState("");
+  const [warning, setWarning] = useState("");
   const [loading, setLoading] = useState(false);
   const { setUser } = useAuthStore();
   const router = useRouter();
@@ -27,6 +29,7 @@ export default function LoginForm() {
     e.preventDefault();
     setError("");
     setInfo("");
+    setWarning("");
     setLoading(true);
 
     try {
@@ -58,12 +61,14 @@ export default function LoginForm() {
       const status = response?.status;
       const code = response?.data?.code;
 
-      if (status === 403 && code === "PENDING_APPROVAL") {
+      if (status === 404 && code === "USER_NOT_FOUND") {
+        setWarning("존재하지 않는 계정입니다. 이메일을 확인해주세요.");
+      } else if (status === 403 && code === "PENDING_APPROVAL") {
         setError("아직 관리자 승인이 완료되지 않았습니다. 승인되면 이메일로 알려드릴게요.");
       } else if (status === 403 && code === "REJECTED") {
         setError("가입이 거절되었습니다. 자세한 문의는 관리자에게 연락해주세요.");
       } else {
-        setError("이메일 또는 비밀번호가 올바르지 않습니다");
+        setError("비밀번호가 올바르지 않습니다");
       }
     } finally {
       setLoading(false);
@@ -114,6 +119,13 @@ export default function LoginForm() {
       >
         {loading ? "로그인 중..." : "로그인"}
       </button>
+
+      <AlertModal
+        open={!!warning}
+        title="로그인 실패"
+        message={warning}
+        onClose={() => setWarning("")}
+      />
     </form>
   );
 }

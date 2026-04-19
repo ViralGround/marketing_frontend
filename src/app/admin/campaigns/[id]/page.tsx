@@ -7,7 +7,7 @@ import api from "@/lib/api";
 import CampaignForm from "@/components/admin/CampaignForm";
 import ApplicationStatusBadge from "@/components/campaign/ApplicationStatusBadge";
 
-type CampaignStatus = "OPEN" | "CLOSED" | "ARCHIVED";
+type CampaignStatus = "OPEN" | "CLOSED";
 type AppStatus = "PENDING" | "APPROVED" | "REJECTED" | "SUBMITTED" | "SETTLED";
 
 interface CampaignDetail {
@@ -54,7 +54,6 @@ interface Application {
 const CAMPAIGN_STATUS_LABEL: Record<CampaignStatus, string> = {
   OPEN: "모집중",
   CLOSED: "마감",
-  ARCHIVED: "아카이브",
 };
 
 export default function AdminCampaignDetailPage() {
@@ -151,6 +150,7 @@ export default function AdminCampaignDetailPage() {
             deadline: campaign.deadline,
             maxParticipants: campaign.maxParticipants,
           }}
+          onSuccess={() => { setEditMode(false); load(); }}
         />
       </div>
     );
@@ -220,7 +220,7 @@ export default function AdminCampaignDetailPage() {
       <div className="mb-6 rounded border border-gray-200 p-4">
         <p className="mb-2 text-sm font-medium text-gray-700">상태 변경</p>
         <div className="flex flex-wrap gap-2">
-          {(["OPEN", "CLOSED", "ARCHIVED"] as CampaignStatus[]).map((s) => (
+          {(["OPEN", "CLOSED"] as CampaignStatus[]).map((s) => (
             <button
               key={s}
               onClick={() => handleStatus(s)}

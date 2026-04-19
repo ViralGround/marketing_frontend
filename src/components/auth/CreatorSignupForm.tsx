@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
+import AlertModal from "@/components/ui/AlertModal";
 
 type Gender = "MALE" | "FEMALE";
 type EditingTool =
@@ -31,6 +32,7 @@ export default function CreatorSignupForm() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [validationModal, setValidationModal] = useState("");
 
   // 기본 정보
   const [email, setEmail] = useState("");
@@ -50,10 +52,10 @@ export default function CreatorSignupForm() {
     e.preventDefault();
     setError("");
 
-    if (!gender) return setError("성별을 선택해주세요");
-    if (!birthYear) return setError("출생연도를 선택해주세요");
-    if (!faceExposure) return setError("얼굴 공개 여부를 선택해주세요");
-    if (!editingTool) return setError("주로 사용하는 편집 툴을 선택해주세요");
+    if (!gender) return setValidationModal("성별을 선택해주세요");
+    if (!birthYear) return setValidationModal("출생연도를 선택해주세요");
+    if (!faceExposure) return setValidationModal("얼굴 공개 여부를 선택해주세요");
+    if (!editingTool) return setValidationModal("주로 사용하는 편집 툴을 선택해주세요");
 
     setLoading(true);
     try {
@@ -298,6 +300,13 @@ export default function CreatorSignupForm() {
       >
         {loading ? "가입 신청 중..." : "가입 신청하기"}
       </button>
+
+      <AlertModal
+        open={!!validationModal}
+        title="필수 항목을 확인해주세요"
+        message={validationModal}
+        onClose={() => setValidationModal("")}
+      />
     </form>
   );
 }

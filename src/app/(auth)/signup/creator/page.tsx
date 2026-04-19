@@ -1,4 +1,3 @@
-import Link from "next/link";
 import CreatorSignupForm from "@/components/auth/CreatorSignupForm";
 
 export default function CreatorSignupPage() {
@@ -9,12 +8,6 @@ export default function CreatorSignupPage() {
           크리에이터 가입 신청
         </h1>
         <CreatorSignupForm />
-        <p className="text-center text-sm text-gray-500">
-          기업이신가요?{" "}
-          <Link href="/signup/company" className="text-primary underline">
-            기업으로 가입하기
-          </Link>
-        </p>
       </div>
     </div>
   );

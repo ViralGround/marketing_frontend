@@ -42,7 +42,6 @@ enum EditingSkill {
 enum CampaignStatus {
   OPEN
   CLOSED
-  ARCHIVED
 }
 
 enum ApplicationStatus {

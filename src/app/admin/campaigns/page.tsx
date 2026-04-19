@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import api from "@/lib/api";
 
-type CampaignStatus = "OPEN" | "CLOSED" | "ARCHIVED";
+type CampaignStatus = "OPEN" | "CLOSED";
 
 interface CampaignItem {
   id: number;
@@ -24,13 +24,11 @@ type Filter = "ALL" | CampaignStatus;
 const STATUS_LABEL: Record<CampaignStatus, string> = {
   OPEN: "모집중",
   CLOSED: "마감",
-  ARCHIVED: "아카이브",
 };
 
 const STATUS_CLASS: Record<CampaignStatus, string> = {
   OPEN: "bg-green-100 text-green-700",
   CLOSED: "bg-gray-200 text-gray-700",
-  ARCHIVED: "bg-gray-100 text-gray-500",
 };
 
 export default function AdminCampaignsPage() {
@@ -67,7 +65,7 @@ export default function AdminCampaignsPage() {
       </div>
 
       <div className="mb-4 flex gap-1">
-        {(["ALL", "OPEN", "CLOSED", "ARCHIVED"] as Filter[]).map((f) => (
+        {(["ALL", "OPEN", "CLOSED"] as Filter[]).map((f) => (
           <button
             key={f}
             onClick={() => setFilter(f)}

@@ -52,6 +52,8 @@ export default function LoginForm() {
 
       if (role === "ADMIN") {
         router.push("/admin/members");
+      } else if (role === "COMPANY") {
+        router.push("/company/dashboard");
       } else {
         router.push("/creator/home");
       }

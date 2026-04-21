@@ -5,7 +5,7 @@ import { useAuthStore } from "@/store/useAuthStore";
 import { removeTokens } from "@/lib/auth";
 import { useRouter } from "next/navigation";
 
-export default function AdminLayout({
+export default function CompanyLayout({
   children,
 }: {
   children: React.ReactNode;
@@ -22,25 +22,25 @@ export default function AdminLayout({
   return (
     <div className="flex min-h-[calc(100vh-65px)]">
       <aside className="w-56 border-r border-gray-200 bg-gray-50 p-4">
-        <h2 className="mb-6 text-lg font-bold text-gray-900">관리자</h2>
+        <h2 className="mb-6 text-lg font-bold text-gray-900">기업 센터</h2>
         <nav className="space-y-2">
           <Link
-            href="/admin/members"
+            href="/company/dashboard"
             className="block rounded px-3 py-2 text-sm text-gray-700 hover:bg-gray-200"
           >
-            회원 관리
+            대시보드
           </Link>
           <Link
-            href="/admin/campaigns"
+            href="/company/campaigns"
             className="block rounded px-3 py-2 text-sm text-gray-700 hover:bg-gray-200"
           >
-            캠페인 관리
+            내 캠페인
           </Link>
           <Link
-            href="/admin/escrow"
+            href="/company/campaigns/new"
             className="block rounded px-3 py-2 text-sm text-gray-700 hover:bg-gray-200"
           >
-            예치금 확인
+            캠페인 등록
           </Link>
         </nav>
         <div className="mt-8 border-t border-gray-200 pt-4">

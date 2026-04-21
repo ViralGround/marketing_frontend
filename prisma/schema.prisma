@@ -9,6 +9,7 @@ datasource db {
 
 enum Role {
   CREATOR
+  COMPANY
   ADMIN
 }
 
@@ -40,8 +41,24 @@ enum EditingSkill {
 }
 
 enum CampaignStatus {
+  DRAFT
   OPEN
   CLOSED
+}
+
+enum EscrowStatus {
+  NONE
+  PENDING_DEPOSIT
+  DEPOSIT_CONFIRMING
+  FUNDED
+  PARTIALLY_RELEASED
+  REFUNDED
+}
+
+enum EscrowTxType {
+  DEPOSIT
+  RELEASE
+  REFUND
 }
 
 enum ApplicationStatus {
@@ -63,6 +80,7 @@ model Member {
   createdAt            DateTime              @default(now()) @map("created_at")
   updatedAt            DateTime              @updatedAt @map("updated_at")
   creatorProfile       CreatorProfile?
+  companyProfile       CompanyProfile?
   campaignsCreated     Campaign[]            @relation("CampaignAuthor")
   applications         CampaignApplication[] @relation("CreatorApplications")
   emailVerification    EmailVerification?
@@ -101,24 +119,62 @@ model CreatorProfile {
   @@map("creator_profiles")
 }
 
+model CompanyProfile {
+  id                 Int      @id @default(autoincrement())
+  memberId           Int      @unique @map("member_id")
+  member             Member   @relation(fields: [memberId], references: [id])
+  companyName        String   @map("company_name")
+  businessNumber     String   @map("business_number")
+  representativeName String   @map("representative_name")
+  contactName        String   @map("contact_name")
+  contactPhone       String   @map("contact_phone")
+  address            String?
+  homepage           String?
+  industry           String?
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  @@map("company_profiles")
+}
+
 model Campaign {
-  id              Int                    @id @default(autoincrement())
-  title           String
-  description     String
-  brandName       String                 @map("brand_name")
-  rewardAmount    Int                    @map("reward_amount")
-  thumbnailUrl    String?                @map("thumbnail_url")
-  requirements    String?
-  deadline        DateTime?
-  maxParticipants Int                    @map("max_participants")
-  status          CampaignStatus         @default(OPEN)
-  createdById     Int                    @map("created_by_id")
-  createdBy       Member                 @relation("CampaignAuthor", fields: [createdById], references: [id])
-  applications    CampaignApplication[]
-  createdAt       DateTime               @default(now()) @map("created_at")
-  updatedAt       DateTime               @updatedAt @map("updated_at")
+  id                  Int                    @id @default(autoincrement())
+  title               String
+  description         String
+  brandName           String                 @map("brand_name")
+  rewardAmount        Int                    @map("reward_amount")
+  totalBudget         Int                    @default(0) @map("total_budget")
+  escrowStatus        EscrowStatus           @default(NONE) @map("escrow_status")
+  depositRequestedAt  DateTime?              @map("deposit_requested_at")
+  fundedAt            DateTime?              @map("funded_at")
+  refundedAt          DateTime?              @map("refunded_at")
+  thumbnailUrl        String?                @map("thumbnail_url")
+  requirements        String?
+  deadline            DateTime?
+  maxParticipants     Int                    @map("max_participants")
+  status              CampaignStatus         @default(DRAFT)
+  createdById         Int                    @map("created_by_id")
+  createdBy           Member                 @relation("CampaignAuthor", fields: [createdById], references: [id])
+  applications        CampaignApplication[]
+  escrowTransactions  EscrowTransaction[]
+  createdAt           DateTime               @default(now()) @map("created_at")
+  updatedAt           DateTime               @updatedAt @map("updated_at")
 
   @@map("campaigns")
+}
+
+model EscrowTransaction {
+  id                Int          @id @default(autoincrement())
+  campaignId        Int          @map("campaign_id")
+  campaign          Campaign     @relation(fields: [campaignId], references: [id])
+  applicationId     Int?         @map("application_id")
+  type              EscrowTxType
+  amount            Int
+  memo              String?
+  createdAt         DateTime     @default(now()) @map("created_at")
+
+  @@index([campaignId])
+  @@map("escrow_transactions")
 }
 
 model CampaignApplication {

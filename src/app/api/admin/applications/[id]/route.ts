@@ -2,6 +2,7 @@ import { NextResponse, after } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getAuthUser } from "@/lib/jwt";
 import { notifyCreatorOfApplicationStatusChange } from "@/lib/email";
+import { randomUUID } from "crypto";
 
 const ALLOWED = ["APPROVED", "REJECTED", "SETTLED", "PENDING"] as const;
 
@@ -41,10 +42,44 @@ export async function PATCH(
       where: { id: Number(id) },
       data,
       include: {
-        campaign: { select: { title: true } },
+        campaign: { select: { id: true, title: true, escrowStatus: true, totalBudget: true } },
         creator: { select: { email: true, name: true } },
       },
     });
+
+    if (status === "SETTLED") {
+      const { escrowStatus } = application.campaign;
+      if (escrowStatus === "FUNDED" || escrowStatus === "PARTIALLY_RELEASED") {
+        const payout = Number(application.rewardPaidAmount ?? 0);
+        const released = await prisma.escrowTransaction.aggregate({
+          where: { campaignId: application.campaign.id, type: "RELEASE" },
+          _sum: { amount: true },
+        });
+        const alreadyReleased = released._sum.amount ?? 0;
+        const remaining = application.campaign.totalBudget - alreadyReleased;
+        if (payout > remaining) {
+          return NextResponse.json(
+            { message: "예치금 잔액이 부족합니다" },
+            { status: 400 }
+          );
+        }
+        await prisma.$transaction([
+          prisma.escrowTransaction.create({
+            data: {
+              campaignId: application.campaign.id,
+              applicationId: application.id,
+              type: "RELEASE",
+              amount: payout,
+              memo: `MOCK-REL-${randomUUID()}`,
+            },
+          }),
+          prisma.campaign.update({
+            where: { id: application.campaign.id },
+            data: { escrowStatus: "PARTIALLY_RELEASED" },
+          }),
+        ]);
+      }
+    }
 
     if (status === "APPROVED" || status === "REJECTED" || status === "SETTLED") {
       const payload = {

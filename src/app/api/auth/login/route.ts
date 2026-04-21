@@ -30,6 +30,16 @@ export async function POST(request: Request) {
       );
     }
 
+    if (!member.emailVerified) {
+      return NextResponse.json(
+        {
+          message: "이메일 인증이 필요합니다. 가입 시 발송된 인증 메일을 확인해주세요.",
+          code: "EMAIL_NOT_VERIFIED",
+        },
+        { status: 403 }
+      );
+    }
+
     if (member.status === "PENDING") {
       return NextResponse.json(
         {

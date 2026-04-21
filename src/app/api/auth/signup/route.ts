@@ -1,8 +1,9 @@
 import { NextResponse, after } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { hashPassword } from "@/lib/password";
-import { notifyAdminsOfNewCreator } from "@/lib/email";
+import { notifyAdminsOfNewCreator, sendEmailVerification } from "@/lib/email";
 import type { Gender, EditingTool } from "@/generated/prisma/client";
+import { randomBytes } from "crypto";
 
 const ALLOWED_GENDERS: Gender[] = ["MALE", "FEMALE", "OTHER"];
 const ALLOWED_TOOLS: EditingTool[] = [
@@ -123,7 +124,14 @@ export async function POST(request: Request) {
       return m;
     });
 
-    // 응답 반환 후 백그라운드에서 관리자 알림 이메일 발송
+    // 이메일 인증 토큰 생성 (24시간 유효)
+    const token = randomBytes(32).toString("hex");
+    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    await prisma.emailVerification.create({
+      data: { memberId: member.id, token, expiresAt },
+    });
+
+    // 응답 반환 후 백그라운드에서 이메일 발송
     const notification = {
       memberId: member.id,
       name: member.name,
@@ -136,7 +144,10 @@ export async function POST(request: Request) {
       tiktokId: survey.tiktokId,
       youtubeId: survey.youtubeId,
     };
-    after(() => notifyAdminsOfNewCreator(notification));
+    after(async () => {
+      await sendEmailVerification(member.email, member.name, token);
+      await notifyAdminsOfNewCreator(notification);
+    });
 
     return NextResponse.json(
       {

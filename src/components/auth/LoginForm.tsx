@@ -7,6 +7,7 @@ import { setTokens } from "@/lib/auth";
 import { useAuthStore } from "@/store/useAuthStore";
 import AlertModal from "@/components/ui/AlertModal";
 import type { TokenResponse, UserRole } from "@/types";
+import Link from "next/link";
 
 export default function LoginForm() {
   const [email, setEmail] = useState("");
@@ -14,6 +15,7 @@ export default function LoginForm() {
   const [error, setError] = useState("");
   const [info, setInfo] = useState("");
   const [warning, setWarning] = useState("");
+  const [unverifiedEmail, setUnverifiedEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const { setUser } = useAuthStore();
   const router = useRouter();
@@ -61,7 +63,10 @@ export default function LoginForm() {
       const status = response?.status;
       const code = response?.data?.code;
 
-      if (status === 404 && code === "USER_NOT_FOUND") {
+      if (status === 403 && code === "EMAIL_NOT_VERIFIED") {
+        setUnverifiedEmail(email);
+        setError("이메일 인증이 필요합니다. 가입 시 발송된 인증 메일을 확인해주세요.");
+      } else if (status === 404 && code === "USER_NOT_FOUND") {
         setWarning("존재하지 않는 계정입니다. 이메일을 확인해주세요.");
       } else if (status === 403 && code === "PENDING_APPROVAL") {
         setError("아직 관리자 승인이 완료되지 않았습니다. 승인되면 이메일로 알려드릴게요.");
@@ -83,6 +88,14 @@ export default function LoginForm() {
       {error && (
         <div className="rounded bg-red-50 p-3 text-sm text-red-600">
           {error}
+          {unverifiedEmail && (
+            <Link
+              href={`/verify-email?email=${encodeURIComponent(unverifiedEmail)}`}
+              className="mt-1 block underline"
+            >
+              인증 메일 다시 받기
+            </Link>
+          )}
         </div>
       )}
       <div>

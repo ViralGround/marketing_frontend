@@ -72,7 +72,7 @@ export default function CreatorSignupForm() {
         tiktokId: tiktokId.trim() || null,
         youtubeId: youtubeId.trim() || null,
       });
-      router.push("/login?pending=1");
+      router.push(`/verify-email?email=${encodeURIComponent(email)}`);
     } catch (err: unknown) {
       const status =
         typeof err === "object" &&

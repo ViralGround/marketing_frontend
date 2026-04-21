@@ -180,6 +180,42 @@ export async function notifyCreatorOfApplicationStatusChange(
   }
 }
 
+export async function sendEmailVerification(
+  to: string,
+  name: string,
+  token: string,
+): Promise<void> {
+  try {
+    if (!resend) {
+      console.warn("[email] RESEND_API_KEY not set; skipping verification email.");
+      return;
+    }
+    const from = process.env.EMAIL_FROM ?? "onboarding@resend.dev";
+    const appUrl = process.env.APP_URL ?? "http://localhost:3000";
+    const verifyUrl = `${appUrl}/verify-email/confirm?token=${token}`;
+
+    const html = `
+      <div style="font-family:system-ui,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#111;">
+        <h2 style="margin:0 0 16px;">이메일 인증을 완료해주세요</h2>
+        <p style="color:#444;margin:0 0 16px;">${escape(name)} 님, Viral Ground 가입을 환영합니다!</p>
+        <p style="color:#444;margin:0 0 24px;">아래 버튼을 클릭해 이메일 인증을 완료하세요. 링크는 <strong>24시간</strong> 동안 유효합니다.</p>
+        <a href="${verifyUrl}" style="display:inline-block;background:#111;color:#fff;padding:12px 24px;border-radius:6px;text-decoration:none;font-size:15px;font-weight:600;">이메일 인증하기</a>
+        <p style="color:#999;font-size:12px;margin:24px 0 0;">버튼이 작동하지 않으면 아래 링크를 복사해 브라우저에 붙여넣으세요.</p>
+        <p style="color:#999;font-size:12px;word-break:break-all;">${verifyUrl}</p>
+      </div>
+    `;
+
+    await resend.emails.send({
+      from,
+      to,
+      subject: "[Viral Ground] 이메일 인증을 완료해주세요",
+      html,
+    });
+  } catch (err) {
+    console.error("[email] Failed to send verification email:", err);
+  }
+}
+
 export async function notifyCreatorOfStatusChange(
   to: string,
   name: string,

@@ -1,46 +1,62 @@
 import { NextRequest, NextResponse } from "next/server";
+import { verifyToken } from "@/lib/jwt";
 
-function extractRoleFromJwt(token: string): string | null {
-  try {
-    const payload = JSON.parse(atob(token.split(".")[1]));
-    return payload.role;
-  } catch {
-    return null;
-  }
+type Role = "CREATOR" | "COMPANY" | "ADMIN";
+
+const HOME_BY_ROLE: Record<Role, string> = {
+  CREATOR: "/creator/home",
+  COMPANY: "/company/dashboard",
+  ADMIN: "/admin/members",
+};
+
+const ROLE_PREFIXES: Record<Role, string[]> = {
+  CREATOR: ["/creator"],
+  COMPANY: ["/company"],
+  ADMIN: ["/admin"],
+};
+
+const AUTH_PAGES = ["/login", "/signup"];
+
+function matchesPrefix(pathname: string, prefix: string) {
+  return pathname === prefix || pathname.startsWith(`${prefix}/`);
 }
 
-export function proxy(request: NextRequest) {
-  const token = request.cookies.get("access_token")?.value;
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  const token = request.cookies.get("access_token")?.value;
 
-  // 루트 `/` — 비로그인은 랜딩 통과, 로그인은 역할별 홈으로 이동
-  if (pathname === "/") {
-    if (!token) return NextResponse.next();
-    const role = extractRoleFromJwt(token);
-    if (role === "ADMIN") {
-      return NextResponse.redirect(new URL("/admin/members", request.url));
+  let role: Role | null = null;
+  if (token) {
+    const payload = await verifyToken(token);
+    const r = payload?.role;
+    if (r === "CREATOR" || r === "COMPANY" || r === "ADMIN") {
+      role = r;
     }
-    if (role === "CREATOR") {
-      return NextResponse.redirect(new URL("/creator/home", request.url));
+  }
+
+  const allProtected = Object.values(ROLE_PREFIXES).flat();
+  const isProtected = allProtected.some((p) => matchesPrefix(pathname, p));
+  const isAuthPage = AUTH_PAGES.some((p) => matchesPrefix(pathname, p));
+
+  if (!role) {
+    if (isProtected) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/login";
+      url.searchParams.set("redirect", pathname);
+      return NextResponse.redirect(url);
     }
     return NextResponse.next();
   }
 
-  // 인증 필수 경로
-  if (pathname === "/profile/setup" && !token) {
-    return NextResponse.redirect(new URL("/login", request.url));
+  if (pathname === "/" || isAuthPage) {
+    return NextResponse.redirect(new URL(HOME_BY_ROLE[role], request.url));
   }
 
-  if (pathname.startsWith("/admin")) {
-    if (!token) return NextResponse.redirect(new URL("/login", request.url));
-    const role = extractRoleFromJwt(token);
-    if (role !== "ADMIN") return NextResponse.redirect(new URL("/", request.url));
-  }
-
-  if (pathname.startsWith("/creator")) {
-    if (!token) return NextResponse.redirect(new URL("/login", request.url));
-    const role = extractRoleFromJwt(token);
-    if (role !== "CREATOR") return NextResponse.redirect(new URL("/", request.url));
+  if (isProtected) {
+    const allowed = ROLE_PREFIXES[role].some((p) => matchesPrefix(pathname, p));
+    if (!allowed) {
+      return NextResponse.redirect(new URL(HOME_BY_ROLE[role], request.url));
+    }
   }
 
   return NextResponse.next();
@@ -49,8 +65,12 @@ export function proxy(request: NextRequest) {
 export const config = {
   matcher: [
     "/",
-    "/admin/:path*",
+    "/login",
+    "/login/:path*",
+    "/signup",
+    "/signup/:path*",
     "/creator/:path*",
-    "/profile/setup",
+    "/company/:path*",
+    "/admin/:path*",
   ],
 };

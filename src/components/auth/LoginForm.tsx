@@ -50,13 +50,18 @@ export default function LoginForm() {
         role,
       });
 
-      if (role === "ADMIN") {
-        router.push("/admin/members");
-      } else if (role === "COMPANY") {
-        router.push("/company/dashboard");
-      } else {
-        router.push("/creator/home");
-      }
+      const defaultHome =
+        role === "ADMIN"
+          ? "/admin/members"
+          : role === "COMPANY"
+            ? "/company/dashboard"
+            : "/creator/home";
+      const redirectTo = searchParams.get("redirect");
+      const target =
+        redirectTo && redirectTo.startsWith("/") && !redirectTo.startsWith("//")
+          ? redirectTo
+          : defaultHome;
+      router.push(target);
     } catch (err: unknown) {
       const response =
         typeof err === "object" && err !== null && "response" in err

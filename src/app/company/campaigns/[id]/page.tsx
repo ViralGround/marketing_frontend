@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import Link from "next/link";
+import { useParams, useRouter } from "next/navigation";
 import api from "@/lib/api";
 
 type CampaignStatus = "DRAFT" | "OPEN" | "CLOSED";
@@ -12,6 +13,20 @@ type EscrowStatus =
   | "FUNDED"
   | "PARTIALLY_RELEASED"
   | "REFUNDED";
+
+type AppStatus = "PENDING" | "APPROVED" | "REJECTED" | "SUBMITTED" | "SETTLED";
+
+interface ApplicationItem {
+  id: number;
+  status: AppStatus;
+  message: string | null;
+  submissionUrl: string | null;
+  rewardPaidAmount: number | null;
+  appliedAt: string;
+  submittedAt: string | null;
+  settledAt: string | null;
+  creator: { id: number; name: string; email: string };
+}
 
 interface Detail {
   id: number;
@@ -29,14 +44,7 @@ interface Detail {
   fundedAt: string | null;
   createdAt: string;
   applicationCount: number;
-  applications: Array<{
-    id: number;
-    status: string;
-    appliedAt: string;
-    submittedAt: string | null;
-    settledAt: string | null;
-    creator: { id: number; name: string; email: string };
-  }>;
+  applications: ApplicationItem[];
   escrowTransactions: Array<{
     id: number;
     type: "DEPOSIT" | "RELEASE" | "REFUND";
@@ -55,12 +63,22 @@ const ESCROW_LABEL: Record<EscrowStatus, string> = {
   REFUNDED: "환불됨",
 };
 
+const APP_LABEL: Record<AppStatus, string> = {
+  PENDING: "지원 접수",
+  APPROVED: "선정 / 제작 대기",
+  REJECTED: "탈락",
+  SUBMITTED: "제출 완료",
+  SETTLED: "정산 완료",
+};
+
 export default function CompanyCampaignDetailPage() {
   const params = useParams<{ id: string }>();
+  const router = useRouter();
   const id = params?.id;
   const [data, setData] = useState<Detail | null>(null);
   const [loading, setLoading] = useState(true);
   const [acting, setActing] = useState(false);
+  const [rowActingId, setRowActingId] = useState<number | null>(null);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
@@ -78,16 +96,13 @@ export default function CompanyCampaignDetailPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
-  const requestDeposit = async () => {
-    if (!data) return;
+  const callAction = async (fn: () => Promise<{ message: string }>) => {
     setActing(true);
     setMessage("");
     setError("");
     try {
-      const { data: res } = await api.post<{ message: string }>(
-        `/company/campaigns/${data.id}/deposit-request`
-      );
-      setMessage(res.message);
+      const result = await fn();
+      setMessage(result.message);
       load();
     } catch (err: unknown) {
       const response =
@@ -100,20 +115,131 @@ export default function CompanyCampaignDetailPage() {
     }
   };
 
+  const requestDeposit = () =>
+    callAction(async () => {
+      if (!data) return { message: "" };
+      const { data: res } = await api.post<{ message: string }>(
+        `/company/campaigns/${data.id}/deposit-request`
+      );
+      return res;
+    });
+
+  const cancelCampaign = () => {
+    if (!data) return;
+    if (!confirm("캠페인을 취소하시겠어요? 예치금은 환불 처리됩니다.")) return;
+    callAction(async () => {
+      const { data: res } = await api.post<{ message: string }>(
+        `/company/campaigns/${data.id}/cancel`
+      );
+      return res;
+    });
+  };
+
+  const deleteCampaign = () => {
+    if (!data) return;
+    if (!confirm("캠페인을 삭제하시겠어요? 이 작업은 되돌릴 수 없습니다.")) return;
+    setActing(true);
+    setMessage("");
+    setError("");
+    api
+      .delete(`/company/campaigns/${data.id}`)
+      .then(() => router.push("/company/campaigns"))
+      .catch((err: unknown) => {
+        const response =
+          typeof err === "object" && err !== null && "response" in err
+            ? (err as { response?: { data?: { message?: string } } }).response
+            : undefined;
+        setError(response?.data?.message ?? "삭제에 실패했습니다");
+      })
+      .finally(() => setActing(false));
+  };
+
+  const reviewApplication = async (
+    appId: number,
+    action: "APPROVE" | "REJECT" | "SETTLE" | "REQUEST_REREVIEW",
+    opts?: { rewardPaidAmount?: number }
+  ) => {
+    setRowActingId(appId);
+    setMessage("");
+    setError("");
+    try {
+      const { data: res } = await api.patch<{ message: string }>(
+        `/company/applications/${appId}`,
+        { action, ...opts }
+      );
+      setMessage(res.message);
+      load();
+    } catch (err: unknown) {
+      const response =
+        typeof err === "object" && err !== null && "response" in err
+          ? (err as { response?: { data?: { message?: string } } }).response
+          : undefined;
+      setError(response?.data?.message ?? "요청에 실패했습니다");
+    } finally {
+      setRowActingId(null);
+    }
+  };
+
+  const canEdit =
+    data &&
+    data.escrowStatus !== "DEPOSIT_CONFIRMING" &&
+    data.escrowStatus !== "REFUNDED" &&
+    data.status !== "CLOSED";
+  const canDelete =
+    data &&
+    data.escrowStatus === "PENDING_DEPOSIT" &&
+    data.applicationCount === 0;
+  const canCancel =
+    data &&
+    data.status !== "CLOSED" &&
+    data.escrowStatus !== "REFUNDED" &&
+    data.applicationCount === 0 &&
+    (data.escrowStatus === "FUNDED" || data.escrowStatus === "PENDING_DEPOSIT");
+
   if (loading) return <p className="text-gray-500">불러오는 중...</p>;
   if (!data) return <p className="text-red-600">{error || "데이터 없음"}</p>;
 
   return (
     <div className="mx-auto max-w-4xl space-y-8">
-      <div>
-        <div className="flex items-center gap-2">
-          <span className="inline-flex rounded bg-gray-100 px-2 py-0.5 text-xs text-gray-700">
-            {ESCROW_LABEL[data.escrowStatus]}
-          </span>
-          <span className="text-xs text-gray-500">{data.status}</span>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-2">
+            <span className="inline-flex rounded bg-gray-100 px-2 py-0.5 text-xs text-gray-700">
+              {ESCROW_LABEL[data.escrowStatus]}
+            </span>
+            <span className="text-xs text-gray-500">{data.status}</span>
+          </div>
+          <h1 className="mt-2 text-2xl font-bold text-gray-900">{data.title}</h1>
+          <p className="mt-1 text-sm text-gray-500">{data.brandName}</p>
         </div>
-        <h1 className="mt-2 text-2xl font-bold text-gray-900">{data.title}</h1>
-        <p className="mt-1 text-sm text-gray-500">{data.brandName}</p>
+        <div className="flex flex-wrap gap-2">
+          {canEdit && (
+            <Link
+              href={`/company/campaigns/${data.id}/edit`}
+              className="rounded border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50"
+            >
+              수정
+            </Link>
+          )}
+          {canCancel && (
+            <button
+              onClick={cancelCampaign}
+              disabled={acting}
+              className="rounded border border-amber-300 px-3 py-1.5 text-sm text-amber-700 hover:bg-amber-50 disabled:opacity-50"
+            >
+              캠페인 취소
+            </button>
+          )}
+          {canDelete && (
+            <button
+              onClick={deleteCampaign}
+              disabled={acting}
+              className="rounded border border-red-300 px-3 py-1.5 text-sm text-red-700 hover:bg-red-50 disabled:opacity-50"
+            >
+              삭제
+            </button>
+          )}
+        </div>
       </div>
 
       {message && (
@@ -173,6 +299,12 @@ export default function CompanyCampaignDetailPage() {
           </div>
         )}
 
+        {data.escrowStatus === "REFUNDED" && (
+          <div className="mt-5 rounded bg-gray-100 p-4 text-sm text-gray-700">
+            환불 처리된 캠페인입니다.
+          </div>
+        )}
+
         {data.escrowTransactions.length > 0 && (
           <div className="mt-5">
             <h3 className="text-xs font-semibold text-gray-500">예치금 이력</h3>
@@ -201,15 +333,84 @@ export default function CompanyCampaignDetailPage() {
       </section>
 
       <section className="rounded-lg border border-gray-200 p-5">
-        <h2 className="text-sm font-semibold text-gray-500">지원자 ({data.applicationCount})</h2>
+        <h2 className="text-sm font-semibold text-gray-500">
+          지원자 ({data.applicationCount})
+        </h2>
         {data.applications.length === 0 ? (
           <p className="mt-3 text-sm text-gray-500">아직 지원자가 없습니다.</p>
         ) : (
           <ul className="mt-3 divide-y divide-gray-200">
             {data.applications.map((a) => (
-              <li key={a.id} className="flex items-center justify-between py-2 text-sm">
-                <span className="text-gray-900">{a.creator.name}</span>
-                <span className="text-xs text-gray-500">{a.status}</span>
+              <li key={a.id} className="py-3">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium text-gray-900">{a.creator.name}</span>
+                      <span className="rounded bg-gray-100 px-2 py-0.5 text-xs text-gray-700">
+                        {APP_LABEL[a.status]}
+                      </span>
+                    </div>
+                    <p className="mt-0.5 text-xs text-gray-500">{a.creator.email}</p>
+                    {a.message && (
+                      <p className="mt-2 whitespace-pre-wrap text-xs text-gray-600">
+                        지원 메시지: {a.message}
+                      </p>
+                    )}
+                    {a.submissionUrl && (
+                      <a
+                        href={a.submissionUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="mt-2 inline-block text-xs text-blue-600 underline"
+                      >
+                        제출물 보기 →
+                      </a>
+                    )}
+                    {a.rewardPaidAmount != null && (
+                      <p className="mt-1 text-xs text-gray-500">
+                        지급: {a.rewardPaidAmount.toLocaleString()}원
+                      </p>
+                    )}
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {a.status === "PENDING" && (
+                      <>
+                        <button
+                          disabled={rowActingId === a.id}
+                          onClick={() => reviewApplication(a.id, "APPROVE")}
+                          className="rounded bg-green-600 px-3 py-1 text-xs text-white hover:bg-green-700 disabled:opacity-50"
+                        >
+                          선정
+                        </button>
+                        <button
+                          disabled={rowActingId === a.id}
+                          onClick={() => reviewApplication(a.id, "REJECT")}
+                          className="rounded border border-gray-300 px-3 py-1 text-xs text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                        >
+                          탈락
+                        </button>
+                      </>
+                    )}
+                    {a.status === "SUBMITTED" && (
+                      <>
+                        <button
+                          disabled={rowActingId === a.id}
+                          onClick={() => reviewApplication(a.id, "SETTLE")}
+                          className="rounded bg-green-600 px-3 py-1 text-xs text-white hover:bg-green-700 disabled:opacity-50"
+                        >
+                          승인 · 정산
+                        </button>
+                        <button
+                          disabled={rowActingId === a.id}
+                          onClick={() => reviewApplication(a.id, "REQUEST_REREVIEW")}
+                          className="rounded border border-amber-300 px-3 py-1 text-xs text-amber-700 hover:bg-amber-50 disabled:opacity-50"
+                        >
+                          재제출 요청
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </div>
               </li>
             ))}
           </ul>

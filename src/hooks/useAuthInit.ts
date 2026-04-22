@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useAuthStore } from "@/store/useAuthStore";
-import { decodeJwtPayload, getAccessToken } from "@/lib/auth";
+import { decodeJwtPayload, getAccessToken, removeTokens } from "@/lib/auth";
 import type { UserRole } from "@/types";
 
 interface JwtPayload {
@@ -8,6 +8,7 @@ interface JwtPayload {
   email: string;
   name?: string;
   role: UserRole;
+  exp?: number;
 }
 
 export function useAuthInit() {
@@ -20,7 +21,14 @@ export function useAuthInit() {
     if (!token) return;
 
     const payload = decodeJwtPayload<JwtPayload>(token);
-    if (!payload) return;
+    if (!payload || !payload.sub || !payload.role) {
+      removeTokens();
+      return;
+    }
+    if (!payload.exp || Date.now() / 1000 > payload.exp) {
+      removeTokens();
+      return;
+    }
 
     setUser({
       id: Number(payload.sub),

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useAuthStore } from "@/store/useAuthStore";
 import { removeTokens } from "@/lib/auth";
 import { useRouter } from "next/navigation";
+import { AuthGuard } from "@/components/auth/AuthGuard";
 
 export default function AdminLayout({
   children,
@@ -20,6 +21,7 @@ export default function AdminLayout({
   };
 
   return (
+    <AuthGuard>
     <div className="flex min-h-[calc(100vh-65px)]">
       <aside className="w-56 border-r border-gray-200 bg-gray-50 p-4">
         <h2 className="mb-6 text-lg font-bold text-gray-900">관리자</h2>
@@ -54,5 +56,6 @@ export default function AdminLayout({
       </aside>
       <div className="flex-1 p-8">{children}</div>
     </div>
+    </AuthGuard>
   );
 }

@@ -2,22 +2,27 @@ import { NextRequest, NextResponse } from "next/server";
 
 type Role = "CREATOR" | "COMPANY" | "ADMIN";
 
-function decodeRole(token: string): Role | null {
+type TokenClaims = {
+  role: Role | null;
+  valid: boolean;
+};
+
+function parseToken(token: string): TokenClaims {
   try {
     const payloadPart = token.split(".")[1];
-    if (!payloadPart) return null;
+    if (!payloadPart) return { role: null, valid: false };
     const normalized = payloadPart.replace(/-/g, "+").replace(/_/g, "/");
     const pad = normalized.length % 4 === 0 ? "" : "=".repeat(4 - (normalized.length % 4));
     const binary = atob(normalized + pad);
     const bytes = Uint8Array.from(binary, (c) => c.charCodeAt(0));
     const json = new TextDecoder("utf-8").decode(bytes);
     const payload = JSON.parse(json) as { role?: string; exp?: number };
-    if (payload.exp && Date.now() / 1000 > payload.exp) return null;
+    if (!payload.exp || Date.now() / 1000 > payload.exp) return { role: null, valid: false };
     const r = payload.role;
-    if (r === "CREATOR" || r === "COMPANY" || r === "ADMIN") return r;
-    return null;
+    const role = r === "CREATOR" || r === "COMPANY" || r === "ADMIN" ? r : null;
+    return { role, valid: true };
   } catch {
-    return null;
+    return { role: null, valid: false };
   }
 }
 
@@ -27,47 +32,46 @@ const HOME_BY_ROLE: Record<Role, string> = {
   ADMIN: "/admin/members",
 };
 
-const ROLE_PREFIXES: Record<Role, string[]> = {
-  CREATOR: ["/creator"],
-  COMPANY: ["/company"],
-  ADMIN: ["/admin"],
-};
-
+const PROTECTED_PREFIXES = ["/creator", "/company", "/admin"];
 const AUTH_PAGES = ["/login", "/signup"];
 
 function matchesPrefix(pathname: string, prefix: string) {
   return pathname === prefix || pathname.startsWith(`${prefix}/`);
 }
 
+function withNoStore(res: NextResponse): NextResponse {
+  res.headers.set("Cache-Control", "no-store, no-cache, must-revalidate");
+  res.headers.set("Pragma", "no-cache");
+  res.headers.set("Expires", "0");
+  return res;
+}
+
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const token = request.cookies.get("access_token")?.value;
 
-  const role: Role | null = token ? decodeRole(token) : null;
+  const claims: TokenClaims = token ? parseToken(token) : { role: null, valid: false };
 
-  const allProtected = Object.values(ROLE_PREFIXES).flat();
-  const isProtected = allProtected.some((p) => matchesPrefix(pathname, p));
+  const isProtected = PROTECTED_PREFIXES.some((p) => matchesPrefix(pathname, p));
   const isAuthPage = AUTH_PAGES.some((p) => matchesPrefix(pathname, p));
 
-  if (!role) {
+  if (!claims.valid) {
     if (isProtected) {
       const url = request.nextUrl.clone();
       url.pathname = "/login";
       url.searchParams.set("redirect", pathname);
-      return NextResponse.redirect(url);
+      return withNoStore(NextResponse.redirect(url));
     }
     return NextResponse.next();
   }
 
   if (pathname === "/" || isAuthPage) {
-    return NextResponse.redirect(new URL(HOME_BY_ROLE[role], request.url));
+    const home = claims.role ? HOME_BY_ROLE[claims.role] : "/";
+    return NextResponse.redirect(new URL(home, request.url));
   }
 
   if (isProtected) {
-    const allowed = ROLE_PREFIXES[role].some((p) => matchesPrefix(pathname, p));
-    if (!allowed) {
-      return NextResponse.redirect(new URL(HOME_BY_ROLE[role], request.url));
-    }
+    return withNoStore(NextResponse.next());
   }
 
   return NextResponse.next();

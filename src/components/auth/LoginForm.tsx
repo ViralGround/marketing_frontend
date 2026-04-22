@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import api from "@/lib/api";
-import { decodeJwtPayload, setTokens } from "@/lib/auth";
+import { decodeJwtPayload, removeTokens, setTokens } from "@/lib/auth";
 import { useAuthStore } from "@/store/useAuthStore";
 import AlertModal from "@/components/ui/AlertModal";
 import type { TokenResponse, UserRole } from "@/types";
@@ -37,37 +37,60 @@ export default function LoginForm() {
         email,
         password,
       });
-      setTokens(data.accessToken, data.refreshToken);
 
       const payload = decodeJwtPayload<{
         sub: string;
         email: string;
         name?: string;
         role: UserRole;
+        exp?: number;
       }>(data.accessToken);
-      if (!payload) {
-        setError("로그인 토큰을 해석하지 못했습니다. 다시 시도해주세요.");
+      const numericSub = payload ? Number(payload.sub) : NaN;
+      const validRole =
+        payload?.role === "ADMIN" ||
+        payload?.role === "COMPANY" ||
+        payload?.role === "CREATOR";
+      const validExp = !!payload?.exp && payload.exp > Date.now() / 1000;
+      if (
+        !payload ||
+        !payload.sub ||
+        !Number.isFinite(numericSub) ||
+        !payload.email ||
+        !validRole ||
+        !validExp
+      ) {
+        removeTokens();
+        setError("로그인 토큰이 유효하지 않습니다. 다시 시도해주세요.");
         return;
       }
+      setTokens(data.accessToken);
       const role = payload.role;
       setUser({
-        id: Number(payload.sub),
+        id: numericSub,
         email: payload.email,
         name: payload.name ?? payload.email,
         role,
       });
 
-      const defaultHome =
-        role === "ADMIN"
-          ? "/admin/members"
-          : role === "COMPANY"
-            ? "/company/dashboard"
-            : "/creator/home";
+      const homeByRole: Record<UserRole, string> = {
+        ADMIN: "/admin/members",
+        COMPANY: "/company/dashboard",
+        CREATOR: "/creator/home",
+      };
+      const allowedPrefix: Record<UserRole, string> = {
+        ADMIN: "/admin",
+        COMPANY: "/company",
+        CREATOR: "/creator",
+      };
+      const defaultHome = homeByRole[role];
       const redirectTo = searchParams.get("redirect");
-      const target =
-        redirectTo && redirectTo.startsWith("/") && !redirectTo.startsWith("//")
-          ? redirectTo
-          : defaultHome;
+      const prefix = allowedPrefix[role];
+      const redirectAllowed =
+        !!redirectTo &&
+        redirectTo.startsWith("/") &&
+        !redirectTo.startsWith("//") &&
+        (redirectTo === prefix || redirectTo.startsWith(`${prefix}/`));
+      const target = redirectAllowed ? redirectTo : defaultHome;
       router.push(target);
     } catch (err: unknown) {
       const response =

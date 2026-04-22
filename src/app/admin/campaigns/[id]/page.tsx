@@ -6,6 +6,7 @@ import Link from "next/link";
 import api from "@/lib/api";
 import CampaignForm from "@/components/admin/CampaignForm";
 import ApplicationStatusBadge from "@/components/campaign/ApplicationStatusBadge";
+import AlertModal from "@/components/ui/AlertModal";
 
 type CampaignStatus = "OPEN" | "CLOSED";
 type AppStatus = "PENDING" | "APPROVED" | "REJECTED" | "SUBMITTED" | "SETTLED";
@@ -62,6 +63,7 @@ export default function AdminCampaignDetailPage() {
   const [campaign, setCampaign] = useState<CampaignDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [editMode, setEditMode] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const load = () => {
     api
@@ -82,7 +84,7 @@ export default function AdminCampaignDetailPage() {
       await api.put(`/admin/campaigns/${id}`, { status: newStatus });
       load();
     } catch {
-      alert("변경에 실패했습니다");
+      setErrorMessage("변경에 실패했습니다");
     }
   };
 
@@ -92,7 +94,7 @@ export default function AdminCampaignDetailPage() {
       await api.delete(`/admin/campaigns/${id}`);
       router.push("/admin/campaigns");
     } catch {
-      alert("삭제에 실패했습니다");
+      setErrorMessage("삭제에 실패했습니다");
     }
   };
 
@@ -107,7 +109,7 @@ export default function AdminCampaignDetailPage() {
       if (input === null) return;
       const amount = Number(input);
       if (!Number.isInteger(amount) || amount < 0) {
-        alert("금액이 올바르지 않습니다");
+        setErrorMessage("금액이 올바르지 않습니다");
         return;
       }
       payload.rewardPaidAmount = amount;
@@ -119,7 +121,7 @@ export default function AdminCampaignDetailPage() {
       await api.patch(`/admin/applications/${appId}`, payload);
       load();
     } catch {
-      alert("처리에 실패했습니다");
+      setErrorMessage("처리에 실패했습니다");
     }
   };
 
@@ -362,6 +364,12 @@ export default function AdminCampaignDetailPage() {
           </div>
         )}
       </div>
+
+      <AlertModal
+        open={!!errorMessage}
+        message={errorMessage}
+        onClose={() => setErrorMessage("")}
+      />
     </div>
   );
 }

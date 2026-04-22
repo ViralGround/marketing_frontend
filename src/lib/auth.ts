@@ -11,7 +11,11 @@ export function getAccessToken(): string | null {
 
 export function setTokens(access: string) {
   accessToken = access;
-  Cookies.set(ACCESS_TOKEN_KEY, access, { path: "/" });
+  Cookies.set(ACCESS_TOKEN_KEY, access, {
+    path: "/",
+    sameSite: "strict",
+    secure: typeof window !== "undefined" && window.location.protocol === "https:",
+  });
 }
 
 export function removeTokens() {

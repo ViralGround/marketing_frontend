@@ -360,7 +360,7 @@ export default function CompanyCampaignDetailPage() {
                       <a
                         href={a.submissionUrl}
                         target="_blank"
-                        rel="noreferrer"
+                        rel="noopener noreferrer"
                         className="mt-2 inline-block text-xs text-blue-600 underline"
                       >
                         제출물 보기 →

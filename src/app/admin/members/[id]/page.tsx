@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import api from "@/lib/api";
+import AlertModal from "@/components/ui/AlertModal";
 
 type MemberStatus = "PENDING" | "APPROVED" | "REJECTED";
 
@@ -49,6 +50,7 @@ export default function AdminMemberDetailPage() {
   const router = useRouter();
   const [member, setMember] = useState<MemberDetail | null>(null);
   const [loading, setLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const fetchMember = () => {
     api
@@ -71,7 +73,7 @@ export default function AdminMemberDetailPage() {
       await api.patch(`/admin/members/${id}/status`, { status });
       setMember((prev) => (prev ? { ...prev, status } : null));
     } catch {
-      alert(`${label}에 실패했습니다`);
+      setErrorMessage(`${label}에 실패했습니다`);
     }
   };
 
@@ -82,7 +84,7 @@ export default function AdminMemberDetailPage() {
       await api.delete(`/admin/members/${id}`);
       router.push("/admin/members");
     } catch {
-      alert("삭제에 실패했습니다");
+      setErrorMessage("삭제에 실패했습니다");
     }
   };
 
@@ -177,6 +179,12 @@ export default function AdminMemberDetailPage() {
           </button>
         </div>
       </div>
+
+      <AlertModal
+        open={!!errorMessage}
+        message={errorMessage}
+        onClose={() => setErrorMessage("")}
+      />
 
       {/* 크리에이터 프로필 / 설문 응답 */}
       {member.creatorProfile && (

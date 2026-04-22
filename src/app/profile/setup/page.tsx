@@ -39,7 +39,7 @@ export default function ProfileSetupPage() {
         profileImage: null,
         instagramId: instagramId || null,
       });
-      router.push("/creator/dashboard");
+      router.push("/creator/home");
     } catch {
       setError("프로필 저장에 실패했습니다. 다시 시도해주세요.");
     } finally {

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import api from "@/lib/api";
+import AlertModal from "@/components/ui/AlertModal";
 
 type MemberStatus = "PENDING" | "APPROVED" | "REJECTED";
 
@@ -33,6 +34,7 @@ export default function AdminMembersPage() {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("ALL");
   const [search, setSearch] = useState("");
   const [searchInput, setSearchInput] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
 
   const fetchMembers = () => {
     setLoading(true);
@@ -67,7 +69,7 @@ export default function AdminMembersPage() {
       await api.delete(`/admin/members/${id}`);
       fetchMembers();
     } catch {
-      alert("삭제에 실패했습니다");
+      setErrorMessage("삭제에 실패했습니다");
     }
   };
 
@@ -78,7 +80,7 @@ export default function AdminMembersPage() {
       await api.patch(`/admin/members/${id}/status`, { status });
       fetchMembers();
     } catch {
-      alert(`${label}에 실패했습니다`);
+      setErrorMessage(`${label}에 실패했습니다`);
     }
   };
 
@@ -163,6 +165,12 @@ export default function AdminMembersPage() {
           </button>
         </form>
       </div>
+
+      <AlertModal
+        open={!!errorMessage}
+        message={errorMessage}
+        onClose={() => setErrorMessage("")}
+      />
 
       {loading ? (
         <p className="text-gray-500">불러오는 중...</p>

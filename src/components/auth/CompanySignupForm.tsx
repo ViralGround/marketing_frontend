@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
+import EmailVerificationField from "@/components/auth/EmailVerificationField";
 
 export default function CompanySignupForm() {
   const router = useRouter();
@@ -10,6 +11,7 @@ export default function CompanySignupForm() {
   const [error, setError] = useState("");
 
   const [email, setEmail] = useState("");
+  const [verifiedToken, setVerifiedToken] = useState<string | null>(null);
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [companyName, setCompanyName] = useState("");
@@ -24,6 +26,10 @@ export default function CompanySignupForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    if (!verifiedToken) {
+      setError("이메일 인증을 완료해주세요");
+      return;
+    }
     setLoading(true);
 
     try {
@@ -31,6 +37,7 @@ export default function CompanySignupForm() {
         email,
         password,
         name,
+        verifiedToken,
         companyName,
         businessNumber,
         representativeName,
@@ -40,7 +47,7 @@ export default function CompanySignupForm() {
         homepage: homepage.trim() || null,
         industry: industry.trim() || null,
       });
-      router.push(`/verify-email?email=${encodeURIComponent(email)}`);
+      router.push(`/login/company`);
     } catch (err: unknown) {
       const response =
         typeof err === "object" && err !== null && "response" in err
@@ -70,20 +77,12 @@ export default function CompanySignupForm() {
 
       <section className="space-y-4">
         <h2 className="text-sm font-semibold text-gray-500">계정 정보</h2>
-        <div>
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-            이메일
-          </label>
-          <input
-            id="email"
-            type="email"
-            required
-            placeholder="company@example.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className={inputCls}
-          />
-        </div>
+        <EmailVerificationField
+          email={email}
+          onEmailChange={setEmail}
+          onVerified={setVerifiedToken}
+          placeholder="company@example.com"
+        />
         <div>
           <label htmlFor="password" className="block text-sm font-medium text-gray-700">
             비밀번호 (8자 이상)
@@ -228,12 +227,12 @@ export default function CompanySignupForm() {
       </section>
 
       <p className="text-xs text-gray-500">
-        가입 후 이메일 인증을 완료하시면 바로 로그인할 수 있습니다.
+        이메일 인증을 완료한 뒤 가입하기를 눌러주세요. 가입 후 바로 로그인할 수 있습니다.
       </p>
 
       <button
         type="submit"
-        disabled={loading}
+        disabled={loading || !verifiedToken}
         className="w-full rounded-lg bg-primary py-2.5 text-white font-medium hover:bg-primary-dark disabled:opacity-50 transition-colors"
       >
         {loading ? "가입 중..." : "가입하기"}

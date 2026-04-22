@@ -2,7 +2,7 @@ import axios from "axios";
 import { getAccessToken, removeTokens } from "./auth";
 
 const api = axios.create({
-  baseURL: "/api",
+  baseURL: process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080",
   headers: { "Content-Type": "application/json" },
 });
 

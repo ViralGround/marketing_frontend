@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 import AlertModal from "@/components/ui/AlertModal";
+import EmailVerificationField from "@/components/auth/EmailVerificationField";
 
 type Gender = "MALE" | "FEMALE";
 type EditingTool =
@@ -38,6 +39,7 @@ export default function CreatorSignupForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
+  const [verifiedToken, setVerifiedToken] = useState<string | null>(null);
 
   // 설문
   const [gender, setGender] = useState<Gender | "">("");
@@ -52,6 +54,7 @@ export default function CreatorSignupForm() {
     e.preventDefault();
     setError("");
 
+    if (!verifiedToken) return setValidationModal("이메일 인증을 완료해주세요");
     if (!gender) return setValidationModal("성별을 선택해주세요");
     if (!birthYear) return setValidationModal("출생연도를 선택해주세요");
     if (!faceExposure) return setValidationModal("얼굴 공개 여부를 선택해주세요");
@@ -64,6 +67,7 @@ export default function CreatorSignupForm() {
         password,
         name,
         role: "CREATOR",
+        verifiedToken,
         gender,
         age: new Date().getFullYear() - Number(birthYear),
         faceExposure: faceExposure === "YES",
@@ -72,7 +76,7 @@ export default function CreatorSignupForm() {
         tiktokId: tiktokId.trim() || null,
         youtubeId: youtubeId.trim() || null,
       });
-      router.push(`/verify-email?email=${encodeURIComponent(email)}`);
+      router.push(`/login?pending=1`);
     } catch (err: unknown) {
       const status =
         typeof err === "object" &&
@@ -119,20 +123,11 @@ export default function CreatorSignupForm() {
             className="mt-1 block w-full rounded border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-gray-500 focus:outline-none"
           />
         </div>
-        <div>
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-            이메일
-          </label>
-          <input
-            id="email"
-            type="email"
-            required
-            placeholder="example@email.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="mt-1 block w-full rounded border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-gray-500 focus:outline-none"
-          />
-        </div>
+        <EmailVerificationField
+          email={email}
+          onEmailChange={setEmail}
+          onVerified={setVerifiedToken}
+        />
         <div>
           <label htmlFor="password" className="block text-sm font-medium text-gray-700">
             비밀번호 (8자 이상)
@@ -295,7 +290,7 @@ export default function CreatorSignupForm() {
 
       <button
         type="submit"
-        disabled={loading}
+        disabled={loading || !verifiedToken}
         className="w-full rounded-lg bg-primary py-2.5 text-white font-medium hover:bg-primary-dark disabled:opacity-50 transition-colors"
       >
         {loading ? "가입 신청 중..." : "가입 신청하기"}

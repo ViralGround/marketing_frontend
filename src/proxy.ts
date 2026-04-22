@@ -1,7 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
-import { verifyToken } from "@/lib/jwt";
 
 type Role = "CREATOR" | "COMPANY" | "ADMIN";
+
+function decodeRole(token: string): Role | null {
+  try {
+    const payloadPart = token.split(".")[1];
+    if (!payloadPart) return null;
+    const normalized = payloadPart.replace(/-/g, "+").replace(/_/g, "/");
+    const json = typeof atob === "function"
+      ? atob(normalized)
+      : Buffer.from(normalized, "base64").toString("utf-8");
+    const payload = JSON.parse(json) as { role?: string; exp?: number };
+    if (payload.exp && Date.now() / 1000 > payload.exp) return null;
+    const r = payload.role;
+    if (r === "CREATOR" || r === "COMPANY" || r === "ADMIN") return r;
+    return null;
+  } catch {
+    return null;
+  }
+}
 
 const HOME_BY_ROLE: Record<Role, string> = {
   CREATOR: "/creator/home",
@@ -25,14 +42,7 @@ export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const token = request.cookies.get("access_token")?.value;
 
-  let role: Role | null = null;
-  if (token) {
-    const payload = await verifyToken(token);
-    const r = payload?.role;
-    if (r === "CREATOR" || r === "COMPANY" || r === "ADMIN") {
-      role = r;
-    }
-  }
+  const role: Role | null = token ? decodeRole(token) : null;
 
   const allProtected = Object.values(ROLE_PREFIXES).flat();
   const isProtected = allProtected.some((p) => matchesPrefix(pathname, p));

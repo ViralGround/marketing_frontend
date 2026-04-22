@@ -70,7 +70,8 @@ export default function EmailVerificationField({
   };
 
   const handleSendCode = async () => {
-    if (!email.trim()) {
+    const requestedEmail = email.trim();
+    if (!requestedEmail) {
       setMessage({ type: "error", text: "이메일을 입력해주세요" });
       return;
     }
@@ -79,8 +80,9 @@ export default function EmailVerificationField({
     try {
       const { data } = await api.post<{ expiresAt: string; message: string }>(
         "/auth/email/request-code",
-        { email: email.trim() },
+        { email: requestedEmail },
       );
+      if (requestedEmail !== email.trim()) return;
       setCodeSent(true);
       setVerified(false);
       setCode("");
@@ -88,6 +90,7 @@ export default function EmailVerificationField({
       setMessage({ type: "info", text: data.message ?? "인증 코드를 발송했습니다" });
       onVerified(null);
     } catch (err: unknown) {
+      if (requestedEmail !== email.trim()) return;
       const response =
         typeof err === "object" && err !== null && "response" in err
           ? (err as { response?: { status?: number; data?: { message?: string } } }).response
@@ -107,6 +110,7 @@ export default function EmailVerificationField({
   };
 
   const handleVerifyCode = async () => {
+    const requestedEmail = email.trim();
     if (!code.trim()) {
       setMessage({ type: "error", text: "인증 코드를 입력해주세요" });
       return;
@@ -116,13 +120,15 @@ export default function EmailVerificationField({
     try {
       const { data } = await api.post<{ verifiedToken: string; message: string }>(
         "/auth/email/verify-code",
-        { email: email.trim(), code: code.trim() },
+        { email: requestedEmail, code: code.trim() },
       );
+      if (requestedEmail !== email.trim()) return;
       setVerified(true);
       setExpiresAt(null);
       setMessage({ type: "success", text: data.message ?? "이메일 인증이 완료되었습니다" });
       onVerified(data.verifiedToken);
     } catch (err: unknown) {
+      if (requestedEmail !== email.trim()) return;
       const response =
         typeof err === "object" && err !== null && "response" in err
           ? (err as { response?: { status?: number; data?: { message?: string } } }).response
@@ -152,7 +158,7 @@ export default function EmailVerificationField({
           value={email}
           onChange={(e) => handleEmailChange(e.target.value)}
           disabled={verified}
-          className="block w-full rounded border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-gray-500 focus:outline-none disabled:bg-gray-100 disabled:text-gray-500"
+          className="block min-w-0 flex-1 rounded border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-gray-500 focus:outline-none disabled:bg-gray-100 disabled:text-gray-500"
         />
         <button
           type="button"
@@ -191,7 +197,7 @@ export default function EmailVerificationField({
               placeholder="6자리 숫자"
               value={code}
               onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
-              className="block w-full rounded border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-gray-500 focus:outline-none"
+              className="block min-w-0 flex-1 rounded border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-gray-500 focus:outline-none"
             />
             <button
               type="button"

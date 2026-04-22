@@ -26,6 +26,15 @@ export default function BottomCTA() {
         >
           무료로 시작하기
         </Link>
+
+        <p className="mt-6 text-sm">
+          <Link
+            href="/signup/company"
+            className="text-white/80 hover:text-white underline-offset-4 hover:underline transition-colors"
+          >
+            기업 담당자이신가요? 캠페인 등록하러 가기 →
+          </Link>
+        </p>
       </div>
     </section>
   );

@@ -1,27 +1,45 @@
-import { Suspense } from "react";
 import Link from "next/link";
-import LoginForm from "@/components/auth/LoginForm";
 
 export default function LoginPage() {
   return (
-    <div className="flex min-h-[calc(100vh-65px)] items-center justify-center px-4">
-      <div className="w-full max-w-md space-y-6 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#111] p-8">
-        <h1 className="text-center text-2xl font-bold text-foreground">
-          크리에이터 로그인
-        </h1>
-
-        <Suspense fallback={<div className="h-40" />}>
-          <LoginForm />
-        </Suspense>
-
-        <div className="space-y-2 text-center text-sm text-gray-500">
-          <p>
-            계정이 없으신가요?{" "}
-            <Link href="/signup/creator" className="text-primary underline">
-              크리에이터로 가입하기
-            </Link>
-          </p>
+    <div className="flex min-h-[calc(100vh-65px)] items-center justify-center py-12">
+      <div className="w-full max-w-md space-y-6 rounded border border-gray-200 bg-white p-8">
+        <div className="space-y-2 text-center">
+          <h1 className="text-2xl font-bold text-gray-900">로그인</h1>
+          <p className="text-sm text-gray-500">로그인 유형을 선택해주세요</p>
         </div>
+
+        <div className="space-y-3">
+          <Link
+            href="/login/creator"
+            className="flex flex-col gap-1 rounded-lg border border-gray-300 px-5 py-4 hover:border-gray-900"
+          >
+            <span className="text-base font-semibold text-gray-900">
+              크리에이터 로그인
+            </span>
+            <span className="text-sm text-gray-500">
+              캠페인에 지원하고 콘텐츠를 제작합니다
+            </span>
+          </Link>
+          <Link
+            href="/login/company"
+            className="flex flex-col gap-1 rounded-lg border border-gray-300 px-5 py-4 hover:border-gray-900"
+          >
+            <span className="text-base font-semibold text-gray-900">
+              기업 로그인
+            </span>
+            <span className="text-sm text-gray-500">
+              캠페인을 등록하고 크리에이터를 모집합니다
+            </span>
+          </Link>
+        </div>
+
+        <p className="text-center text-xs text-gray-500">
+          계정이 없으신가요?{" "}
+          <Link href="/signup" className="text-gray-900 underline">
+            가입하기
+          </Link>
+        </p>
       </div>
     </div>
   );

@@ -54,6 +54,12 @@ export default function LandingHeader() {
           ) : (
             <>
               <Link
+                href="/signup/company"
+                className="hidden sm:inline-block rounded-lg px-3 py-2 text-sm text-gray-500 hover:text-primary transition-colors"
+              >
+                기업으로 등록하기
+              </Link>
+              <Link
                 href="/login"
                 className="rounded-lg px-4 py-2 text-sm font-medium text-foreground hover:text-primary transition-colors"
               >

@@ -1,6 +1,14 @@
 import { useEffect } from "react";
 import { useAuthStore } from "@/store/useAuthStore";
-import { getAccessToken } from "@/lib/auth";
+import { decodeJwtPayload, getAccessToken } from "@/lib/auth";
+import type { UserRole } from "@/types";
+
+interface JwtPayload {
+  sub: string;
+  email: string;
+  name?: string;
+  role: UserRole;
+}
 
 export function useAuthInit() {
   const { isAuthenticated, setUser } = useAuthStore();
@@ -11,16 +19,14 @@ export function useAuthInit() {
     const token = getAccessToken();
     if (!token) return;
 
-    try {
-      const payload = JSON.parse(atob(token.split(".")[1]));
-      setUser({
-        id: Number(payload.sub),
-        email: payload.email,
-        name: payload.name ?? payload.email,
-        role: payload.role,
-      });
-    } catch {
-      // 토큰이 손상된 경우 무시 — middleware와 API 인터셉터가 처리
-    }
+    const payload = decodeJwtPayload<JwtPayload>(token);
+    if (!payload) return;
+
+    setUser({
+      id: Number(payload.sub),
+      email: payload.email,
+      name: payload.name ?? payload.email,
+      role: payload.role,
+    });
   }, [isAuthenticated, setUser]);
 }

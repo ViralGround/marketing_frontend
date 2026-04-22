@@ -7,9 +7,10 @@ function decodeRole(token: string): Role | null {
     const payloadPart = token.split(".")[1];
     if (!payloadPart) return null;
     const normalized = payloadPart.replace(/-/g, "+").replace(/_/g, "/");
-    const json = typeof atob === "function"
-      ? atob(normalized)
-      : Buffer.from(normalized, "base64").toString("utf-8");
+    const pad = normalized.length % 4 === 0 ? "" : "=".repeat(4 - (normalized.length % 4));
+    const binary = atob(normalized + pad);
+    const bytes = Uint8Array.from(binary, (c) => c.charCodeAt(0));
+    const json = new TextDecoder("utf-8").decode(bytes);
     const payload = JSON.parse(json) as { role?: string; exp?: number };
     if (payload.exp && Date.now() / 1000 > payload.exp) return null;
     const r = payload.role;

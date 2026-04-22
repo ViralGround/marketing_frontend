@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import api from "@/lib/api";
-import { setTokens } from "@/lib/auth";
+import { decodeJwtPayload, setTokens } from "@/lib/auth";
 import { useAuthStore } from "@/store/useAuthStore";
 import AlertModal from "@/components/ui/AlertModal";
 import type { TokenResponse, UserRole } from "@/types";
@@ -39,8 +39,17 @@ export default function LoginForm() {
       });
       setTokens(data.accessToken, data.refreshToken);
 
-      const payload = JSON.parse(atob(data.accessToken.split(".")[1]));
-      const role = payload.role as UserRole;
+      const payload = decodeJwtPayload<{
+        sub: string;
+        email: string;
+        name?: string;
+        role: UserRole;
+      }>(data.accessToken);
+      if (!payload) {
+        setError("로그인 토큰을 해석하지 못했습니다. 다시 시도해주세요.");
+        return;
+      }
+      const role = payload.role;
       setUser({
         id: Number(payload.sub),
         email: payload.email,

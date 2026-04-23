@@ -17,6 +17,21 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Viral Ground",
   description: "크리에이터와 기업을 연결하는 마케팅 플랫폼",
+  openGraph: {
+    title: "Viral Ground",
+    description: "크리에이터와 기업을 연결하는 마케팅 플랫폼",
+    url: "https://viralground.kr",
+    siteName: "Viral Ground",
+    images: [{ url: "/opengraph-image", width: 1200, height: 630 }],
+    locale: "ko_KR",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Viral Ground",
+    description: "크리에이터와 기업을 연결하는 마케팅 플랫폼",
+    images: ["/opengraph-image"],
+  },
 };
 
 export default function RootLayout({

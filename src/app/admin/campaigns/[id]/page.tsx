@@ -10,6 +10,14 @@ import AlertModal from "@/components/ui/AlertModal";
 
 type CampaignStatus = "OPEN" | "CLOSED";
 type AppStatus = "PENDING" | "APPROVED" | "REJECTED" | "SUBMITTED" | "SETTLED";
+type EscrowStatus =
+  | "NONE"
+  | "PENDING_DEPOSIT"
+  | "DEPOSIT_CONFIRMING"
+  | "FUNDED"
+  | "PARTIALLY_RELEASED"
+  | "RELEASED"
+  | "REFUNDED";
 
 interface CampaignDetail {
   id: number;
@@ -22,9 +30,37 @@ interface CampaignDetail {
   deadline: string | null;
   maxParticipants: number;
   status: CampaignStatus;
+  escrowStatus: EscrowStatus;
+  fundedAt: string | null;
   createdAt: string;
   applications: Application[];
 }
+
+const ESCROW_LABEL: Record<EscrowStatus, string> = {
+  NONE: "미신청",
+  PENDING_DEPOSIT: "입금 대기",
+  DEPOSIT_CONFIRMING: "확인 대기",
+  FUNDED: "예치 완료",
+  PARTIALLY_RELEASED: "일부 지급",
+  RELEASED: "전액 지급",
+  REFUNDED: "환불",
+};
+
+const ESCROW_CLASS: Record<EscrowStatus, string> = {
+  NONE: "bg-gray-100 text-gray-600",
+  PENDING_DEPOSIT: "bg-amber-100 text-amber-700",
+  DEPOSIT_CONFIRMING: "bg-orange-100 text-orange-700",
+  FUNDED: "bg-emerald-100 text-emerald-700",
+  PARTIALLY_RELEASED: "bg-indigo-100 text-indigo-700",
+  RELEASED: "bg-blue-100 text-blue-700",
+  REFUNDED: "bg-red-100 text-red-700",
+};
+
+const FORCE_COMPLETE_STATES: EscrowStatus[] = [
+  "NONE",
+  "PENDING_DEPOSIT",
+  "DEPOSIT_CONFIRMING",
+];
 
 interface Application {
   id: number;
@@ -85,6 +121,27 @@ export default function AdminCampaignDetailPage() {
       load();
     } catch {
       setErrorMessage("변경에 실패했습니다");
+    }
+  };
+
+  const handleForceCompleteEscrow = async () => {
+    if (
+      !confirm(
+        "이 캠페인을 예치금 완료 상태로 전환할까요? 크리에이터에게 즉시 노출됩니다.",
+      )
+    )
+      return;
+    try {
+      await api.post(`/admin/campaigns/${id}/escrow/force-complete`);
+      load();
+    } catch (err: unknown) {
+      const msg =
+        typeof err === "object" &&
+        err !== null &&
+        "response" in err &&
+        (err as { response?: { data?: { message?: string } } }).response?.data
+          ?.message;
+      setErrorMessage(msg || "예치금 완료 처리에 실패했습니다");
     }
   };
 
@@ -216,6 +273,41 @@ export default function AdminCampaignDetailPage() {
             {CAMPAIGN_STATUS_LABEL[campaign.status]}
           </p>
         </div>
+      </div>
+
+      {/* 예치금 */}
+      <div className="mb-6 rounded border border-gray-200 p-4">
+        <div className="mb-2 flex items-center justify-between">
+          <p className="text-sm font-medium text-gray-700">예치금</p>
+          <span
+            className={`rounded px-2 py-0.5 text-xs ${ESCROW_CLASS[campaign.escrowStatus]}`}
+          >
+            {ESCROW_LABEL[campaign.escrowStatus]}
+          </span>
+        </div>
+        {campaign.fundedAt && (
+          <p className="mb-2 text-xs text-gray-500">
+            완료 시각: {new Date(campaign.fundedAt).toLocaleString("ko-KR")}
+          </p>
+        )}
+        {FORCE_COMPLETE_STATES.includes(campaign.escrowStatus) ? (
+          <div>
+            <button
+              onClick={handleForceCompleteEscrow}
+              className="rounded bg-emerald-600 px-3 py-1.5 text-sm text-white hover:bg-emerald-700"
+            >
+              예치금 입금완료 처리
+            </button>
+            <p className="mt-2 text-xs text-gray-500">
+              관리자가 임의로 예치금 완료 처리합니다. 캠페인이 DRAFT 상태라면 모집중으로 전환되어
+              크리에이터에게 노출됩니다.
+            </p>
+          </div>
+        ) : (
+          <p className="text-xs text-gray-500">
+            이미 예치금이 완료되었거나 정산/환불된 캠페인입니다.
+          </p>
+        )}
       </div>
 
       {/* 상태 변경 */}

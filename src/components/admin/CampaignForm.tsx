@@ -45,6 +45,7 @@ export default function CampaignForm({
   const [maxParticipants, setMaxParticipants] = useState(
     initial?.maxParticipants?.toString() ?? "10",
   );
+  const [immediatelyOpen, setImmediatelyOpen] = useState(true);
 
   const trimmedThumb = thumbnailUrl.trim();
   const thumbnailUrlValid = useMemo(() => {
@@ -80,19 +81,20 @@ export default function CampaignForm({
 
     setLoading(true);
 
-    const payload = {
+    const payload: Record<string, unknown> = {
       title: title.trim(),
       description: description.trim(),
       brandName: brandName.trim(),
       rewardAmount: reward,
       thumbnailUrl: trimmedThumb || null,
       requirements: requirements.trim() || null,
-      deadline: deadline || null,
+      deadline: deadline ? `${deadline}T00:00:00` : null,
       maxParticipants: maxP,
     };
 
     try {
       if (mode === "create") {
+        payload.immediatelyOpen = immediatelyOpen;
         const { data } = await api.post("/admin/campaigns", payload);
         router.push(`/admin/campaigns/${data.id}`);
       } else if (initial?.id) {
@@ -252,6 +254,29 @@ export default function CampaignForm({
           </p>
         )}
       </div>
+
+      {mode === "create" && (
+        <div className="rounded border border-gray-200 bg-gray-50 p-3">
+          <label className="flex items-start gap-2 text-sm text-gray-800">
+            <input
+              type="checkbox"
+              checked={immediatelyOpen}
+              onChange={(e) => setImmediatelyOpen(e.target.checked)}
+              className="mt-0.5"
+            />
+            <span>
+              <span className="font-medium">바로 모집 시작</span>
+              <span className="text-gray-500"> (예치금 완료 상태로 생성)</span>
+            </span>
+          </label>
+          {!immediatelyOpen && (
+            <p className="mt-2 pl-6 text-xs text-amber-700">
+              예치금 대기 상태로 생성됩니다. 이후 상세 페이지에서 &quot;예치금 입금완료 처리&quot;를
+              눌러야 크리에이터에게 노출됩니다.
+            </p>
+          )}
+        </div>
+      )}
 
       <div className="flex gap-2">
         <button

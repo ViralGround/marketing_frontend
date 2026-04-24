@@ -8,6 +8,7 @@ import { removeTokens } from "@/lib/auth";
 import { useAuthStore } from "@/store/useAuthStore";
 import StatCards from "@/components/creator/StatCards";
 import ApplicationStatusBadge from "@/components/campaign/ApplicationStatusBadge";
+import VideoUploader from "@/components/submission/VideoUploader";
 
 type AppStatus = "PENDING" | "APPROVED" | "REJECTED" | "SUBMITTED" | "SETTLED";
 type Filter = "ALL" | AppStatus;
@@ -22,6 +23,7 @@ interface ApplicationItem {
   id: number;
   status: AppStatus;
   submissionUrl: string | null;
+  videoFileKey?: string | null;
   rewardPaidAmount: number | null;
   appliedAt: string;
   settledAt: string | null;
@@ -54,9 +56,6 @@ export default function CreatorMyPage() {
   const [submitModal, setSubmitModal] = useState<{ id: number; campaignTitle: string } | null>(
     null,
   );
-  const [submitUrl, setSubmitUrl] = useState("");
-  const [submitError, setSubmitError] = useState("");
-  const [submitLoading, setSubmitLoading] = useState(false);
   const [withdrawModal, setWithdrawModal] = useState(false);
   const [withdrawLoading, setWithdrawLoading] = useState(false);
   const [withdrawError, setWithdrawError] = useState("");
@@ -92,8 +91,6 @@ export default function CreatorMyPage() {
 
   const openSubmitModal = (id: number, campaignTitle: string) => {
     setSubmitModal({ id, campaignTitle });
-    setSubmitUrl("");
-    setSubmitError("");
   };
 
   const handleWithdraw = async () => {
@@ -113,23 +110,10 @@ export default function CreatorMyPage() {
     }
   };
 
-  const handleSubmitUrl = async () => {
-    if (!submitModal) return;
-    setSubmitError("");
-    setSubmitLoading(true);
-    try {
-      await api.post(`/me/applications/${submitModal.id}/submit`, { submissionUrl: submitUrl });
-      setSubmitModal(null);
-      loadApps();
-      loadStats();
-    } catch (err: unknown) {
-      const msg =
-        (err as { response?: { data?: { message?: string } } }).response?.data?.message ||
-        "제출에 실패했습니다";
-      setSubmitError(msg);
-    } finally {
-      setSubmitLoading(false);
-    }
+  const handleUploaded = () => {
+    setSubmitModal(null);
+    loadApps();
+    loadStats();
   };
 
   return (
@@ -256,17 +240,22 @@ export default function CreatorMyPage() {
                       onClick={() => openSubmitModal(a.id, a.campaign.title)}
                       className="rounded bg-gray-900 px-3 py-1.5 text-xs text-white hover:bg-gray-700"
                     >
-                      {a.status === "APPROVED" ? "영상 제출" : "제출 URL 수정"}
+                      {a.status === "APPROVED" ? "영상 업로드" : "영상 재업로드"}
                     </button>
                   )}
-                  {a.submissionUrl && (
+                  {a.videoFileKey && (
+                    <span className="rounded bg-gray-100 px-3 py-1.5 text-xs text-gray-700">
+                      영상 제출됨
+                    </span>
+                  )}
+                  {!a.videoFileKey && a.submissionUrl && isSafeExternalLink(a.submissionUrl) && (
                     <a
                       href={a.submissionUrl}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="rounded border border-gray-300 px-3 py-1.5 text-xs text-gray-700 hover:bg-gray-50"
                     >
-                      제출물 보기
+                      외부 링크 보기
                     </a>
                   )}
                 </div>
@@ -320,38 +309,29 @@ export default function CreatorMyPage() {
       {submitModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
           <div className="w-full max-w-md rounded-xl bg-white p-6">
-            <h3 className="mb-1 text-lg font-semibold text-gray-900">영상 제출</h3>
+            <h3 className="mb-1 text-lg font-semibold text-gray-900">영상 업로드</h3>
             <p className="mb-4 text-sm text-gray-500">{submitModal.campaignTitle}</p>
-            <label htmlFor="submitUrl" className="block text-sm text-gray-700">
-              제출 URL (Google Drive, YouTube 등)
-            </label>
-            <input
-              id="submitUrl"
-              type="url"
-              value={submitUrl}
-              onChange={(e) => setSubmitUrl(e.target.value)}
-              placeholder="https://..."
-              className="mt-1 block w-full rounded border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-gray-500 focus:outline-none"
+            <VideoUploader
+              applicationId={submitModal.id}
+              onUploaded={handleUploaded}
+              onCancel={() => setSubmitModal(null)}
             />
-            {submitError && <p className="mt-2 text-sm text-red-600">{submitError}</p>}
-            <div className="mt-4 flex justify-end gap-2">
-              <button
-                onClick={() => setSubmitModal(null)}
-                className="rounded border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50"
-              >
-                취소
-              </button>
-              <button
-                onClick={handleSubmitUrl}
-                disabled={submitLoading}
-                className="rounded bg-gray-900 px-3 py-1.5 text-sm text-white hover:bg-gray-700 disabled:opacity-50"
-              >
-                {submitLoading ? "제출 중..." : "제출하기"}
-              </button>
-            </div>
           </div>
         </div>
       )}
     </div>
   );
+}
+
+/**
+ * 레거시 submissionUrl 렌더링 시 javascript:/data: 스킴 주입을 차단.
+ * 새로 업로드된 영상은 videoFileKey 로만 서빙하므로 이 함수는 레거시 데이터 대응 용도.
+ */
+function isSafeExternalLink(raw: string): boolean {
+  try {
+    const u = new URL(raw);
+    return u.protocol === "http:" || u.protocol === "https:";
+  } catch {
+    return false;
+  }
 }

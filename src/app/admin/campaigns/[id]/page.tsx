@@ -408,14 +408,18 @@ export default function AdminCampaignDetailPage() {
                 {app.submissionUrl && (
                   <div className="mb-3 text-sm">
                     <span className="text-gray-500">제출 URL: </span>
-                    <a
-                      href={app.submissionUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-600 underline"
-                    >
-                      {app.submissionUrl}
-                    </a>
+                    {isSafeExternalLink(app.submissionUrl) ? (
+                      <a
+                        href={app.submissionUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 underline"
+                      >
+                        {app.submissionUrl}
+                      </a>
+                    ) : (
+                      <span className="text-red-600">유효하지 않은 링크</span>
+                    )}
                   </div>
                 )}
 
@@ -464,4 +468,17 @@ export default function AdminCampaignDetailPage() {
       />
     </div>
   );
+}
+
+/**
+ * submissionUrl 같은 외부 입력값을 href 에 주입하기 전 프로토콜을 제한.
+ * javascript:/data: 등 실행 가능한 스킴을 차단.
+ */
+function isSafeExternalLink(raw: string): boolean {
+  try {
+    const u = new URL(raw);
+    return u.protocol === "http:" || u.protocol === "https:";
+  } catch {
+    return false;
+  }
 }

@@ -32,7 +32,7 @@ const HOME_BY_ROLE: Record<Role, string> = {
   ADMIN: "/admin/members",
 };
 
-const PROTECTED_PREFIXES = ["/creator", "/company", "/admin"];
+const PROTECTED_PREFIXES = ["/creator", "/company", "/admin", "/creators"];
 const AUTH_PAGES = ["/login", "/signup"];
 
 function matchesPrefix(pathname: string, prefix: string) {
@@ -87,5 +87,6 @@ export const config = {
     "/creator/:path*",
     "/company/:path*",
     "/admin/:path*",
+    "/creators/:path*",
   ],
 };

@@ -9,6 +9,7 @@ import { useAuthStore } from "@/store/useAuthStore";
 import StatCards from "@/components/creator/StatCards";
 import ApplicationStatusBadge from "@/components/campaign/ApplicationStatusBadge";
 import VideoUploader from "@/components/submission/VideoUploader";
+import ReviewForm from "@/components/review/ReviewForm";
 
 type AppStatus =
   | "PENDING"
@@ -63,6 +64,9 @@ export default function CreatorMyPage() {
   const [appsLoading, setAppsLoading] = useState(true);
   const [filter, setFilter] = useState<Filter>("ALL");
   const [submitModal, setSubmitModal] = useState<{ id: number; campaignTitle: string } | null>(
+    null,
+  );
+  const [reviewModal, setReviewModal] = useState<{ id: number; campaignTitle: string } | null>(
     null,
   );
   const [withdrawModal, setWithdrawModal] = useState(false);
@@ -261,6 +265,14 @@ export default function CreatorMyPage() {
                         재제출
                       </button>
                     )}
+                    {a.status === "SETTLED" && (
+                      <button
+                        onClick={() => setReviewModal({ id: a.id, campaignTitle: a.campaign.title })}
+                        className="rounded border border-gray-300 px-3 py-1.5 text-xs text-gray-700 hover:bg-gray-50"
+                      >
+                        리뷰 작성
+                      </button>
+                    )}
                     {a.videoFileKey && a.status !== "CHANGES_REQUESTED" && (
                       <span className="rounded bg-gray-100 px-3 py-1.5 text-xs text-gray-700">
                         영상 제출됨
@@ -325,6 +337,24 @@ export default function CreatorMyPage() {
                 {withdrawLoading ? "처리 중..." : "탈퇴하기"}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* 리뷰 작성 모달 */}
+      {reviewModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="w-full max-w-md rounded-xl bg-white p-6">
+            <h3 className="mb-1 text-lg font-semibold text-gray-900">기업 리뷰 작성</h3>
+            <p className="mb-4 text-sm text-gray-500">{reviewModal.campaignTitle}</p>
+            <ReviewForm
+              applicationId={reviewModal.id}
+              onSubmitted={() => {
+                setReviewModal(null);
+                loadApps();
+              }}
+              onCancel={() => setReviewModal(null)}
+            />
           </div>
         </div>
       )}

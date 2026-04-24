@@ -7,6 +7,7 @@ import api from "@/lib/api";
 import SubmissionTimeline, {
   type SubmissionHistoryItem,
 } from "@/components/submission/SubmissionTimeline";
+import ReviewForm from "@/components/review/ReviewForm";
 
 type CampaignStatus = "DRAFT" | "OPEN" | "CLOSED";
 type EscrowStatus =
@@ -201,6 +202,9 @@ export default function CompanyCampaignDetailPage() {
 
   const [changesModal, setChangesModal] = useState<{ appId: number } | null>(null);
   const [changesComment, setChangesComment] = useState("");
+  const [reviewModal, setReviewModal] = useState<{ appId: number; creatorName: string } | null>(
+    null,
+  );
 
   const canEdit =
     data &&
@@ -463,6 +467,22 @@ export default function CompanyCampaignDetailPage() {
                         크리에이터 재제출 대기 중
                       </span>
                     )}
+                    {a.status === "SETTLED" && (
+                      <>
+                        <button
+                          onClick={() => setReviewModal({ appId: a.id, creatorName: a.creator.name })}
+                          className="rounded border border-gray-300 px-3 py-1 text-xs text-gray-700 hover:bg-gray-50"
+                        >
+                          리뷰 작성
+                        </button>
+                        <Link
+                          href={`/creators/${a.creator.id}`}
+                          className="rounded border border-gray-300 px-3 py-1 text-xs text-gray-700 hover:bg-gray-50"
+                        >
+                          프로필 보기
+                        </Link>
+                      </>
+                    )}
                   </div>
                 </div>
               </li>
@@ -470,6 +490,23 @@ export default function CompanyCampaignDetailPage() {
           </ul>
         )}
       </section>
+
+      {reviewModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="w-full max-w-md rounded-xl bg-white p-6">
+            <h3 className="mb-1 text-lg font-semibold text-gray-900">크리에이터 리뷰 작성</h3>
+            <p className="mb-4 text-sm text-gray-500">{reviewModal.creatorName}</p>
+            <ReviewForm
+              applicationId={reviewModal.appId}
+              onSubmitted={() => {
+                setReviewModal(null);
+                load();
+              }}
+              onCancel={() => setReviewModal(null)}
+            />
+          </div>
+        </div>
+      )}
 
       {changesModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">

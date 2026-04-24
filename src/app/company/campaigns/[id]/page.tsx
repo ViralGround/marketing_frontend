@@ -358,6 +358,15 @@ export default function CompanyCampaignDetailPage() {
         )}
       </section>
 
+      <div className="flex justify-end">
+        <Link
+          href={`/company/campaigns/${data.id}/performance`}
+          className="rounded border border-gray-300 px-3 py-1.5 text-xs text-gray-700 hover:bg-gray-50"
+        >
+          성과 리포트 보기 →
+        </Link>
+      </div>
+
       <section className="rounded-lg border border-gray-200 p-5">
         <h2 className="text-sm font-semibold text-gray-500">
           지원자 ({data.applicationCount})

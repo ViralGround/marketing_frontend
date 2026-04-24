@@ -173,6 +173,14 @@ export default function CreatorMyPage() {
           <p className="text-sm text-gray-500">활동 정보와 채널 업데이트</p>
           <p className="mt-4 text-sm text-primary group-hover:underline">수정하기 →</p>
         </Link>
+        <Link
+          href="/creator/performance"
+          className="group rounded-xl border border-gray-200 p-6 transition hover:border-gray-400 hover:shadow-sm"
+        >
+          <h2 className="mb-1 text-lg font-semibold text-gray-900">성과 대시보드</h2>
+          <p className="text-sm text-gray-500">SNS 조회수·좋아요·댓글 입력 및 확인</p>
+          <p className="mt-4 text-sm text-primary group-hover:underline">보러 가기 →</p>
+        </Link>
       </div>
 
       {/* 내 지원 현황 */}

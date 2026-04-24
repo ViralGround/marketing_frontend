@@ -56,12 +56,20 @@ export default function Header() {
                 </Link>
               )}
               {user.role === "ADMIN" && (
-                <Link
-                  href="/admin/members"
-                  className="text-gray-600 dark:text-gray-400 hover:text-primary"
-                >
-                  관리자
-                </Link>
+                <>
+                  <Link
+                    href="/admin/dashboard"
+                    className="text-gray-600 dark:text-gray-400 hover:text-primary"
+                  >
+                    대시보드
+                  </Link>
+                  <Link
+                    href="/admin/members"
+                    className="text-gray-600 dark:text-gray-400 hover:text-primary"
+                  >
+                    회원 관리
+                  </Link>
+                </>
               )}
               <span className="text-sm text-gray-500">
                 {user.name} ({ROLE_LABEL[user.role]})

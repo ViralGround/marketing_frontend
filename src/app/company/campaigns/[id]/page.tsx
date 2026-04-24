@@ -4,6 +4,9 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import api from "@/lib/api";
+import SubmissionTimeline, {
+  type SubmissionHistoryItem,
+} from "@/components/submission/SubmissionTimeline";
 
 type CampaignStatus = "DRAFT" | "OPEN" | "CLOSED";
 type EscrowStatus =
@@ -14,18 +17,28 @@ type EscrowStatus =
   | "PARTIALLY_RELEASED"
   | "REFUNDED";
 
-type AppStatus = "PENDING" | "APPROVED" | "REJECTED" | "SUBMITTED" | "SETTLED";
+type AppStatus =
+  | "PENDING"
+  | "APPROVED"
+  | "REJECTED"
+  | "SUBMITTED"
+  | "CHANGES_REQUESTED"
+  | "SETTLED";
 
 interface ApplicationItem {
   id: number;
   status: AppStatus;
   message: string | null;
   submissionUrl: string | null;
+  videoFileKey: string | null;
+  resubmissionCount: number | null;
+  reviewComment: string | null;
   rewardPaidAmount: number | null;
   appliedAt: string;
   submittedAt: string | null;
   settledAt: string | null;
   creator: { id: number; name: string; email: string };
+  submissions: SubmissionHistoryItem[];
 }
 
 interface Detail {
@@ -68,6 +81,7 @@ const APP_LABEL: Record<AppStatus, string> = {
   APPROVED: "선정 / 제작 대기",
   REJECTED: "탈락",
   SUBMITTED: "제출 완료",
+  CHANGES_REQUESTED: "수정 요청 중",
   SETTLED: "정산 완료",
 };
 
@@ -156,8 +170,13 @@ export default function CompanyCampaignDetailPage() {
 
   const reviewApplication = async (
     appId: number,
-    action: "APPROVE" | "REJECT" | "SETTLE" | "REQUEST_REREVIEW",
-    opts?: { rewardPaidAmount?: number }
+    action:
+      | "APPROVE"
+      | "REJECT"
+      | "APPROVE_VIDEO"
+      | "REQUEST_CHANGES"
+      | "REJECT_VIDEO",
+    opts?: { rewardPaidAmount?: number; reviewComment?: string }
   ) => {
     setRowActingId(appId);
     setMessage("");
@@ -179,6 +198,9 @@ export default function CompanyCampaignDetailPage() {
       setRowActingId(null);
     }
   };
+
+  const [changesModal, setChangesModal] = useState<{ appId: number } | null>(null);
+  const [changesComment, setChangesComment] = useState("");
 
   const canEdit =
     data &&
@@ -356,20 +378,34 @@ export default function CompanyCampaignDetailPage() {
                         지원 메시지: {a.message}
                       </p>
                     )}
-                    {a.submissionUrl && (
+                    {!a.videoFileKey && a.submissionUrl && isSafeExternalLink(a.submissionUrl) && (
                       <a
                         href={a.submissionUrl}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="mt-2 inline-block text-xs text-blue-600 underline"
                       >
-                        제출물 보기 →
+                        외부 링크 보기 (레거시) →
                       </a>
+                    )}
+                    {a.status === "CHANGES_REQUESTED" && a.reviewComment && (
+                      <div className="mt-2 rounded bg-orange-50 p-2 text-xs text-orange-800">
+                        <span className="font-semibold">수정 요청 사유:</span> {a.reviewComment}
+                      </div>
                     )}
                     {a.rewardPaidAmount != null && (
                       <p className="mt-1 text-xs text-gray-500">
                         지급: {a.rewardPaidAmount.toLocaleString()}원
                       </p>
+                    )}
+                    {a.submissions.length > 0 && (
+                      <div className="mt-3">
+                        <p className="mb-2 text-xs font-semibold text-gray-500">
+                          제출 이력
+                          {(a.resubmissionCount ?? 0) > 0 && ` (재제출 ${a.resubmissionCount}회)`}
+                        </p>
+                        <SubmissionTimeline submissions={a.submissions} />
+                      </div>
                     )}
                   </div>
                   <div className="flex flex-wrap gap-2">
@@ -395,19 +431,37 @@ export default function CompanyCampaignDetailPage() {
                       <>
                         <button
                           disabled={rowActingId === a.id}
-                          onClick={() => reviewApplication(a.id, "SETTLE")}
+                          onClick={() => reviewApplication(a.id, "APPROVE_VIDEO")}
                           className="rounded bg-green-600 px-3 py-1 text-xs text-white hover:bg-green-700 disabled:opacity-50"
                         >
                           승인 · 정산
                         </button>
                         <button
                           disabled={rowActingId === a.id}
-                          onClick={() => reviewApplication(a.id, "REQUEST_REREVIEW")}
+                          onClick={() => {
+                            setChangesModal({ appId: a.id });
+                            setChangesComment("");
+                          }}
                           className="rounded border border-amber-300 px-3 py-1 text-xs text-amber-700 hover:bg-amber-50 disabled:opacity-50"
                         >
-                          재제출 요청
+                          수정 요청
+                        </button>
+                        <button
+                          disabled={rowActingId === a.id}
+                          onClick={() => {
+                            if (!confirm("이 영상을 최종 거절하시겠어요?")) return;
+                            reviewApplication(a.id, "REJECT_VIDEO");
+                          }}
+                          className="rounded border border-red-300 px-3 py-1 text-xs text-red-700 hover:bg-red-50 disabled:opacity-50"
+                        >
+                          거절
                         </button>
                       </>
+                    )}
+                    {a.status === "CHANGES_REQUESTED" && (
+                      <span className="rounded bg-orange-100 px-3 py-1 text-xs text-orange-700">
+                        크리에이터 재제출 대기 중
+                      </span>
                     )}
                   </div>
                 </div>
@@ -416,6 +470,55 @@ export default function CompanyCampaignDetailPage() {
           </ul>
         )}
       </section>
+
+      {changesModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="w-full max-w-md rounded-xl bg-white p-6">
+            <h3 className="mb-1 text-lg font-semibold text-gray-900">수정 요청 사유</h3>
+            <p className="mb-4 text-sm text-gray-500">
+              크리에이터에게 전달되는 피드백입니다. 무엇을 어떻게 수정해야 할지 구체적으로 작성해주세요.
+            </p>
+            <textarea
+              value={changesComment}
+              onChange={(e) => setChangesComment(e.target.value)}
+              rows={4}
+              placeholder="예: 로고 노출 시간이 3초 미만입니다. 중반부 이후에도 3초 이상 노출되도록 편집해주세요."
+              className="block w-full rounded border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-gray-500 focus:outline-none"
+            />
+            <div className="mt-4 flex justify-end gap-2">
+              <button
+                onClick={() => setChangesModal(null)}
+                className="rounded border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50"
+              >
+                취소
+              </button>
+              <button
+                onClick={async () => {
+                  if (!changesModal || !changesComment.trim()) return;
+                  await reviewApplication(changesModal.appId, "REQUEST_CHANGES", {
+                    reviewComment: changesComment.trim(),
+                  });
+                  setChangesModal(null);
+                }}
+                disabled={!changesComment.trim() || rowActingId === changesModal.appId}
+                className="rounded bg-amber-600 px-3 py-1.5 text-sm text-white hover:bg-amber-700 disabled:opacity-50"
+              >
+                수정 요청 보내기
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
+}
+
+/** submissionUrl 렌더링 전 프로토콜 검증. javascript:/data: 차단. */
+function isSafeExternalLink(raw: string): boolean {
+  try {
+    const u = new URL(raw);
+    return u.protocol === "http:" || u.protocol === "https:";
+  } catch {
+    return false;
+  }
 }

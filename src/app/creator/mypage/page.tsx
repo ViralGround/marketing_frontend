@@ -10,7 +10,13 @@ import StatCards from "@/components/creator/StatCards";
 import ApplicationStatusBadge from "@/components/campaign/ApplicationStatusBadge";
 import VideoUploader from "@/components/submission/VideoUploader";
 
-type AppStatus = "PENDING" | "APPROVED" | "REJECTED" | "SUBMITTED" | "SETTLED";
+type AppStatus =
+  | "PENDING"
+  | "APPROVED"
+  | "REJECTED"
+  | "SUBMITTED"
+  | "CHANGES_REQUESTED"
+  | "SETTLED";
 type Filter = "ALL" | AppStatus;
 
 interface Stats {
@@ -24,6 +30,8 @@ interface ApplicationItem {
   status: AppStatus;
   submissionUrl: string | null;
   videoFileKey?: string | null;
+  resubmissionCount?: number | null;
+  reviewComment?: string | null;
   rewardPaidAmount: number | null;
   appliedAt: string;
   settledAt: string | null;
@@ -41,6 +49,7 @@ const FILTER_LABEL: Record<Filter, string> = {
   PENDING: "대기",
   APPROVED: "참여",
   SUBMITTED: "제출",
+  CHANGES_REQUESTED: "수정요청",
   SETTLED: "정산",
   REJECTED: "거절",
 };
@@ -166,7 +175,7 @@ export default function CreatorMyPage() {
       <section>
         <h2 className="mb-3 text-lg font-semibold text-gray-900">내 지원 현황</h2>
         <div className="mb-4 flex flex-wrap gap-1">
-          {(["ALL", "PENDING", "APPROVED", "SUBMITTED", "SETTLED", "REJECTED"] as Filter[]).map(
+          {(["ALL", "PENDING", "APPROVED", "SUBMITTED", "CHANGES_REQUESTED", "SETTLED", "REJECTED"] as Filter[]).map(
             (f) => (
               <button
                 key={f}
@@ -234,29 +243,44 @@ export default function CreatorMyPage() {
                     )}
                   </div>
                 </div>
-                <div className="flex gap-2">
-                  {(a.status === "APPROVED" || a.status === "SUBMITTED") && (
-                    <button
-                      onClick={() => openSubmitModal(a.id, a.campaign.title)}
-                      className="rounded bg-gray-900 px-3 py-1.5 text-xs text-white hover:bg-gray-700"
-                    >
-                      {a.status === "APPROVED" ? "영상 업로드" : "영상 재업로드"}
-                    </button>
-                  )}
-                  {a.videoFileKey && (
-                    <span className="rounded bg-gray-100 px-3 py-1.5 text-xs text-gray-700">
-                      영상 제출됨
-                    </span>
-                  )}
-                  {!a.videoFileKey && a.submissionUrl && isSafeExternalLink(a.submissionUrl) && (
-                    <a
-                      href={a.submissionUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="rounded border border-gray-300 px-3 py-1.5 text-xs text-gray-700 hover:bg-gray-50"
-                    >
-                      외부 링크 보기
-                    </a>
+                <div className="flex flex-col items-end gap-2">
+                  <div className="flex gap-2">
+                    {(a.status === "APPROVED" || a.status === "SUBMITTED") && (
+                      <button
+                        onClick={() => openSubmitModal(a.id, a.campaign.title)}
+                        className="rounded bg-gray-900 px-3 py-1.5 text-xs text-white hover:bg-gray-700"
+                      >
+                        {a.status === "APPROVED" ? "영상 업로드" : "영상 재업로드"}
+                      </button>
+                    )}
+                    {a.status === "CHANGES_REQUESTED" && (
+                      <button
+                        onClick={() => openSubmitModal(a.id, a.campaign.title)}
+                        className="rounded bg-amber-600 px-3 py-1.5 text-xs text-white hover:bg-amber-700"
+                      >
+                        재제출
+                      </button>
+                    )}
+                    {a.videoFileKey && a.status !== "CHANGES_REQUESTED" && (
+                      <span className="rounded bg-gray-100 px-3 py-1.5 text-xs text-gray-700">
+                        영상 제출됨
+                      </span>
+                    )}
+                    {!a.videoFileKey && a.submissionUrl && isSafeExternalLink(a.submissionUrl) && (
+                      <a
+                        href={a.submissionUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="rounded border border-gray-300 px-3 py-1.5 text-xs text-gray-700 hover:bg-gray-50"
+                      >
+                        외부 링크 보기
+                      </a>
+                    )}
+                  </div>
+                  {a.status === "CHANGES_REQUESTED" && a.reviewComment && (
+                    <p className="max-w-xs rounded bg-orange-50 px-3 py-1.5 text-xs text-orange-800">
+                      <span className="font-semibold">수정 요청:</span> {a.reviewComment}
+                    </p>
                   )}
                 </div>
               </div>

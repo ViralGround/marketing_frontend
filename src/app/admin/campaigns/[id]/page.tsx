@@ -7,9 +7,16 @@ import api from "@/lib/api";
 import CampaignForm from "@/components/admin/CampaignForm";
 import ApplicationStatusBadge from "@/components/campaign/ApplicationStatusBadge";
 import AlertModal from "@/components/ui/AlertModal";
+import SubmissionTimeline from "@/components/submission/SubmissionTimeline";
 
 type CampaignStatus = "OPEN" | "CLOSED";
-type AppStatus = "PENDING" | "APPROVED" | "REJECTED" | "SUBMITTED" | "SETTLED";
+type AppStatus =
+  | "PENDING"
+  | "APPROVED"
+  | "REJECTED"
+  | "SUBMITTED"
+  | "CHANGES_REQUESTED"
+  | "SETTLED";
 type EscrowStatus =
   | "NONE"
   | "PENDING_DEPOSIT"
@@ -67,11 +74,15 @@ interface Application {
   status: AppStatus;
   message: string | null;
   submissionUrl: string | null;
+  videoFileKey: string | null;
+  resubmissionCount: number | null;
+  reviewComment: string | null;
   rewardPaidAmount: number | null;
   appliedAt: string;
   reviewedAt: string | null;
   submittedAt: string | null;
   settledAt: string | null;
+  submissions: import("@/components/submission/SubmissionTimeline").SubmissionHistoryItem[];
   creator: {
     id: number;
     email: string;
@@ -157,10 +168,10 @@ export default function AdminCampaignDetailPage() {
 
   const handleApplicationAction = async (
     appId: number,
-    status: "APPROVED" | "REJECTED" | "SETTLED",
+    status: "APPROVED" | "REJECTED" | "SETTLED" | "CHANGES_REQUESTED",
     appCreatorName: string,
   ) => {
-    const payload: { status: string; rewardPaidAmount?: number } = { status };
+    const payload: { status: string; rewardPaidAmount?: number; reviewComment?: string } = { status };
     if (status === "SETTLED") {
       const input = prompt(`"${appCreatorName}" 에게 지급할 금액을 입력하세요 (원)`, String(campaign?.rewardAmount ?? 0));
       if (input === null) return;
@@ -170,6 +181,10 @@ export default function AdminCampaignDetailPage() {
         return;
       }
       payload.rewardPaidAmount = amount;
+    } else if (status === "CHANGES_REQUESTED") {
+      const comment = prompt(`"${appCreatorName}" 에게 수정 요청 사유를 입력하세요`, "");
+      if (comment === null || !comment.trim()) return;
+      payload.reviewComment = comment.trim();
     } else {
       const label = status === "APPROVED" ? "승인" : "거절";
       if (!confirm(`"${appCreatorName}" 의 지원을 ${label}하시겠습니까?`)) return;
@@ -405,9 +420,9 @@ export default function AdminCampaignDetailPage() {
                   </div>
                 )}
 
-                {app.submissionUrl && (
+                {!app.videoFileKey && app.submissionUrl && (
                   <div className="mb-3 text-sm">
-                    <span className="text-gray-500">제출 URL: </span>
+                    <span className="text-gray-500">제출 URL (레거시): </span>
                     {isSafeExternalLink(app.submissionUrl) ? (
                       <a
                         href={app.submissionUrl}
@@ -420,6 +435,20 @@ export default function AdminCampaignDetailPage() {
                     ) : (
                       <span className="text-red-600">유효하지 않은 링크</span>
                     )}
+                  </div>
+                )}
+                {app.status === "CHANGES_REQUESTED" && app.reviewComment && (
+                  <div className="mb-3 rounded bg-orange-50 p-2 text-xs text-orange-800">
+                    <span className="font-semibold">수정 요청 사유:</span> {app.reviewComment}
+                  </div>
+                )}
+                {app.submissions && app.submissions.length > 0 && (
+                  <div className="mb-3">
+                    <p className="mb-2 text-xs font-semibold text-gray-500">
+                      제출 이력
+                      {(app.resubmissionCount ?? 0) > 0 && ` (재제출 ${app.resubmissionCount}회)`}
+                    </p>
+                    <SubmissionTimeline submissions={app.submissions} />
                   </div>
                 )}
 
@@ -447,12 +476,31 @@ export default function AdminCampaignDetailPage() {
                     </>
                   )}
                   {app.status === "SUBMITTED" && (
-                    <button
-                      onClick={() => handleApplicationAction(app.id, "SETTLED", app.creator.name)}
-                      className="rounded bg-purple-600 px-3 py-1.5 text-xs text-white hover:bg-purple-700"
-                    >
-                      정산 완료 처리
-                    </button>
+                    <>
+                      <button
+                        onClick={() => handleApplicationAction(app.id, "SETTLED", app.creator.name)}
+                        className="rounded bg-purple-600 px-3 py-1.5 text-xs text-white hover:bg-purple-700"
+                      >
+                        승인·정산
+                      </button>
+                      <button
+                        onClick={() => handleApplicationAction(app.id, "CHANGES_REQUESTED", app.creator.name)}
+                        className="rounded border border-amber-300 px-3 py-1.5 text-xs text-amber-700 hover:bg-amber-50"
+                      >
+                        수정 요청
+                      </button>
+                      <button
+                        onClick={() => handleApplicationAction(app.id, "REJECTED", app.creator.name)}
+                        className="rounded border border-red-300 px-3 py-1.5 text-xs text-red-600 hover:bg-red-50"
+                      >
+                        거절
+                      </button>
+                    </>
+                  )}
+                  {app.status === "CHANGES_REQUESTED" && (
+                    <span className="rounded bg-orange-100 px-3 py-1.5 text-xs text-orange-700">
+                      재제출 대기 중
+                    </span>
                   )}
                 </div>
               </div>

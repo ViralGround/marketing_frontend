@@ -17,7 +17,16 @@ interface PortfolioItem {
 
 interface Portfolio {
   creator: { id: number; name: string; joinedAt: string };
-  summary: { totalCompleted: number; reviewCount: number; averageRating: number };
+  summary: {
+    totalCompleted: number;
+    reviewCount: number;
+    averageRating: number;
+    totalViews: number;
+    totalLikes: number;
+    totalComments: number;
+    metricSampleSize: number;
+    averageViews: number;
+  };
   items: PortfolioItem[];
 }
 
@@ -57,7 +66,7 @@ export default function CreatorPortfolioPage() {
         </p>
       </div>
 
-      <div className="mb-10 grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <div className="mb-10 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
         <SummaryCard
           label="완료한 캠페인"
           value={`${portfolio.summary.totalCompleted}건`}
@@ -69,6 +78,22 @@ export default function CreatorPortfolioPage() {
         <SummaryCard
           label="평균 평점"
           value={portfolio.summary.reviewCount === 0 ? "-" : `★ ${portfolio.summary.averageRating.toFixed(1)}`}
+        />
+        <SummaryCard
+          label="평균 조회수"
+          value={
+            portfolio.summary.metricSampleSize === 0
+              ? "-"
+              : portfolio.summary.averageViews.toLocaleString("ko-KR")
+          }
+        />
+        <SummaryCard
+          label="누적 조회수"
+          value={portfolio.summary.totalViews.toLocaleString("ko-KR")}
+        />
+        <SummaryCard
+          label="누적 좋아요"
+          value={portfolio.summary.totalLikes.toLocaleString("ko-KR")}
         />
       </div>
 

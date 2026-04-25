@@ -380,10 +380,21 @@ export default function CompanyCampaignDetailPage() {
                 <div className="flex items-start justify-between gap-4">
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="font-medium text-gray-900">{a.creator.name}</span>
+                      <Link
+                        href={`/creators/${a.creator.id}`}
+                        className="font-medium text-gray-900 hover:text-primary hover:underline"
+                      >
+                        {a.creator.name}
+                      </Link>
                       <span className="rounded bg-gray-100 px-2 py-0.5 text-xs text-gray-700">
                         {APP_LABEL[a.status]}
                       </span>
+                      <Link
+                        href={`/creators/${a.creator.id}`}
+                        className="text-xs text-primary hover:underline"
+                      >
+                        상세 프로필 →
+                      </Link>
                     </div>
                     <p className="mt-0.5 text-xs text-gray-500">{a.creator.email}</p>
                     {a.message && (
@@ -477,20 +488,12 @@ export default function CompanyCampaignDetailPage() {
                       </span>
                     )}
                     {a.status === "SETTLED" && (
-                      <>
-                        <button
-                          onClick={() => setReviewModal({ appId: a.id, creatorName: a.creator.name })}
-                          className="rounded border border-gray-300 px-3 py-1 text-xs text-gray-700 hover:bg-gray-50"
-                        >
-                          리뷰 작성
-                        </button>
-                        <Link
-                          href={`/creators/${a.creator.id}`}
-                          className="rounded border border-gray-300 px-3 py-1 text-xs text-gray-700 hover:bg-gray-50"
-                        >
-                          프로필 보기
-                        </Link>
-                      </>
+                      <button
+                        onClick={() => setReviewModal({ appId: a.id, creatorName: a.creator.name })}
+                        className="rounded border border-gray-300 px-3 py-1 text-xs text-gray-700 hover:bg-gray-50"
+                      >
+                        리뷰 작성
+                      </button>
                     )}
                   </div>
                 </div>

@@ -5,6 +5,7 @@ import { useAuthStore } from "@/store/useAuthStore";
 import { removeTokens } from "@/lib/auth";
 import { useRouter } from "next/navigation";
 import type { UserRole } from "@/types";
+import ThemeToggle from "@/components/ui/ThemeToggle";
 
 const ROLE_LABEL: Record<UserRole, string> = {
   ADMIN: "관리자",
@@ -80,14 +81,18 @@ export default function Header() {
               >
                 로그아웃
               </button>
+              <ThemeToggle />
             </>
           ) : (
-            <Link
-              href="/login"
-              className="rounded-lg bg-primary px-4 py-2 text-sm text-white hover:bg-primary-dark"
-            >
-              로그인
-            </Link>
+            <>
+              <Link
+                href="/login"
+                className="rounded-lg bg-primary px-4 py-2 text-sm text-white hover:bg-primary-dark"
+              >
+                로그인
+              </Link>
+              <ThemeToggle />
+            </>
           )}
         </nav>
       </div>

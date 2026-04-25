@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
@@ -22,16 +24,16 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-    --primary: #A78BFA;
-    --primary-light: #C4B5FD;
-    --primary-dark: #7C3AED;
-    --primary-bg: #1a1025;
-    --section-alt: #111111;
-  }
+/* 다크모드는 layout.tsx 의 pre-hydration 스크립트가 OS 설정과 localStorage 를
+   읽어 <html> 에 .dark 를 부착한다. @media 조건은 사용하지 않는다. */
+html.dark {
+  --background: #0a0a0a;
+  --foreground: #ededed;
+  --primary: #A78BFA;
+  --primary-light: #C4B5FD;
+  --primary-dark: #7C3AED;
+  --primary-bg: #1a1025;
+  --section-alt: #111111;
 }
 
 body {

@@ -44,6 +44,15 @@ export default function RootLayout({
       lang="ko"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
+      <head>
+        {/* hydration 전에 동기 실행. localStorage 우선, 없으면 OS 설정. <html.dark> 를
+            먼저 부착해 라이트→다크 전환 시 발생하는 흰 깜빡임을 막는다. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var s=localStorage.getItem('theme');var p=window.matchMedia('(prefers-color-scheme: dark)').matches;var t=s||(p?'dark':'light');if(t==='dark')document.documentElement.classList.add('dark');}catch(e){}})();`,
+          }}
+        />
+      </head>
       <body className="min-h-full flex flex-col">
         <AuthInit />
         <ConditionalHeader />

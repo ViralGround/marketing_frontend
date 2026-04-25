@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/useAuthStore";
 import { removeTokens } from "@/lib/auth";
+import ThemeToggle from "@/components/ui/ThemeToggle";
 
 export default function LandingHeader() {
   const { user, isAuthenticated, logout } = useAuthStore();
@@ -50,6 +51,7 @@ export default function LandingHeader() {
               >
                 로그아웃
               </button>
+              <ThemeToggle />
             </>
           ) : (
             <>
@@ -71,6 +73,7 @@ export default function LandingHeader() {
               >
                 시작하기
               </Link>
+              <ThemeToggle />
             </>
           )}
         </nav>

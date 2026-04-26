@@ -22,17 +22,17 @@ const ROLE_LABEL: Record<ReviewAuthorRole, string> = {
 
 export default function ReviewList({ reviews }: { reviews: ReviewItem[] }) {
   if (reviews.length === 0) {
-    return <p className="text-sm text-gray-400">아직 작성된 리뷰가 없습니다.</p>;
+    return <p className="text-sm text-faint">아직 작성된 리뷰가 없습니다.</p>;
   }
 
   return (
     <ul className="space-y-3">
       {reviews.map((r) => (
-        <li key={r.id} className="rounded border border-gray-200 p-4">
+        <li key={r.id} className="rounded border border-line p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="font-medium text-gray-900">{r.authorName}</span>
-              <span className="rounded bg-gray-100 px-2 py-0.5 text-xs text-gray-600">
+              <span className="font-medium text-foreground">{r.authorName}</span>
+              <span className="rounded bg-surface-chip px-2 py-0.5 text-xs text-muted">
                 {ROLE_LABEL[r.authorRole]}
               </span>
               <span className="text-sm text-yellow-500">
@@ -40,12 +40,12 @@ export default function ReviewList({ reviews }: { reviews: ReviewItem[] }) {
                 <span className="text-gray-300">{"★".repeat(5 - r.rating)}</span>
               </span>
             </div>
-            <span className="text-xs text-gray-400">
+            <span className="text-xs text-faint">
               {new Date(r.createdAt).toLocaleDateString("ko-KR")}
             </span>
           </div>
           {r.comment && (
-            <p className="mt-2 whitespace-pre-wrap text-sm text-gray-700">{r.comment}</p>
+            <p className="mt-2 whitespace-pre-wrap text-sm text-content-soft">{r.comment}</p>
           )}
         </li>
       ))}

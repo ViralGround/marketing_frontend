@@ -34,7 +34,7 @@ function FAQItem({ q, a }: { q: string; a: string }) {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="border-b border-gray-100 dark:border-gray-800">
+    <div className="border-b border-line">
       <button
         onClick={() => setOpen(!open)}
         className="flex w-full items-center justify-between py-5 text-left"
@@ -53,7 +53,7 @@ function FAQItem({ q, a }: { q: string; a: string }) {
           open ? "max-h-40 pb-5" : "max-h-0"
         }`}
       >
-        <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
+        <p className="text-sm text-muted leading-relaxed">
           {a}
         </p>
       </div>
@@ -70,7 +70,7 @@ export default function FAQSection() {
         <h2 className="text-center text-3xl font-bold text-foreground md:text-4xl">
           자주 묻는 질문
         </h2>
-        <p className="mt-4 text-center text-gray-500 dark:text-gray-400">
+        <p className="mt-4 text-center text-muted">
           궁금한 점이 있으신가요?
         </p>
 

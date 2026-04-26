@@ -58,8 +58,8 @@ export default function CompanyCampaignsPage() {
     <div className="mx-auto max-w-5xl">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">내 캠페인</h1>
-          <p className="mt-1 text-sm text-gray-500">
+          <h1 className="text-2xl font-bold text-foreground">내 캠페인</h1>
+          <p className="mt-1 text-sm text-muted">
             등록한 캠페인과 예치금 상태를 확인하세요.
           </p>
         </div>
@@ -72,15 +72,15 @@ export default function CompanyCampaignsPage() {
       </div>
 
       {loading ? (
-        <p className="mt-8 text-gray-500">불러오는 중...</p>
+        <p className="mt-8 text-muted">불러오는 중...</p>
       ) : campaigns.length === 0 ? (
-        <div className="mt-8 rounded-xl border border-dashed border-gray-300 p-12 text-center text-gray-500">
+        <div className="mt-8 rounded-xl border border-dashed border-line-strong p-12 text-center text-muted">
           아직 등록한 캠페인이 없습니다.
         </div>
       ) : (
-        <div className="mt-6 overflow-hidden rounded-lg border border-gray-200">
+        <div className="mt-6 overflow-hidden rounded-lg border border-line">
           <table className="w-full text-sm">
-            <thead className="bg-gray-50 text-left text-xs text-gray-500">
+            <thead className="bg-surface-muted text-left text-xs text-muted">
               <tr>
                 <th className="px-4 py-3">제목</th>
                 <th className="px-4 py-3">보상 × 모집</th>
@@ -90,33 +90,33 @@ export default function CompanyCampaignsPage() {
                 <th className="px-4 py-3">지원</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
+            <tbody className="divide-y divide-line">
               {campaigns.map((c) => (
-                <tr key={c.id} className="hover:bg-gray-50">
+                <tr key={c.id} className="hover:bg-surface-muted">
                   <td className="px-4 py-3">
                     <Link
                       href={`/company/campaigns/${c.id}`}
-                      className="font-medium text-gray-900 hover:underline"
+                      className="font-medium text-foreground hover:underline"
                     >
                       {c.title}
                     </Link>
-                    <p className="text-xs text-gray-500">{c.brandName}</p>
+                    <p className="text-xs text-muted">{c.brandName}</p>
                   </td>
-                  <td className="px-4 py-3 text-gray-700">
+                  <td className="px-4 py-3 text-content-soft">
                     {c.rewardAmount.toLocaleString()}원 × {c.maxParticipants}명
                   </td>
-                  <td className="px-4 py-3 font-medium text-gray-900">
+                  <td className="px-4 py-3 font-medium text-foreground">
                     {c.totalBudget.toLocaleString()}원
                   </td>
                   <td className="px-4 py-3">
-                    <span className="inline-flex rounded bg-gray-100 px-2 py-0.5 text-xs text-gray-700">
+                    <span className="inline-flex rounded bg-surface-chip px-2 py-0.5 text-xs text-content-soft">
                       {ESCROW_LABEL[c.escrowStatus]}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-gray-700">
+                  <td className="px-4 py-3 text-content-soft">
                     {STATUS_LABEL[c.status]}
                   </td>
-                  <td className="px-4 py-3 text-gray-700">
+                  <td className="px-4 py-3 text-content-soft">
                     {c.applicationCount}명
                   </td>
                 </tr>

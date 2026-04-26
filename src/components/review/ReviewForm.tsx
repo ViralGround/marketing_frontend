@@ -33,7 +33,7 @@ export default function ReviewForm({ applicationId, onSubmitted, onCancel }: Pro
 
   return (
     <div>
-      <label className="block text-sm text-gray-700">평점</label>
+      <label className="block text-sm text-content-soft">평점</label>
       <div className="mt-1 flex gap-1">
         {[1, 2, 3, 4, 5].map((n) => (
           <button
@@ -43,17 +43,17 @@ export default function ReviewForm({ applicationId, onSubmitted, onCancel }: Pro
             className={`h-9 w-9 rounded text-lg transition ${
               n <= rating
                 ? "bg-yellow-400 text-white"
-                : "border border-gray-300 text-gray-400 hover:bg-gray-50"
+                : "border border-line-strong text-faint hover:bg-surface-muted"
             }`}
             aria-label={`${n}점`}
           >
             ★
           </button>
         ))}
-        <span className="ml-2 self-center text-sm text-gray-600">{rating}점</span>
+        <span className="ml-2 self-center text-sm text-muted">{rating}점</span>
       </div>
 
-      <label htmlFor="review-comment" className="mt-4 block text-sm text-gray-700">
+      <label htmlFor="review-comment" className="mt-4 block text-sm text-content-soft">
         코멘트 (선택)
       </label>
       <textarea
@@ -62,7 +62,7 @@ export default function ReviewForm({ applicationId, onSubmitted, onCancel }: Pro
         onChange={(e) => setComment(e.target.value)}
         rows={4}
         placeholder="협업 경험을 간단히 남겨주세요."
-        className="mt-1 block w-full rounded border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-gray-500 focus:outline-none"
+        className="mt-1 block w-full rounded border border-line-strong px-3 py-2 text-sm text-foreground placeholder-faint focus:border-gray-500 focus:outline-none"
       />
 
       {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
@@ -72,7 +72,7 @@ export default function ReviewForm({ applicationId, onSubmitted, onCancel }: Pro
           type="button"
           onClick={onCancel}
           disabled={loading}
-          className="rounded border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+          className="rounded border border-line-strong px-3 py-1.5 text-sm text-content-soft hover:bg-surface-muted disabled:opacity-50"
         >
           취소
         </button>

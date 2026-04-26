@@ -53,12 +53,12 @@ export default function NewCampaignPage() {
   };
 
   const inputCls =
-    "mt-1 block w-full rounded border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-gray-500 focus:outline-none";
+    "mt-1 block w-full rounded border border-line-strong px-3 py-2 text-foreground placeholder-faint focus:border-gray-500 focus:outline-none";
 
   return (
     <div className="mx-auto max-w-2xl">
-      <h1 className="text-2xl font-bold text-gray-900">캠페인 등록</h1>
-      <p className="mt-1 text-sm text-gray-500">
+      <h1 className="text-2xl font-bold text-foreground">캠페인 등록</h1>
+      <p className="mt-1 text-sm text-muted">
         등록 후 예치금을 입금하면 크리에이터에게 공개됩니다.
       </p>
 
@@ -69,7 +69,7 @@ export default function NewCampaignPage() {
 
         <section className="space-y-4">
           <div>
-            <label htmlFor="title" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="title" className="block text-sm font-medium text-content-soft">
               캠페인 제목
             </label>
             <input
@@ -82,7 +82,7 @@ export default function NewCampaignPage() {
             />
           </div>
           <div>
-            <label htmlFor="brandName" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="brandName" className="block text-sm font-medium text-content-soft">
               브랜드명
             </label>
             <input
@@ -95,7 +95,7 @@ export default function NewCampaignPage() {
             />
           </div>
           <div>
-            <label htmlFor="description" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="description" className="block text-sm font-medium text-content-soft">
               캠페인 설명
             </label>
             <textarea
@@ -108,8 +108,8 @@ export default function NewCampaignPage() {
             />
           </div>
           <div>
-            <label htmlFor="requirements" className="block text-sm font-medium text-gray-700">
-              제출 요구사항 <span className="text-gray-400">(선택)</span>
+            <label htmlFor="requirements" className="block text-sm font-medium text-content-soft">
+              제출 요구사항 <span className="text-faint">(선택)</span>
             </label>
             <textarea
               id="requirements"
@@ -122,11 +122,11 @@ export default function NewCampaignPage() {
           </div>
         </section>
 
-        <section className="space-y-4 border-t border-gray-200 pt-6">
-          <h2 className="text-sm font-semibold text-gray-500">보상 · 모집</h2>
+        <section className="space-y-4 border-t border-line pt-6">
+          <h2 className="text-sm font-semibold text-muted">보상 · 모집</h2>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label htmlFor="rewardAmount" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="rewardAmount" className="block text-sm font-medium text-content-soft">
                 1인당 보상 (원)
               </label>
               <input
@@ -140,7 +140,7 @@ export default function NewCampaignPage() {
               />
             </div>
             <div>
-              <label htmlFor="maxParticipants" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="maxParticipants" className="block text-sm font-medium text-content-soft">
                 모집 인원
               </label>
               <input
@@ -154,18 +154,18 @@ export default function NewCampaignPage() {
               />
             </div>
           </div>
-          <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
-            <p className="text-xs text-gray-500">예치 필요 금액 (총 예산)</p>
-            <p className="mt-1 text-xl font-bold text-gray-900">
+          <div className="rounded-lg border border-line bg-surface-muted p-4">
+            <p className="text-xs text-muted">예치 필요 금액 (총 예산)</p>
+            <p className="mt-1 text-xl font-bold text-foreground">
               {totalBudget.toLocaleString()}원
             </p>
-            <p className="mt-2 text-xs text-gray-500">
+            <p className="mt-2 text-xs text-muted">
               등록 직후 캠페인은 <span className="font-semibold">입금 대기</span> 상태가 되며, 예치금 입금 확인 후 모집이 시작됩니다.
             </p>
           </div>
           <div>
-            <label htmlFor="deadline" className="block text-sm font-medium text-gray-700">
-              모집 마감일 <span className="text-gray-400">(선택)</span>
+            <label htmlFor="deadline" className="block text-sm font-medium text-content-soft">
+              모집 마감일 <span className="text-faint">(선택)</span>
             </label>
             <input
               id="deadline"
@@ -176,8 +176,8 @@ export default function NewCampaignPage() {
             />
           </div>
           <div>
-            <label htmlFor="thumbnailUrl" className="block text-sm font-medium text-gray-700">
-              썸네일 URL <span className="text-gray-400">(선택)</span>
+            <label htmlFor="thumbnailUrl" className="block text-sm font-medium text-content-soft">
+              썸네일 URL <span className="text-faint">(선택)</span>
             </label>
             <input
               id="thumbnailUrl"

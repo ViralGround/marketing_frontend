@@ -32,7 +32,7 @@ export default function Header() {
   const logoHref = isAuthenticated && user ? ROLE_HOME[user.role] : "/";
 
   return (
-    <header className="border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-[#0a0a0a]">
+    <header className="border-b border-line bg-surface">
       <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4">
         <Link href={logoHref} className="text-xl font-bold text-primary">
           Viral Ground
@@ -43,7 +43,7 @@ export default function Header() {
               {user.role === "CREATOR" && (
                 <Link
                   href="/creator/mypage"
-                  className="text-gray-600 dark:text-gray-400 hover:text-primary"
+                  className="text-muted hover:text-primary"
                 >
                   마이페이지
                 </Link>
@@ -51,7 +51,7 @@ export default function Header() {
               {user.role === "COMPANY" && (
                 <Link
                   href="/company/dashboard"
-                  className="text-gray-600 dark:text-gray-400 hover:text-primary"
+                  className="text-muted hover:text-primary"
                 >
                   마이페이지
                 </Link>
@@ -60,19 +60,19 @@ export default function Header() {
                 <>
                   <Link
                     href="/admin/dashboard"
-                    className="text-gray-600 dark:text-gray-400 hover:text-primary"
+                    className="text-muted hover:text-primary"
                   >
                     대시보드
                   </Link>
                   <Link
                     href="/admin/members"
-                    className="text-gray-600 dark:text-gray-400 hover:text-primary"
+                    className="text-muted hover:text-primary"
                   >
                     회원 관리
                   </Link>
                 </>
               )}
-              <span className="text-sm text-gray-500">
+              <span className="text-sm text-muted">
                 {user.name} ({ROLE_LABEL[user.role]})
               </span>
               <button

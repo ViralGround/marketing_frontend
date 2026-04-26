@@ -96,33 +96,33 @@ export default function AdminMembersPage() {
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-bold text-gray-900">크리에이터 관리</h1>
+      <h1 className="mb-6 text-2xl font-bold text-foreground">크리에이터 관리</h1>
 
       {stats && (
         <div className="mb-8 grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6">
-          <div className="rounded border border-gray-200 p-4">
-            <p className="text-sm text-gray-500">전체</p>
-            <p className="text-2xl font-bold text-gray-900">{stats.total}명</p>
+          <div className="rounded border border-line p-4">
+            <p className="text-sm text-muted">전체</p>
+            <p className="text-2xl font-bold text-foreground">{stats.total}명</p>
           </div>
           <div className="rounded border border-yellow-200 bg-yellow-50 p-4">
             <p className="text-sm text-yellow-700">승인 대기</p>
             <p className="text-2xl font-bold text-yellow-800">{stats.pendingCount}명</p>
           </div>
-          <div className="rounded border border-gray-200 p-4">
-            <p className="text-sm text-gray-500">승인 완료</p>
-            <p className="text-2xl font-bold text-gray-900">{stats.approvedCount}명</p>
+          <div className="rounded border border-line p-4">
+            <p className="text-sm text-muted">승인 완료</p>
+            <p className="text-2xl font-bold text-foreground">{stats.approvedCount}명</p>
           </div>
-          <div className="rounded border border-gray-200 p-4">
-            <p className="text-sm text-gray-500">거절</p>
-            <p className="text-2xl font-bold text-gray-900">{stats.rejectedCount}명</p>
+          <div className="rounded border border-line p-4">
+            <p className="text-sm text-muted">거절</p>
+            <p className="text-2xl font-bold text-foreground">{stats.rejectedCount}명</p>
           </div>
-          <div className="rounded border border-gray-200 p-4">
-            <p className="text-sm text-gray-500">오늘 가입</p>
-            <p className="text-2xl font-bold text-gray-900">{stats.todayCount}명</p>
+          <div className="rounded border border-line p-4">
+            <p className="text-sm text-muted">오늘 가입</p>
+            <p className="text-2xl font-bold text-foreground">{stats.todayCount}명</p>
           </div>
-          <div className="rounded border border-gray-200 p-4">
-            <p className="text-sm text-gray-500">이번 주 가입</p>
-            <p className="text-2xl font-bold text-gray-900">{stats.weekCount}명</p>
+          <div className="rounded border border-line p-4">
+            <p className="text-sm text-muted">이번 주 가입</p>
+            <p className="text-2xl font-bold text-foreground">{stats.weekCount}명</p>
           </div>
         </div>
       )}
@@ -136,7 +136,7 @@ export default function AdminMembersPage() {
               className={`rounded px-3 py-1.5 text-sm ${
                 statusFilter === s
                   ? "bg-gray-900 text-white"
-                  : "border border-gray-300 text-gray-600 hover:bg-gray-50"
+                  : "border border-line-strong text-muted hover:bg-surface-muted"
               }`}
             >
               {s === "ALL"
@@ -155,7 +155,7 @@ export default function AdminMembersPage() {
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
             placeholder="이름 또는 이메일 검색"
-            className="rounded border border-gray-300 px-3 py-1.5 text-sm text-gray-900 placeholder-gray-400 focus:border-gray-500 focus:outline-none"
+            className="rounded border border-line-strong px-3 py-1.5 text-sm text-foreground placeholder-faint focus:border-gray-500 focus:outline-none"
           />
           <button
             type="submit"
@@ -173,13 +173,13 @@ export default function AdminMembersPage() {
       />
 
       {loading ? (
-        <p className="text-gray-500">불러오는 중...</p>
+        <p className="text-muted">불러오는 중...</p>
       ) : members.length === 0 ? (
-        <p className="text-gray-500">검색 결과가 없습니다.</p>
+        <p className="text-muted">검색 결과가 없습니다.</p>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
-            <thead className="border-b border-gray-200 text-xs text-gray-500 uppercase">
+            <thead className="border-b border-line text-xs text-muted uppercase">
               <tr>
                 <th className="px-4 py-3">이름</th>
                 <th className="px-4 py-3">이메일</th>
@@ -189,24 +189,24 @@ export default function AdminMembersPage() {
                 <th className="px-4 py-3">관리</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y divide-line">
               {members.map((m) => (
-                <tr key={m.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 font-medium text-gray-900">
+                <tr key={m.id} className="hover:bg-surface-muted">
+                  <td className="px-4 py-3 font-medium text-foreground">
                     <Link href={`/admin/members/${m.id}`} className="hover:underline">
                       {m.name}
                     </Link>
                   </td>
-                  <td className="px-4 py-3 text-gray-600">{m.email}</td>
+                  <td className="px-4 py-3 text-muted">{m.email}</td>
                   <td className="px-4 py-3">
                     <span className={`rounded px-2 py-0.5 text-xs ${statusClass(m.status)}`}>
                       {statusLabel(m.status)}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-gray-500">
+                  <td className="px-4 py-3 text-muted">
                     {m.instagramId ? `@${m.instagramId}` : "-"}
                   </td>
-                  <td className="px-4 py-3 text-gray-500">
+                  <td className="px-4 py-3 text-muted">
                     {new Date(m.createdAt).toLocaleDateString("ko-KR")}
                   </td>
                   <td className="px-4 py-3">
@@ -229,7 +229,7 @@ export default function AdminMembersPage() {
                       )}
                       <Link
                         href={`/admin/members/${m.id}`}
-                        className="text-xs text-gray-600 hover:text-gray-900"
+                        className="text-xs text-muted hover:text-foreground"
                       >
                         상세
                       </Link>

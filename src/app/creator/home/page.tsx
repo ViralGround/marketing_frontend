@@ -65,8 +65,8 @@ export default function CreatorHomePage() {
   return (
     <div className="mx-auto max-w-5xl px-4 py-8">
       <div className="mb-6">
-        <p className="text-sm text-gray-500">참여 가능한 캠페인</p>
-        <h1 className="mt-1 text-2xl font-bold text-gray-900">
+        <p className="text-sm text-muted">참여 가능한 캠페인</p>
+        <h1 className="mt-1 text-2xl font-bold text-foreground">
           지금 모집 중인 캠페인
         </h1>
       </div>
@@ -81,7 +81,7 @@ export default function CreatorHomePage() {
               className={`rounded px-3 py-1.5 text-sm ${
                 sort === s
                   ? "bg-gray-900 text-white"
-                  : "border border-gray-300 text-gray-600 hover:bg-gray-50"
+                  : "border border-line-strong text-muted hover:bg-surface-muted"
               }`}
             >
               {SORT_LABEL[s]}
@@ -94,7 +94,7 @@ export default function CreatorHomePage() {
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
             placeholder="캠페인 제목·브랜드 검색"
-            className="rounded border border-gray-300 px-3 py-1.5 text-sm text-gray-900 placeholder-gray-400 focus:border-gray-500 focus:outline-none"
+            className="rounded border border-line-strong px-3 py-1.5 text-sm text-foreground placeholder-faint focus:border-gray-500 focus:outline-none"
           />
           <button
             type="submit"
@@ -110,7 +110,7 @@ export default function CreatorHomePage() {
                 setSearchInput("");
                 setSearch("");
               }}
-              className="text-sm text-gray-500 hover:text-gray-900"
+              className="text-sm text-muted hover:text-foreground"
             >
               초기화
             </button>
@@ -119,10 +119,10 @@ export default function CreatorHomePage() {
       </div>
 
       {loading ? (
-        <p className="text-gray-500">불러오는 중...</p>
+        <p className="text-muted">불러오는 중...</p>
       ) : campaigns.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-gray-300 p-12 text-center">
-          <p className="text-gray-500">
+        <div className="rounded-xl border border-dashed border-line-strong p-12 text-center">
+          <p className="text-muted">
             {search
               ? `"${search}" 로 검색된 캠페인이 없습니다.`
               : "현재 모집 중인 캠페인이 없습니다."}
@@ -153,7 +153,7 @@ export default function CreatorHomePage() {
                   c.myApplication ? (
                     <ApplicationStatusBadge status={c.myApplication.status} />
                   ) : (
-                    <span className="text-xs text-gray-500">
+                    <span className="text-xs text-muted">
                       지원 {c.applicationCount} / {c.maxParticipants}
                     </span>
                   )

@@ -49,10 +49,10 @@ export default function ProfileSetupPage() {
 
   return (
     <div className="flex min-h-[calc(100vh-65px)] items-center justify-center">
-      <div className="w-full max-w-md space-y-6 rounded border border-gray-200 bg-white p-8">
+      <div className="w-full max-w-md space-y-6 rounded border border-line bg-surface p-8">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">프로필 작성</h1>
-          <p className="mt-1 text-sm text-gray-500">
+          <h1 className="text-2xl font-bold text-foreground">프로필 작성</h1>
+          <p className="mt-1 text-sm text-muted">
             크리에이터 활동을 위한 정보를 입력해주세요
           </p>
         </div>
@@ -66,7 +66,7 @@ export default function ProfileSetupPage() {
 
           {/* 편집 가능 여부 */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-content-soft mb-2">
               편집을 할 수 있나요?
             </label>
             <div className="flex gap-3">
@@ -76,7 +76,7 @@ export default function ProfileSetupPage() {
                 className={`flex-1 rounded border px-4 py-2 text-sm transition-colors ${
                   canEdit === true
                     ? "border-primary bg-primary text-white"
-                    : "border-gray-300 text-gray-700 hover:bg-gray-50"
+                    : "border-line-strong text-content-soft hover:bg-surface-muted"
                 }`}
               >
                 예
@@ -87,7 +87,7 @@ export default function ProfileSetupPage() {
                 className={`flex-1 rounded border px-4 py-2 text-sm transition-colors ${
                   canEdit === false
                     ? "border-primary bg-primary text-white"
-                    : "border-gray-300 text-gray-700 hover:bg-gray-50"
+                    : "border-line-strong text-content-soft hover:bg-surface-muted"
                 }`}
               >
                 아니요
@@ -97,7 +97,7 @@ export default function ProfileSetupPage() {
 
           {/* 편집 실력 */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-content-soft mb-2">
               편집 실력은 어느 정도인가요?
             </label>
             <div className="flex gap-3">
@@ -113,7 +113,7 @@ export default function ProfileSetupPage() {
                   className={`flex-1 rounded border px-4 py-2 text-sm transition-colors ${
                     editingSkill === option.value
                       ? "border-primary bg-primary text-white"
-                      : "border-gray-300 text-gray-700 hover:bg-gray-50"
+                      : "border-line-strong text-content-soft hover:bg-surface-muted"
                   }`}
                 >
                   {option.label}
@@ -124,10 +124,10 @@ export default function ProfileSetupPage() {
 
           {/* 얼굴 공개 여부 */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-content-soft mb-1">
               얼굴이 공개되어도 상관없나요?
             </label>
-            <p className="text-xs text-gray-400 mb-2">
+            <p className="text-xs text-faint mb-2">
               얼굴 공개가 더 쉽게 수익을 올릴 수 있습니다
             </p>
             <div className="flex gap-3">
@@ -137,7 +137,7 @@ export default function ProfileSetupPage() {
                 className={`flex-1 rounded border px-4 py-2 text-sm transition-colors ${
                   faceExposure === true
                     ? "border-primary bg-primary text-white"
-                    : "border-gray-300 text-gray-700 hover:bg-gray-50"
+                    : "border-line-strong text-content-soft hover:bg-surface-muted"
                 }`}
               >
                 예
@@ -148,7 +148,7 @@ export default function ProfileSetupPage() {
                 className={`flex-1 rounded border px-4 py-2 text-sm transition-colors ${
                   faceExposure === false
                     ? "border-primary bg-primary text-white"
-                    : "border-gray-300 text-gray-700 hover:bg-gray-50"
+                    : "border-line-strong text-content-soft hover:bg-surface-muted"
                 }`}
               >
                 아니요
@@ -158,21 +158,21 @@ export default function ProfileSetupPage() {
 
           {/* 인스타그램 */}
           <div>
-            <label htmlFor="instagram" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="instagram" className="block text-sm font-medium text-content-soft">
               인스타그램 아이디 (선택)
             </label>
-            <p className="text-xs text-gray-400 mb-1">
+            <p className="text-xs text-faint mb-1">
               이미 운영하고 있는 계정이 있다면 입력해주세요
             </p>
             <div className="flex items-center mt-1">
-              <span className="text-sm text-gray-400 mr-1">@</span>
+              <span className="text-sm text-faint mr-1">@</span>
               <input
                 id="instagram"
                 type="text"
                 value={instagramId}
                 onChange={(e) => setInstagramId(e.target.value)}
                 placeholder="instagram_id"
-                className="block w-full rounded border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-gray-500 focus:outline-none"
+                className="block w-full rounded border border-line-strong px-3 py-2 text-foreground placeholder-faint focus:border-gray-500 focus:outline-none"
               />
             </div>
           </div>

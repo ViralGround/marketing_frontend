@@ -33,9 +33,9 @@ export default function CampaignCard({
   return (
     <Link
       href={href}
-      className="group overflow-hidden rounded-xl border border-gray-200 bg-white transition hover:border-gray-400 hover:shadow-sm"
+      className="group overflow-hidden rounded-xl border border-line bg-surface transition hover:border-gray-400 hover:shadow-sm"
     >
-      <div className="relative aspect-video w-full overflow-hidden bg-gray-100">
+      <div className="relative aspect-video w-full overflow-hidden bg-surface-chip">
         {thumbnailUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -64,14 +64,14 @@ export default function CampaignCard({
         </div>
       </div>
       <div className="p-4">
-        <p className="text-xs text-gray-500">{brandName}</p>
-        <h3 className="mt-1 line-clamp-2 font-semibold text-gray-900">{title}</h3>
+        <p className="text-xs text-muted">{brandName}</p>
+        <h3 className="mt-1 line-clamp-2 font-semibold text-foreground">{title}</h3>
         <div className="mt-3 flex items-center justify-between">
-          <span className="text-sm font-bold text-gray-900">
+          <span className="text-sm font-bold text-foreground">
             ₩{rewardAmount.toLocaleString("ko-KR")}
           </span>
           {deadlineText && (
-            <span className="text-xs text-gray-500">~{deadlineText}</span>
+            <span className="text-xs text-muted">~{deadlineText}</span>
           )}
         </div>
         {rightSlot && <div className="mt-2">{rightSlot}</div>}

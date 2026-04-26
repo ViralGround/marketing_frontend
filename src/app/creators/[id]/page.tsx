@@ -53,15 +53,15 @@ export default function CreatorPortfolioPage() {
       .finally(() => setLoading(false));
   }, [id]);
 
-  if (loading) return <p className="mx-auto max-w-4xl px-4 py-10 text-gray-500">불러오는 중...</p>;
+  if (loading) return <p className="mx-auto max-w-4xl px-4 py-10 text-muted">불러오는 중...</p>;
   if (error || !portfolio)
     return <p className="mx-auto max-w-4xl px-4 py-10 text-red-600">{error || "데이터 없음"}</p>;
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-10">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">{portfolio.creator.name}</h1>
-        <p className="mt-1 text-sm text-gray-500">
+        <h1 className="text-3xl font-bold text-foreground">{portfolio.creator.name}</h1>
+        <p className="mt-1 text-sm text-muted">
           가입: {new Date(portfolio.creator.joinedAt).toLocaleDateString("ko-KR")}
         </p>
       </div>
@@ -98,26 +98,26 @@ export default function CreatorPortfolioPage() {
       </div>
 
       <section className="mb-10">
-        <h2 className="mb-3 text-lg font-semibold text-gray-900">작업 이력</h2>
+        <h2 className="mb-3 text-lg font-semibold text-foreground">작업 이력</h2>
         {portfolio.items.length === 0 ? (
-          <p className="text-sm text-gray-400">아직 완료한 캠페인이 없습니다.</p>
+          <p className="text-sm text-faint">아직 완료한 캠페인이 없습니다.</p>
         ) : (
           <ul className="space-y-3">
             {portfolio.items.map((item) => (
               <li
                 key={item.applicationId}
-                className="rounded border border-gray-200 p-4"
+                className="rounded border border-line p-4"
               >
-                <p className="text-xs text-gray-500">{item.brandName}</p>
-                <p className="mt-0.5 font-semibold text-gray-900">{item.campaignTitle}</p>
-                <div className="mt-2 flex flex-wrap gap-3 text-xs text-gray-600">
+                <p className="text-xs text-muted">{item.brandName}</p>
+                <p className="mt-0.5 font-semibold text-foreground">{item.campaignTitle}</p>
+                <div className="mt-2 flex flex-wrap gap-3 text-xs text-muted">
                   {item.rewardPaidAmount != null && (
                     <span>정산 ₩{item.rewardPaidAmount.toLocaleString("ko-KR")}</span>
                   )}
                   {item.settledAt && (
                     <span>완료: {new Date(item.settledAt).toLocaleDateString("ko-KR")}</span>
                   )}
-                  {item.videoFileKey && <span className="text-gray-400">영상 제출됨</span>}
+                  {item.videoFileKey && <span className="text-faint">영상 제출됨</span>}
                 </div>
               </li>
             ))}
@@ -126,7 +126,7 @@ export default function CreatorPortfolioPage() {
       </section>
 
       <section>
-        <h2 className="mb-3 text-lg font-semibold text-gray-900">리뷰</h2>
+        <h2 className="mb-3 text-lg font-semibold text-foreground">리뷰</h2>
         <ReviewList reviews={reviews} />
       </section>
     </div>
@@ -135,9 +135,9 @@ export default function CreatorPortfolioPage() {
 
 function SummaryCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-xl border border-gray-200 p-5">
-      <p className="text-xs text-gray-500">{label}</p>
-      <p className="mt-2 text-2xl font-bold text-gray-900">{value}</p>
+    <div className="rounded-xl border border-line p-5">
+      <p className="text-xs text-muted">{label}</p>
+      <p className="mt-2 text-2xl font-bold text-foreground">{value}</p>
     </div>
   );
 }

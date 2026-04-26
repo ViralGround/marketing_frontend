@@ -27,12 +27,12 @@ export default function HowItWorksSection() {
   const ref = useScrollAnimation<HTMLDivElement>();
 
   return (
-    <section className="bg-white dark:bg-[#0a0a0a] py-20 md:py-28">
+    <section className="bg-surface py-20 md:py-28">
       <div ref={ref} className="mx-auto max-w-5xl px-6">
         <h2 className="text-center text-3xl font-bold text-foreground md:text-4xl">
           이렇게 간단해요
         </h2>
-        <p className="mt-4 text-center text-gray-500 dark:text-gray-400">
+        <p className="mt-4 text-center text-muted">
           3단계면 수익이 시작됩니다
         </p>
 
@@ -52,7 +52,7 @@ export default function HowItWorksSection() {
               <h3 className="mt-2 text-xl font-semibold text-foreground">
                 {s.title}
               </h3>
-              <p className="mt-2 text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
+              <p className="mt-2 text-sm text-muted leading-relaxed">
                 {s.desc}
               </p>
             </div>

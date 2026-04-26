@@ -31,19 +31,19 @@ export default function AdminDashboardPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <p className="mx-auto max-w-5xl px-4 py-10 text-gray-500">불러오는 중...</p>;
+  if (loading) return <p className="mx-auto max-w-5xl px-4 py-10 text-muted">불러오는 중...</p>;
   if (error || !kpi)
     return <p className="mx-auto max-w-5xl px-4 py-10 text-red-600">{error || "데이터 없음"}</p>;
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-10">
       <div className="mb-8">
-        <p className="text-sm text-gray-500">운영</p>
-        <h1 className="mt-1 text-3xl font-bold text-gray-900">플랫폼 KPI 대시보드</h1>
+        <p className="text-sm text-muted">운영</p>
+        <h1 className="mt-1 text-3xl font-bold text-foreground">플랫폼 KPI 대시보드</h1>
       </div>
 
       <section className="mb-10">
-        <h2 className="mb-3 text-sm font-semibold text-gray-500">거래</h2>
+        <h2 className="mb-3 text-sm font-semibold text-muted">거래</h2>
         <KPICards
           items={[
             { label: "GMV (총 예치)", value: `₩${kpi.gmv.toLocaleString("ko-KR")}` },
@@ -54,7 +54,7 @@ export default function AdminDashboardPage() {
       </section>
 
       <section className="mb-10">
-        <h2 className="mb-3 text-sm font-semibold text-gray-500">참여</h2>
+        <h2 className="mb-3 text-sm font-semibold text-muted">참여</h2>
         <KPICards
           items={[
             { label: "활성 크리에이터", value: `${kpi.activeCreators}명` },
@@ -67,7 +67,7 @@ export default function AdminDashboardPage() {
       </section>
 
       <section className="mb-10">
-        <h2 className="mb-3 text-sm font-semibold text-gray-500">콘텐츠 성과 (수동 입력 합산)</h2>
+        <h2 className="mb-3 text-sm font-semibold text-muted">콘텐츠 성과 (수동 입력 합산)</h2>
         <KPICards
           items={[
             { label: "총 조회수", value: kpi.contentMetrics.views.toLocaleString("ko-KR") },
@@ -78,7 +78,7 @@ export default function AdminDashboardPage() {
       </section>
 
       <section>
-        <h2 className="mb-3 text-sm font-semibold text-gray-500">신뢰도</h2>
+        <h2 className="mb-3 text-sm font-semibold text-muted">신뢰도</h2>
         <KPICards
           items={[
             { label: "리뷰 건수", value: `${kpi.reviews.count}건` },

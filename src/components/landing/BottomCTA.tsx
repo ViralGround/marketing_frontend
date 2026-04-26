@@ -7,7 +7,7 @@ export default function BottomCTA() {
   const ref = useScrollAnimation<HTMLDivElement>();
 
   return (
-    <section className="bg-white dark:bg-[#0a0a0a] py-20 md:py-28">
+    <section className="bg-surface py-20 md:py-28">
       <div
         ref={ref}
         className="mx-auto max-w-4xl rounded-3xl bg-gradient-to-br from-primary to-primary-dark px-8 py-16 text-center md:px-16 md:py-20"
@@ -22,7 +22,7 @@ export default function BottomCTA() {
         </p>
         <Link
           href="/signup/creator"
-          className="mt-8 inline-block rounded-xl bg-white px-10 py-4 text-lg font-semibold text-primary shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5"
+          className="mt-8 inline-block rounded-xl bg-surface px-10 py-4 text-lg font-semibold text-primary shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5"
         >
           무료로 시작하기
         </Link>

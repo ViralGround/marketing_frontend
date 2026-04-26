@@ -146,7 +146,7 @@ export default function EmailVerificationField({
 
   return (
     <div className="space-y-2">
-      <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+      <label htmlFor="email" className="block text-sm font-medium text-content-soft">
         {label}
       </label>
       <div className="flex gap-2">
@@ -158,13 +158,13 @@ export default function EmailVerificationField({
           value={email}
           onChange={(e) => handleEmailChange(e.target.value)}
           disabled={verified}
-          className="block min-w-0 flex-1 rounded border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-gray-500 focus:outline-none disabled:bg-gray-100 disabled:text-gray-500"
+          className="block min-w-0 flex-1 rounded border border-line-strong px-3 py-2 text-foreground placeholder-faint focus:border-gray-500 focus:outline-none disabled:bg-surface-chip disabled:text-muted"
         />
         <button
           type="button"
           onClick={handleSendCode}
           disabled={sendLoading || verified || !email.trim()}
-          className="shrink-0 whitespace-nowrap rounded border border-gray-900 bg-white px-4 py-2 text-sm font-medium text-gray-900 hover:bg-gray-50 disabled:cursor-not-allowed disabled:border-gray-300 disabled:text-gray-400"
+          className="shrink-0 whitespace-nowrap rounded border border-gray-900 bg-surface px-4 py-2 text-sm font-medium text-foreground hover:bg-surface-muted disabled:cursor-not-allowed disabled:border-line-strong disabled:text-faint"
         >
           {verified
             ? "인증 완료"
@@ -177,9 +177,9 @@ export default function EmailVerificationField({
       </div>
 
       {codeSent && !verified && (
-        <div className="space-y-2 rounded border border-gray-200 bg-gray-50 p-3">
+        <div className="space-y-2 rounded border border-line bg-surface-muted p-3">
           <div className="flex items-center justify-between">
-            <label htmlFor="verification-code" className="text-sm font-medium text-gray-700">
+            <label htmlFor="verification-code" className="text-sm font-medium text-content-soft">
               인증 코드
             </label>
             {remaining > 0 ? (
@@ -197,7 +197,7 @@ export default function EmailVerificationField({
               placeholder="6자리 숫자"
               value={code}
               onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
-              className="block min-w-0 flex-1 rounded border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-gray-500 focus:outline-none"
+              className="block min-w-0 flex-1 rounded border border-line-strong px-3 py-2 text-foreground placeholder-faint focus:border-gray-500 focus:outline-none"
             />
             <button
               type="button"
@@ -218,7 +218,7 @@ export default function EmailVerificationField({
               ? "text-red-600"
               : message.type === "success"
                 ? "text-green-600"
-                : "text-gray-500"
+                : "text-muted"
           }`}
         >
           {message.text}

@@ -112,20 +112,20 @@ export default function VideoUploader({ applicationId, onUploaded, onCancel }: P
         }}
         onClick={() => !loading && inputRef.current?.click()}
         className={`cursor-pointer rounded-lg border-2 border-dashed p-8 text-center transition ${
-          dragging ? "border-gray-900 bg-gray-50" : "border-gray-300 hover:border-gray-400"
+          dragging ? "border-gray-900 bg-surface-muted" : "border-line-strong hover:border-gray-400"
         } ${loading ? "pointer-events-none opacity-60" : ""}`}
       >
         {file ? (
           <div>
-            <p className="text-sm font-semibold text-gray-900">{file.name}</p>
-            <p className="mt-1 text-xs text-gray-500">
+            <p className="text-sm font-semibold text-foreground">{file.name}</p>
+            <p className="mt-1 text-xs text-muted">
               {formatSize(file.size)} · {file.type}
             </p>
           </div>
         ) : (
           <div>
-            <p className="text-sm text-gray-600">영상 파일을 끌어다 놓거나 클릭해서 선택해주세요</p>
-            <p className="mt-1 text-xs text-gray-400">mp4, mov, webm · 최대 500MB</p>
+            <p className="text-sm text-muted">영상 파일을 끌어다 놓거나 클릭해서 선택해주세요</p>
+            <p className="mt-1 text-xs text-faint">mp4, mov, webm · 최대 500MB</p>
           </div>
         )}
       </div>
@@ -139,11 +139,11 @@ export default function VideoUploader({ applicationId, onUploaded, onCancel }: P
 
       {loading && (
         <div className="mt-4">
-          <div className="mb-1 flex justify-between text-xs text-gray-500">
+          <div className="mb-1 flex justify-between text-xs text-muted">
             <span>업로드 중</span>
             <span>{progress}%</span>
           </div>
-          <div className="h-2 overflow-hidden rounded bg-gray-100">
+          <div className="h-2 overflow-hidden rounded bg-surface-chip">
             <div
               className="h-full bg-gray-900 transition-all"
               style={{ width: `${progress}%` }}
@@ -159,7 +159,7 @@ export default function VideoUploader({ applicationId, onUploaded, onCancel }: P
           type="button"
           onClick={onCancel}
           disabled={loading}
-          className="rounded border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+          className="rounded border border-line-strong px-3 py-1.5 text-sm text-content-soft hover:bg-surface-muted disabled:opacity-50"
         >
           취소
         </button>

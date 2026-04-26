@@ -116,14 +116,14 @@ export default function EditCampaignPage() {
   };
 
   const inputCls =
-    "mt-1 block w-full rounded border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-gray-500 focus:outline-none disabled:bg-gray-50 disabled:text-gray-500";
+    "mt-1 block w-full rounded border border-line-strong px-3 py-2 text-foreground placeholder-faint focus:border-gray-500 focus:outline-none disabled:bg-surface-muted disabled:text-muted";
 
-  if (loading) return <p className="text-gray-500">불러오는 중...</p>;
+  if (loading) return <p className="text-muted">불러오는 중...</p>;
   if (!detail) return <p className="text-red-600">{error || "데이터 없음"}</p>;
 
   return (
     <div className="mx-auto max-w-2xl">
-      <h1 className="text-2xl font-bold text-gray-900">캠페인 수정</h1>
+      <h1 className="text-2xl font-bold text-foreground">캠페인 수정</h1>
       {readOnly && (
         <div className="mt-4 rounded bg-amber-50 p-3 text-sm text-amber-800">
           현재 상태에서는 수정이 제한됩니다.
@@ -136,7 +136,7 @@ export default function EditCampaignPage() {
         )}
 
         <div>
-          <label htmlFor="title" className="block text-sm font-medium text-gray-700">
+          <label htmlFor="title" className="block text-sm font-medium text-content-soft">
             캠페인 제목
           </label>
           <input
@@ -150,7 +150,7 @@ export default function EditCampaignPage() {
           />
         </div>
         <div>
-          <label htmlFor="brandName" className="block text-sm font-medium text-gray-700">
+          <label htmlFor="brandName" className="block text-sm font-medium text-content-soft">
             브랜드명
           </label>
           <input
@@ -164,7 +164,7 @@ export default function EditCampaignPage() {
           />
         </div>
         <div>
-          <label htmlFor="description" className="block text-sm font-medium text-gray-700">
+          <label htmlFor="description" className="block text-sm font-medium text-content-soft">
             캠페인 설명
           </label>
           <textarea
@@ -178,8 +178,8 @@ export default function EditCampaignPage() {
           />
         </div>
         <div>
-          <label htmlFor="requirements" className="block text-sm font-medium text-gray-700">
-            제출 요구사항 <span className="text-gray-400">(선택)</span>
+          <label htmlFor="requirements" className="block text-sm font-medium text-content-soft">
+            제출 요구사항 <span className="text-faint">(선택)</span>
           </label>
           <textarea
             id="requirements"
@@ -191,8 +191,8 @@ export default function EditCampaignPage() {
           />
         </div>
 
-        <section className="space-y-4 border-t border-gray-200 pt-6">
-          <h2 className="text-sm font-semibold text-gray-500">보상 · 모집</h2>
+        <section className="space-y-4 border-t border-line pt-6">
+          <h2 className="text-sm font-semibold text-muted">보상 · 모집</h2>
           {!canEditBudget && (
             <p className="text-xs text-amber-700">
               지원자가 있거나 예치 완료 후에는 보상/모집 인원을 수정할 수 없습니다.
@@ -200,7 +200,7 @@ export default function EditCampaignPage() {
           )}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label htmlFor="rewardAmount" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="rewardAmount" className="block text-sm font-medium text-content-soft">
                 1인당 보상 (원)
               </label>
               <input
@@ -215,7 +215,7 @@ export default function EditCampaignPage() {
               />
             </div>
             <div>
-              <label htmlFor="maxParticipants" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="maxParticipants" className="block text-sm font-medium text-content-soft">
                 모집 인원
               </label>
               <input
@@ -231,8 +231,8 @@ export default function EditCampaignPage() {
             </div>
           </div>
           <div>
-            <label htmlFor="deadline" className="block text-sm font-medium text-gray-700">
-              모집 마감일 <span className="text-gray-400">(선택)</span>
+            <label htmlFor="deadline" className="block text-sm font-medium text-content-soft">
+              모집 마감일 <span className="text-faint">(선택)</span>
             </label>
             <input
               id="deadline"
@@ -244,8 +244,8 @@ export default function EditCampaignPage() {
             />
           </div>
           <div>
-            <label htmlFor="thumbnailUrl" className="block text-sm font-medium text-gray-700">
-              썸네일 URL <span className="text-gray-400">(선택)</span>
+            <label htmlFor="thumbnailUrl" className="block text-sm font-medium text-content-soft">
+              썸네일 URL <span className="text-faint">(선택)</span>
             </label>
             <input
               id="thumbnailUrl"
@@ -269,7 +269,7 @@ export default function EditCampaignPage() {
           <button
             type="button"
             onClick={() => router.push(`/company/campaigns/${detail.id}`)}
-            className="rounded-lg border border-gray-300 px-5 py-2.5 text-gray-700 hover:bg-gray-50"
+            className="rounded-lg border border-line-strong px-5 py-2.5 text-content-soft hover:bg-surface-muted"
           >
             취소
           </button>

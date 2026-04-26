@@ -53,8 +53,8 @@ export default function AdminEscrowPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900">예치금 입금 확인</h1>
-      <p className="mt-1 text-sm text-gray-500">
+      <h1 className="text-2xl font-bold text-foreground">예치금 입금 확인</h1>
+      <p className="mt-1 text-sm text-muted">
         기업이 입금을 신청한 캠페인을 검토하고, 아직 입금 신청 전인 캠페인의 현황도 함께 확인할 수 있습니다.
       </p>
 
@@ -63,15 +63,15 @@ export default function AdminEscrowPage() {
       )}
 
       {loading ? (
-        <p className="mt-6 text-gray-500">불러오는 중...</p>
+        <p className="mt-6 text-muted">불러오는 중...</p>
       ) : items.length === 0 ? (
-        <div className="mt-6 rounded-xl border border-dashed border-gray-300 p-12 text-center text-gray-500">
+        <div className="mt-6 rounded-xl border border-dashed border-line-strong p-12 text-center text-muted">
           예치 대기 중인 캠페인이 없습니다.
         </div>
       ) : (
-        <div className="mt-6 overflow-hidden rounded-lg border border-gray-200">
+        <div className="mt-6 overflow-hidden rounded-lg border border-line">
           <table className="w-full text-sm">
-            <thead className="bg-gray-50 text-left text-xs text-gray-500">
+            <thead className="bg-surface-muted text-left text-xs text-muted">
               <tr>
                 <th className="px-4 py-3">캠페인</th>
                 <th className="px-4 py-3">기업</th>
@@ -81,17 +81,17 @@ export default function AdminEscrowPage() {
                 <th className="px-4 py-3">작업</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
+            <tbody className="divide-y divide-line">
               {items.map((c) => (
                 <tr key={c.id}>
                   <td className="px-4 py-3">
-                    <p className="font-medium text-gray-900">{c.title}</p>
-                    <p className="text-xs text-gray-500">
+                    <p className="font-medium text-foreground">{c.title}</p>
+                    <p className="text-xs text-muted">
                       {c.brandName} · {c.rewardAmount.toLocaleString()}원 × {c.maxParticipants}명
                     </p>
                   </td>
-                  <td className="px-4 py-3 text-gray-700">{c.companyName}</td>
-                  <td className="px-4 py-3 font-medium text-gray-900">
+                  <td className="px-4 py-3 text-content-soft">{c.companyName}</td>
+                  <td className="px-4 py-3 font-medium text-foreground">
                     {c.totalBudget.toLocaleString()}원
                   </td>
                   <td className="px-4 py-3">
@@ -105,7 +105,7 @@ export default function AdminEscrowPage() {
                       </span>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-gray-500">
+                  <td className="px-4 py-3 text-muted">
                     {c.depositRequestedAt
                       ? new Date(c.depositRequestedAt).toLocaleString()
                       : "-"}
@@ -123,13 +123,13 @@ export default function AdminEscrowPage() {
                         <button
                           disabled={actingId === c.id}
                           onClick={() => act(c.id, "reject")}
-                          className="rounded border border-gray-300 px-3 py-1 text-xs text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                          className="rounded border border-line-strong px-3 py-1 text-xs text-content-soft hover:bg-surface-muted disabled:opacity-50"
                         >
                           반려
                         </button>
                       </div>
                     ) : (
-                      <span className="text-xs text-gray-400">기업의 계좌이체 완료 대기 중</span>
+                      <span className="text-xs text-faint">기업의 계좌이체 완료 대기 중</span>
                     )}
                   </td>
                 </tr>

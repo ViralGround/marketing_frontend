@@ -67,7 +67,7 @@ export default function CompanySignupForm() {
   };
 
   const inputCls =
-    "mt-1 block w-full rounded border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-gray-500 focus:outline-none";
+    "mt-1 block w-full rounded border border-line-strong px-3 py-2 text-foreground placeholder-faint focus:border-gray-500 focus:outline-none";
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -76,7 +76,7 @@ export default function CompanySignupForm() {
       )}
 
       <section className="space-y-4">
-        <h2 className="text-sm font-semibold text-gray-500">계정 정보</h2>
+        <h2 className="text-sm font-semibold text-muted">계정 정보</h2>
         <EmailVerificationField
           email={email}
           onEmailChange={setEmail}
@@ -84,7 +84,7 @@ export default function CompanySignupForm() {
           placeholder="company@example.com"
         />
         <div>
-          <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+          <label htmlFor="password" className="block text-sm font-medium text-content-soft">
             비밀번호 (8자 이상)
           </label>
           <input
@@ -98,7 +98,7 @@ export default function CompanySignupForm() {
           />
         </div>
         <div>
-          <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+          <label htmlFor="name" className="block text-sm font-medium text-content-soft">
             계정 사용자 이름
           </label>
           <input
@@ -113,10 +113,10 @@ export default function CompanySignupForm() {
         </div>
       </section>
 
-      <section className="space-y-4 border-t border-gray-200 pt-6">
-        <h2 className="text-sm font-semibold text-gray-500">기업 정보</h2>
+      <section className="space-y-4 border-t border-line pt-6">
+        <h2 className="text-sm font-semibold text-muted">기업 정보</h2>
         <div>
-          <label htmlFor="companyName" className="block text-sm font-medium text-gray-700">
+          <label htmlFor="companyName" className="block text-sm font-medium text-content-soft">
             회사명
           </label>
           <input
@@ -129,7 +129,7 @@ export default function CompanySignupForm() {
           />
         </div>
         <div>
-          <label htmlFor="businessNumber" className="block text-sm font-medium text-gray-700">
+          <label htmlFor="businessNumber" className="block text-sm font-medium text-content-soft">
             사업자등록번호
           </label>
           <input
@@ -143,7 +143,7 @@ export default function CompanySignupForm() {
           />
         </div>
         <div>
-          <label htmlFor="representativeName" className="block text-sm font-medium text-gray-700">
+          <label htmlFor="representativeName" className="block text-sm font-medium text-content-soft">
             대표자명
           </label>
           <input
@@ -156,8 +156,8 @@ export default function CompanySignupForm() {
           />
         </div>
         <div>
-          <label htmlFor="industry" className="block text-sm font-medium text-gray-700">
-            업종 <span className="text-gray-400">(선택)</span>
+          <label htmlFor="industry" className="block text-sm font-medium text-content-soft">
+            업종 <span className="text-faint">(선택)</span>
           </label>
           <input
             id="industry"
@@ -169,8 +169,8 @@ export default function CompanySignupForm() {
           />
         </div>
         <div>
-          <label htmlFor="address" className="block text-sm font-medium text-gray-700">
-            주소 <span className="text-gray-400">(선택)</span>
+          <label htmlFor="address" className="block text-sm font-medium text-content-soft">
+            주소 <span className="text-faint">(선택)</span>
           </label>
           <input
             id="address"
@@ -181,8 +181,8 @@ export default function CompanySignupForm() {
           />
         </div>
         <div>
-          <label htmlFor="homepage" className="block text-sm font-medium text-gray-700">
-            홈페이지 <span className="text-gray-400">(선택)</span>
+          <label htmlFor="homepage" className="block text-sm font-medium text-content-soft">
+            홈페이지 <span className="text-faint">(선택)</span>
           </label>
           <input
             id="homepage"
@@ -195,10 +195,10 @@ export default function CompanySignupForm() {
         </div>
       </section>
 
-      <section className="space-y-4 border-t border-gray-200 pt-6">
-        <h2 className="text-sm font-semibold text-gray-500">담당자 정보</h2>
+      <section className="space-y-4 border-t border-line pt-6">
+        <h2 className="text-sm font-semibold text-muted">담당자 정보</h2>
         <div>
-          <label htmlFor="contactName" className="block text-sm font-medium text-gray-700">
+          <label htmlFor="contactName" className="block text-sm font-medium text-content-soft">
             담당자명
           </label>
           <input
@@ -211,7 +211,7 @@ export default function CompanySignupForm() {
           />
         </div>
         <div>
-          <label htmlFor="contactPhone" className="block text-sm font-medium text-gray-700">
+          <label htmlFor="contactPhone" className="block text-sm font-medium text-content-soft">
             담당자 연락처
           </label>
           <input
@@ -226,7 +226,7 @@ export default function CompanySignupForm() {
         </div>
       </section>
 
-      <p className="text-xs text-gray-500">
+      <p className="text-xs text-muted">
         이메일 인증을 완료한 뒤 가입하기를 눌러주세요. 가입 후 바로 로그인할 수 있습니다.
       </p>
 

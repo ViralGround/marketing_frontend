@@ -30,13 +30,13 @@ export default function AlertModal({
       onClick={onClose}
     >
       <div
-        className="w-full max-w-sm rounded-xl bg-white p-6 shadow-xl"
+        className="w-full max-w-sm rounded-xl bg-surface p-6 shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
         {title && (
-          <h3 className="mb-2 text-lg font-semibold text-gray-900">{title}</h3>
+          <h3 className="mb-2 text-lg font-semibold text-foreground">{title}</h3>
         )}
-        <p className="mb-5 text-sm text-gray-700 whitespace-pre-line">{message}</p>
+        <p className="mb-5 text-sm text-content-soft whitespace-pre-line">{message}</p>
         <div className="flex justify-end">
           <button
             type="button"

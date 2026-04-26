@@ -125,7 +125,7 @@ export default function LoginForm() {
         <div className="rounded bg-red-50 p-3 text-sm text-red-600">{error}</div>
       )}
       <div>
-        <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+        <label htmlFor="email" className="block text-sm font-medium text-content-soft">
           이메일
         </label>
         <input
@@ -135,11 +135,11 @@ export default function LoginForm() {
           placeholder="example@email.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="mt-1 block w-full rounded-lg border border-gray-300 dark:border-gray-700 px-3 py-2 text-foreground bg-white dark:bg-[#111] placeholder-gray-400 focus:border-primary focus:outline-none"
+          className="mt-1 block w-full rounded-lg border border-line-strong px-3 py-2 text-foreground bg-surface placeholder-faint focus:border-primary focus:outline-none"
         />
       </div>
       <div>
-        <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+        <label htmlFor="password" className="block text-sm font-medium text-content-soft">
           비밀번호
         </label>
         <input
@@ -148,7 +148,7 @@ export default function LoginForm() {
           required
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="mt-1 block w-full rounded-lg border border-gray-300 dark:border-gray-700 px-3 py-2 text-foreground bg-white dark:bg-[#111] placeholder-gray-400 focus:border-primary focus:outline-none"
+          className="mt-1 block w-full rounded-lg border border-line-strong px-3 py-2 text-foreground bg-surface placeholder-faint focus:border-primary focus:outline-none"
         />
       </div>
       <button

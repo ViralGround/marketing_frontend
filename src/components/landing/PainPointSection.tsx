@@ -29,7 +29,7 @@ export default function PainPointSection() {
         <h2 className="text-center text-3xl font-bold text-foreground md:text-4xl">
           이런 고민, 해본 적 있나요?
         </h2>
-        <p className="mt-4 text-center text-gray-500 dark:text-gray-400">
+        <p className="mt-4 text-center text-muted">
           Viral Ground가 그 고민을 해결해 드립니다
         </p>
 
@@ -37,13 +37,13 @@ export default function PainPointSection() {
           {pains.map((p) => (
             <div
               key={p.title}
-              className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-[#111] p-8 transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
+              className="rounded-2xl border border-line bg-surface p-8 transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
             >
               <span className="text-4xl">{p.emoji}</span>
               <h3 className="mt-4 text-lg font-semibold text-foreground">
                 {p.title}
               </h3>
-              <p className="mt-2 text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
+              <p className="mt-2 text-sm text-muted leading-relaxed">
                 {p.desc}
               </p>
             </div>

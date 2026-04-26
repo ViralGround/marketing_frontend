@@ -30,12 +30,12 @@ export default function TestimonialsSection() {
   const ref = useScrollAnimation<HTMLDivElement>();
 
   return (
-    <section className="bg-white dark:bg-[#0a0a0a] py-20 md:py-28">
+    <section className="bg-surface py-20 md:py-28">
       <div ref={ref} className="mx-auto max-w-5xl px-6">
         <h2 className="text-center text-3xl font-bold text-foreground md:text-4xl">
           실제 크리에이터들의 이야기
         </h2>
-        <p className="mt-4 text-center text-gray-500 dark:text-gray-400">
+        <p className="mt-4 text-center text-muted">
           수익도 채널 성장도, Viral Ground에서 함께하고 있습니다
         </p>
 
@@ -43,13 +43,13 @@ export default function TestimonialsSection() {
           {testimonials.map((t) => (
             <div
               key={t.name}
-              className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-section-alt p-7 transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
+              className="rounded-2xl border border-line bg-section-alt p-7 transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
             >
               {/* 수입 배지 */}
               <div className="mb-4 inline-flex rounded-full bg-primary/10 px-3 py-1 text-sm font-semibold text-primary">
                 {t.income}
               </div>
-              <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
+              <p className="text-sm text-muted leading-relaxed">
                 &ldquo;{t.text}&rdquo;
               </p>
               <div className="mt-6 flex items-center gap-3">
@@ -60,7 +60,7 @@ export default function TestimonialsSection() {
                   <p className="text-sm font-semibold text-foreground">
                     {t.name}
                   </p>
-                  <p className="text-xs text-gray-400">{t.role}</p>
+                  <p className="text-xs text-faint">{t.role}</p>
                 </div>
               </div>
             </div>

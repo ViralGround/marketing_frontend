@@ -52,7 +52,7 @@ export default function MetricForm({ applicationId, initial, onSaved, onCancel }
         <NumberField label="댓글" value={comments} onChange={setComments} />
       </div>
 
-      <label htmlFor="metric-url" className="mt-4 block text-sm text-gray-700">
+      <label htmlFor="metric-url" className="mt-4 block text-sm text-content-soft">
         게시물 URL (선택, http/https)
       </label>
       <input
@@ -61,7 +61,7 @@ export default function MetricForm({ applicationId, initial, onSaved, onCancel }
         value={externalUrl}
         onChange={(e) => setExternalUrl(e.target.value)}
         placeholder="https://www.instagram.com/p/..."
-        className="mt-1 block w-full rounded border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-gray-500 focus:outline-none"
+        className="mt-1 block w-full rounded border border-line-strong px-3 py-2 text-sm text-foreground placeholder-faint focus:border-gray-500 focus:outline-none"
       />
 
       {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
@@ -71,7 +71,7 @@ export default function MetricForm({ applicationId, initial, onSaved, onCancel }
           type="button"
           onClick={onCancel}
           disabled={loading}
-          className="rounded border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+          className="rounded border border-line-strong px-3 py-1.5 text-sm text-content-soft hover:bg-surface-muted disabled:opacity-50"
         >
           취소
         </button>
@@ -99,13 +99,13 @@ function NumberField({
 }) {
   return (
     <div>
-      <label className="block text-sm text-gray-700">{label}</label>
+      <label className="block text-sm text-content-soft">{label}</label>
       <input
         type="number"
         min={0}
         value={value}
         onChange={(e) => onChange(Math.max(0, Number(e.target.value) || 0))}
-        className="mt-1 block w-full rounded border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-gray-500 focus:outline-none"
+        className="mt-1 block w-full rounded border border-line-strong px-3 py-2 text-sm text-foreground focus:border-gray-500 focus:outline-none"
       />
     </div>
   );

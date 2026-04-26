@@ -19,14 +19,14 @@ function StatItem({
         <span ref={ref}>0</span>
         {suffix}
       </p>
-      <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">{label}</p>
+      <p className="mt-2 text-sm text-muted">{label}</p>
     </div>
   );
 }
 
 export default function StatsSection() {
   return (
-    <section className="border-y border-gray-100 dark:border-gray-800 bg-white dark:bg-[#0a0a0a] py-16">
+    <section className="border-y border-line bg-surface py-16">
       <div className="mx-auto grid max-w-5xl grid-cols-2 gap-8 px-6 md:grid-cols-4">
         <StatItem value={50} suffix="+" label="활동 크리에이터" />
         <StatItem value={48} suffix="만원" label="평균 월 수입" />

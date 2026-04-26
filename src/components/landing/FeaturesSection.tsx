@@ -44,7 +44,7 @@ export default function FeaturesSection() {
         <h2 className="text-center text-3xl font-bold text-foreground md:text-4xl">
           왜 Viral Ground인가요?
         </h2>
-        <p className="mt-4 text-center text-gray-500 dark:text-gray-400">
+        <p className="mt-4 text-center text-muted">
           크리에이터를 위해 설계된 플랫폼
         </p>
 
@@ -52,7 +52,7 @@ export default function FeaturesSection() {
           {features.map((f) => (
             <div
               key={f.title}
-              className="group rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-[#111] p-7 transition-all duration-300 hover:border-primary/30 hover:shadow-lg hover:-translate-y-1"
+              className="group rounded-2xl border border-line bg-surface p-7 transition-all duration-300 hover:border-primary/30 hover:shadow-lg hover:-translate-y-1"
             >
               <span className="inline-block text-3xl transition-transform duration-300 group-hover:scale-110">
                 {f.icon}
@@ -60,7 +60,7 @@ export default function FeaturesSection() {
               <h3 className="mt-4 text-lg font-semibold text-foreground">
                 {f.title}
               </h3>
-              <p className="mt-2 text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
+              <p className="mt-2 text-sm text-muted leading-relaxed">
                 {f.desc}
               </p>
             </div>

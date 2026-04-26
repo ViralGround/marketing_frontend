@@ -39,7 +39,7 @@ const STATUS_LABEL: Record<CampaignStatus, string> = {
 const STATUS_CLASS: Record<CampaignStatus, string> = {
   DRAFT: "bg-amber-100 text-amber-700",
   OPEN: "bg-green-100 text-green-700",
-  CLOSED: "bg-gray-200 text-gray-700",
+  CLOSED: "bg-gray-200 text-content-soft",
 };
 
 const ESCROW_LABEL: Record<EscrowStatus, string> = {
@@ -53,7 +53,7 @@ const ESCROW_LABEL: Record<EscrowStatus, string> = {
 };
 
 const ESCROW_CLASS: Record<EscrowStatus, string> = {
-  NONE: "bg-gray-100 text-gray-600",
+  NONE: "bg-surface-chip text-muted",
   PENDING_DEPOSIT: "bg-amber-100 text-amber-700",
   DEPOSIT_CONFIRMING: "bg-orange-100 text-orange-700",
   FUNDED: "bg-emerald-100 text-emerald-700",
@@ -103,7 +103,7 @@ export default function AdminCampaignsPage() {
   return (
     <div>
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">캠페인 관리</h1>
+        <h1 className="text-2xl font-bold text-foreground">캠페인 관리</h1>
         <Link
           href="/admin/campaigns/new"
           className="rounded bg-gray-900 px-4 py-2 text-sm text-white hover:bg-gray-700"
@@ -136,7 +136,7 @@ export default function AdminCampaignsPage() {
             className={`rounded px-3 py-1.5 text-sm ${
               filter === f
                 ? "bg-gray-900 text-white"
-                : "border border-gray-300 text-gray-600 hover:bg-gray-50"
+                : "border border-line-strong text-muted hover:bg-surface-muted"
             }`}
           >
             {f === "ALL" ? "전체" : STATUS_LABEL[f]}
@@ -156,13 +156,13 @@ export default function AdminCampaignsPage() {
           </button>
         </div>
       ) : loading ? (
-        <p className="text-gray-500">불러오는 중...</p>
+        <p className="text-muted">불러오는 중...</p>
       ) : campaigns.length === 0 ? (
-        <p className="text-gray-500">등록된 캠페인이 없습니다.</p>
+        <p className="text-muted">등록된 캠페인이 없습니다.</p>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
-            <thead className="border-b border-gray-200 text-xs text-gray-500 uppercase">
+            <thead className="border-b border-line text-xs text-muted uppercase">
               <tr>
                 <th className="px-4 py-3">제목</th>
                 <th className="px-4 py-3">브랜드</th>
@@ -174,19 +174,19 @@ export default function AdminCampaignsPage() {
                 <th className="px-4 py-3">생성일</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y divide-line">
               {campaigns.map((c) => (
-                <tr key={c.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 font-medium text-gray-900">
+                <tr key={c.id} className="hover:bg-surface-muted">
+                  <td className="px-4 py-3 font-medium text-foreground">
                     <Link href={`/admin/campaigns/${c.id}`} className="hover:underline">
                       {c.title}
                     </Link>
                   </td>
-                  <td className="px-4 py-3 text-gray-600">{c.brandName}</td>
-                  <td className="px-4 py-3 text-gray-900">
+                  <td className="px-4 py-3 text-muted">{c.brandName}</td>
+                  <td className="px-4 py-3 text-foreground">
                     ₩{c.rewardAmount.toLocaleString("ko-KR")}
                   </td>
-                  <td className="px-4 py-3 text-gray-600">
+                  <td className="px-4 py-3 text-muted">
                     {c.applicationCount} / {c.maxParticipants}
                   </td>
                   <td className="px-4 py-3">
@@ -201,10 +201,10 @@ export default function AdminCampaignsPage() {
                       {ESCROW_LABEL[c.escrowStatus]}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-gray-500">
+                  <td className="px-4 py-3 text-muted">
                     {c.deadline ? new Date(c.deadline).toLocaleDateString("ko-KR") : "-"}
                   </td>
-                  <td className="px-4 py-3 text-gray-500">
+                  <td className="px-4 py-3 text-muted">
                     {new Date(c.createdAt).toLocaleDateString("ko-KR")}
                   </td>
                 </tr>

@@ -4,7 +4,7 @@ import Link from "next/link";
 
 export default function HeroSection() {
   return (
-    <section className="relative overflow-hidden bg-gradient-to-br from-primary-bg via-white to-white dark:from-[#1a1025] dark:via-[#0a0a0a] dark:to-[#0a0a0a] pt-28 pb-20 md:pt-36 md:pb-28">
+    <section className="relative overflow-hidden bg-gradient-to-br from-primary-bg via-background to-background pt-28 pb-20 md:pt-36 md:pb-28">
       {/* 배경 장식 */}
       <div className="absolute top-20 right-0 w-72 h-72 bg-primary/10 rounded-full blur-3xl" />
       <div className="absolute bottom-0 left-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
@@ -24,7 +24,7 @@ export default function HeroSection() {
         </h1>
 
         {/* 서브카피 */}
-        <p className="mx-auto mt-6 max-w-2xl text-lg text-gray-500 dark:text-gray-400 md:text-xl animate-fade-in-up" style={{ animationDelay: "0.15s" }}>
+        <p className="mx-auto mt-6 max-w-2xl text-lg text-muted md:text-xl animate-fade-in-up" style={{ animationDelay: "0.15s" }}>
           특별한 장비도, 경험도 필요 없습니다.
           <br className="hidden md:block" />
           수익을 얻으면서 나만의 인플루언서 채널까지 키워보세요.
@@ -41,7 +41,7 @@ export default function HeroSection() {
         </div>
 
         {/* 부가 정보 */}
-        <p className="mt-6 text-sm text-gray-400 dark:text-gray-500 animate-fade-in" style={{ animationDelay: "0.5s" }}>
+        <p className="mt-6 text-sm text-faint animate-fade-in" style={{ animationDelay: "0.5s" }}>
           가입비 무료 · 3분이면 가입 완료 · 언제든 그만둘 수 있어요
         </p>
 
@@ -49,7 +49,7 @@ export default function HeroSection() {
         <p className="mt-4 text-sm animate-fade-in" style={{ animationDelay: "0.6s" }}>
           <Link
             href="/signup/company"
-            className="text-gray-500 hover:text-primary underline-offset-4 hover:underline transition-colors"
+            className="text-muted hover:text-primary underline-offset-4 hover:underline transition-colors"
           >
             기업 담당자이신가요? 캠페인 등록하러 가기 →
           </Link>

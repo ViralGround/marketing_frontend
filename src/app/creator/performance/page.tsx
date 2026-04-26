@@ -39,15 +39,15 @@ export default function CreatorPerformancePage() {
     load();
   }, []);
 
-  if (loading) return <p className="mx-auto max-w-4xl px-4 py-10 text-gray-500">불러오는 중...</p>;
+  if (loading) return <p className="mx-auto max-w-4xl px-4 py-10 text-muted">불러오는 중...</p>;
   if (!data) return <p className="mx-auto max-w-4xl px-4 py-10 text-red-600">데이터 없음</p>;
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-10">
       <div className="mb-8">
-        <p className="text-sm text-gray-500">성과 대시보드</p>
-        <h1 className="mt-1 text-3xl font-bold text-gray-900">내 영상 누적 성과</h1>
-        <p className="mt-2 text-sm text-gray-500">
+        <p className="text-sm text-muted">성과 대시보드</p>
+        <h1 className="mt-1 text-3xl font-bold text-foreground">내 영상 누적 성과</h1>
+        <p className="mt-2 text-sm text-muted">
           SNS 게시물의 조회수·좋아요·댓글을 직접 입력하면 포트폴리오에 반영됩니다.
         </p>
       </div>
@@ -64,33 +64,33 @@ export default function CreatorPerformancePage() {
       </div>
 
       <section>
-        <h2 className="mb-3 text-lg font-semibold text-gray-900">작품별 성과</h2>
+        <h2 className="mb-3 text-lg font-semibold text-foreground">작품별 성과</h2>
         {data.items.length === 0 ? (
-          <p className="text-sm text-gray-400">정산 완료된 작업이 없어요.</p>
+          <p className="text-sm text-faint">정산 완료된 작업이 없어요.</p>
         ) : (
           <ul className="space-y-3">
             {data.items.map((it) => (
               <li
                 key={it.applicationId}
-                className="flex items-center justify-between rounded border border-gray-200 p-4"
+                className="flex items-center justify-between rounded border border-line p-4"
               >
                 <div className="min-w-0">
-                  <p className="text-xs text-gray-500">{it.brandName}</p>
-                  <p className="truncate font-semibold text-gray-900">{it.campaignTitle}</p>
-                  <p className="mt-1 text-xs text-gray-600">
+                  <p className="text-xs text-muted">{it.brandName}</p>
+                  <p className="truncate font-semibold text-foreground">{it.campaignTitle}</p>
+                  <p className="mt-1 text-xs text-muted">
                     조회 {it.views.toLocaleString("ko-KR")} · 좋아요{" "}
                     {it.likes.toLocaleString("ko-KR")} · 댓글{" "}
                     {it.comments.toLocaleString("ko-KR")}
                   </p>
                   {it.recordedAt && (
-                    <p className="mt-0.5 text-xs text-gray-400">
+                    <p className="mt-0.5 text-xs text-faint">
                       기록: {new Date(it.recordedAt).toLocaleDateString("ko-KR")}
                     </p>
                   )}
                 </div>
                 <button
                   onClick={() => setEditTarget(it)}
-                  className="rounded border border-gray-300 px-3 py-1.5 text-xs text-gray-700 hover:bg-gray-50"
+                  className="rounded border border-line-strong px-3 py-1.5 text-xs text-content-soft hover:bg-surface-muted"
                 >
                   성과 입력/수정
                 </button>
@@ -102,9 +102,9 @@ export default function CreatorPerformancePage() {
 
       {editTarget && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="w-full max-w-md rounded-xl bg-white p-6">
-            <h3 className="mb-1 text-lg font-semibold text-gray-900">성과 입력</h3>
-            <p className="mb-4 text-sm text-gray-500">{editTarget.campaignTitle}</p>
+          <div className="w-full max-w-md rounded-xl bg-surface p-6">
+            <h3 className="mb-1 text-lg font-semibold text-foreground">성과 입력</h3>
+            <p className="mb-4 text-sm text-muted">{editTarget.campaignTitle}</p>
             <MetricForm
               applicationId={editTarget.applicationId}
               initial={{

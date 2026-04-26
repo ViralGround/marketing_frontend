@@ -19,7 +19,7 @@ export default function ThemeToggle() {
       <button
         type="button"
         aria-label="테마 전환"
-        className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-gray-300 dark:border-gray-700 bg-transparent"
+        className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-line-strong bg-transparent"
       />
     );
   }
@@ -32,7 +32,7 @@ export default function ThemeToggle() {
       onClick={toggle}
       aria-label={isDark ? "라이트모드로 전환" : "다크모드로 전환"}
       title={isDark ? "라이트모드로 전환" : "다크모드로 전환"}
-      className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-gray-300 dark:border-gray-700 bg-transparent text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+      className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-line-strong bg-transparent text-muted hover:bg-surface-muted transition-colors"
     >
       {isDark ? (
         // sun

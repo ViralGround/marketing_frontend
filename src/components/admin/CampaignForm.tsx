@@ -121,7 +121,7 @@ export default function CampaignForm({
       )}
 
       <div>
-        <label htmlFor="title" className="block text-sm font-medium text-gray-700">
+        <label htmlFor="title" className="block text-sm font-medium text-content-soft">
           캠페인 제목
         </label>
         <input
@@ -129,12 +129,12 @@ export default function CampaignForm({
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="예: 신제품 바디워시 리뷰 영상"
-          className="mt-1 block w-full rounded border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-gray-500 focus:outline-none"
+          className="mt-1 block w-full rounded border border-line-strong px-3 py-2 text-foreground placeholder-faint focus:border-gray-500 focus:outline-none"
         />
       </div>
 
       <div>
-        <label htmlFor="brandName" className="block text-sm font-medium text-gray-700">
+        <label htmlFor="brandName" className="block text-sm font-medium text-content-soft">
           브랜드명
         </label>
         <input
@@ -142,12 +142,12 @@ export default function CampaignForm({
           value={brandName}
           onChange={(e) => setBrandName(e.target.value)}
           placeholder="예: ABC 코스메틱"
-          className="mt-1 block w-full rounded border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-gray-500 focus:outline-none"
+          className="mt-1 block w-full rounded border border-line-strong px-3 py-2 text-foreground placeholder-faint focus:border-gray-500 focus:outline-none"
         />
       </div>
 
       <div>
-        <label htmlFor="description" className="block text-sm font-medium text-gray-700">
+        <label htmlFor="description" className="block text-sm font-medium text-content-soft">
           설명
         </label>
         <textarea
@@ -156,13 +156,13 @@ export default function CampaignForm({
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           placeholder="캠페인 상세 설명"
-          className="mt-1 block w-full rounded border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-gray-500 focus:outline-none"
+          className="mt-1 block w-full rounded border border-line-strong px-3 py-2 text-foreground placeholder-faint focus:border-gray-500 focus:outline-none"
         />
       </div>
 
       <div>
-        <label htmlFor="requirements" className="block text-sm font-medium text-gray-700">
-          요구사항/가이드라인 <span className="text-gray-400">(선택)</span>
+        <label htmlFor="requirements" className="block text-sm font-medium text-content-soft">
+          요구사항/가이드라인 <span className="text-faint">(선택)</span>
         </label>
         <textarea
           id="requirements"
@@ -170,13 +170,13 @@ export default function CampaignForm({
           value={requirements}
           onChange={(e) => setRequirements(e.target.value)}
           placeholder="예: 30초 이상 세로형 영상, 얼굴 공개 필요, 지정 해시태그 포함"
-          className="mt-1 block w-full rounded border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-gray-500 focus:outline-none"
+          className="mt-1 block w-full rounded border border-line-strong px-3 py-2 text-foreground placeholder-faint focus:border-gray-500 focus:outline-none"
         />
       </div>
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label htmlFor="rewardAmount" className="block text-sm font-medium text-gray-700">
+          <label htmlFor="rewardAmount" className="block text-sm font-medium text-content-soft">
             보상 금액 (원)
           </label>
           <input
@@ -185,11 +185,11 @@ export default function CampaignForm({
             min={0}
             value={rewardAmount}
             onChange={(e) => setRewardAmount(e.target.value)}
-            className="mt-1 block w-full rounded border border-gray-300 px-3 py-2 text-gray-900 focus:border-gray-500 focus:outline-none"
+            className="mt-1 block w-full rounded border border-line-strong px-3 py-2 text-foreground focus:border-gray-500 focus:outline-none"
           />
         </div>
         <div>
-          <label htmlFor="maxParticipants" className="block text-sm font-medium text-gray-700">
+          <label htmlFor="maxParticipants" className="block text-sm font-medium text-content-soft">
             최대 참여자 수
           </label>
           <input
@@ -198,27 +198,27 @@ export default function CampaignForm({
             min={1}
             value={maxParticipants}
             onChange={(e) => setMaxParticipants(e.target.value)}
-            className="mt-1 block w-full rounded border border-gray-300 px-3 py-2 text-gray-900 focus:border-gray-500 focus:outline-none"
+            className="mt-1 block w-full rounded border border-line-strong px-3 py-2 text-foreground focus:border-gray-500 focus:outline-none"
           />
         </div>
       </div>
 
       <div>
-        <label htmlFor="deadline" className="block text-sm font-medium text-gray-700">
-          마감일 <span className="text-gray-400">(선택)</span>
+        <label htmlFor="deadline" className="block text-sm font-medium text-content-soft">
+          마감일 <span className="text-faint">(선택)</span>
         </label>
         <input
           id="deadline"
           type="date"
           value={deadline}
           onChange={(e) => setDeadline(e.target.value)}
-          className="mt-1 block w-full rounded border border-gray-300 px-3 py-2 text-gray-900 focus:border-gray-500 focus:outline-none"
+          className="mt-1 block w-full rounded border border-line-strong px-3 py-2 text-foreground focus:border-gray-500 focus:outline-none"
         />
       </div>
 
       <div>
-        <label htmlFor="thumbnailUrl" className="block text-sm font-medium text-gray-700">
-          썸네일 이미지 URL <span className="text-gray-400">(선택)</span>
+        <label htmlFor="thumbnailUrl" className="block text-sm font-medium text-content-soft">
+          썸네일 이미지 URL <span className="text-faint">(선택)</span>
         </label>
         <input
           id="thumbnailUrl"
@@ -229,7 +229,7 @@ export default function CampaignForm({
             setThumbBroken(false);
           }}
           placeholder="https://..."
-          className="mt-1 block w-full rounded border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-gray-500 focus:outline-none"
+          className="mt-1 block w-full rounded border border-line-strong px-3 py-2 text-foreground placeholder-faint focus:border-gray-500 focus:outline-none"
         />
         {trimmedThumb && thumbnailUrlValid === false && (
           <p className="mt-1 text-xs text-red-600">
@@ -238,12 +238,12 @@ export default function CampaignForm({
         )}
         {trimmedThumb && thumbnailUrlValid && !thumbBroken && (
           <div className="mt-2">
-            <p className="mb-1 text-xs text-gray-500">미리보기</p>
+            <p className="mb-1 text-xs text-muted">미리보기</p>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={trimmedThumb}
               alt="썸네일 미리보기"
-              className="max-h-48 rounded border border-gray-200"
+              className="max-h-48 rounded border border-line"
               onError={() => setThumbBroken(true)}
             />
           </div>
@@ -256,7 +256,7 @@ export default function CampaignForm({
       </div>
 
       {mode === "create" && (
-        <div className="rounded border border-gray-200 bg-gray-50 p-3">
+        <div className="rounded border border-line bg-surface-muted p-3">
           <label className="flex items-start gap-2 text-sm text-gray-800">
             <input
               type="checkbox"
@@ -266,7 +266,7 @@ export default function CampaignForm({
             />
             <span>
               <span className="font-medium">바로 모집 시작</span>
-              <span className="text-gray-500"> (예치금 완료 상태로 생성)</span>
+              <span className="text-muted"> (예치금 완료 상태로 생성)</span>
             </span>
           </label>
           {!immediatelyOpen && (
@@ -289,7 +289,7 @@ export default function CampaignForm({
         <button
           type="button"
           onClick={() => router.back()}
-          className="rounded border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+          className="rounded border border-line-strong px-4 py-2 text-sm text-content-soft hover:bg-surface-muted"
         >
           취소
         </button>

@@ -54,7 +54,7 @@ const ESCROW_LABEL: Record<EscrowStatus, string> = {
 };
 
 const ESCROW_CLASS: Record<EscrowStatus, string> = {
-  NONE: "bg-gray-100 text-gray-600",
+  NONE: "bg-surface-chip text-muted",
   PENDING_DEPOSIT: "bg-amber-100 text-amber-700",
   DEPOSIT_CONFIRMING: "bg-orange-100 text-orange-700",
   FUNDED: "bg-emerald-100 text-emerald-700",
@@ -198,7 +198,7 @@ export default function AdminCampaignDetailPage() {
   };
 
   if (loading || !campaign) {
-    return <p className="text-gray-500">불러오는 중...</p>;
+    return <p className="text-muted">불러오는 중...</p>;
   }
 
   if (editMode) {
@@ -206,11 +206,11 @@ export default function AdminCampaignDetailPage() {
       <div className="mx-auto max-w-2xl">
         <button
           onClick={() => setEditMode(false)}
-          className="mb-4 text-sm text-gray-500 hover:text-gray-900"
+          className="mb-4 text-sm text-muted hover:text-foreground"
         >
           &larr; 취소
         </button>
-        <h1 className="mb-6 text-2xl font-bold text-gray-900">캠페인 수정</h1>
+        <h1 className="mb-6 text-2xl font-bold text-foreground">캠페인 수정</h1>
         <CampaignForm
           mode="edit"
           initial={{
@@ -234,20 +234,20 @@ export default function AdminCampaignDetailPage() {
     <div>
       <button
         onClick={() => router.push("/admin/campaigns")}
-        className="mb-4 text-sm text-gray-500 hover:text-gray-900"
+        className="mb-4 text-sm text-muted hover:text-foreground"
       >
         &larr; 캠페인 목록으로
       </button>
 
       <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
         <div>
-          <p className="text-sm text-gray-500">{campaign.brandName}</p>
-          <h1 className="mt-1 text-2xl font-bold text-gray-900">{campaign.title}</h1>
+          <p className="text-sm text-muted">{campaign.brandName}</p>
+          <h1 className="mt-1 text-2xl font-bold text-foreground">{campaign.title}</h1>
         </div>
         <div className="flex flex-wrap gap-2">
           <button
             onClick={() => setEditMode(true)}
-            className="rounded border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50"
+            className="rounded border border-line-strong px-3 py-1.5 text-sm text-content-soft hover:bg-surface-muted"
           >
             수정
           </button>
@@ -262,38 +262,38 @@ export default function AdminCampaignDetailPage() {
 
       {/* 요약 */}
       <div className="mb-6 grid grid-cols-2 gap-4 md:grid-cols-4">
-        <div className="rounded border border-gray-200 p-4">
-          <p className="text-sm text-gray-500">보상</p>
-          <p className="mt-1 text-xl font-bold text-gray-900">
+        <div className="rounded border border-line p-4">
+          <p className="text-sm text-muted">보상</p>
+          <p className="mt-1 text-xl font-bold text-foreground">
             ₩{campaign.rewardAmount.toLocaleString("ko-KR")}
           </p>
         </div>
-        <div className="rounded border border-gray-200 p-4">
-          <p className="text-sm text-gray-500">지원자</p>
-          <p className="mt-1 text-xl font-bold text-gray-900">
+        <div className="rounded border border-line p-4">
+          <p className="text-sm text-muted">지원자</p>
+          <p className="mt-1 text-xl font-bold text-foreground">
             {campaign.applications.length} / {campaign.maxParticipants}
           </p>
         </div>
-        <div className="rounded border border-gray-200 p-4">
-          <p className="text-sm text-gray-500">마감일</p>
-          <p className="mt-1 text-xl font-bold text-gray-900">
+        <div className="rounded border border-line p-4">
+          <p className="text-sm text-muted">마감일</p>
+          <p className="mt-1 text-xl font-bold text-foreground">
             {campaign.deadline
               ? new Date(campaign.deadline).toLocaleDateString("ko-KR")
               : "-"}
           </p>
         </div>
-        <div className="rounded border border-gray-200 p-4">
-          <p className="text-sm text-gray-500">상태</p>
-          <p className="mt-1 text-xl font-bold text-gray-900">
+        <div className="rounded border border-line p-4">
+          <p className="text-sm text-muted">상태</p>
+          <p className="mt-1 text-xl font-bold text-foreground">
             {CAMPAIGN_STATUS_LABEL[campaign.status]}
           </p>
         </div>
       </div>
 
       {/* 예치금 */}
-      <div className="mb-6 rounded border border-gray-200 p-4">
+      <div className="mb-6 rounded border border-line p-4">
         <div className="mb-2 flex items-center justify-between">
-          <p className="text-sm font-medium text-gray-700">예치금</p>
+          <p className="text-sm font-medium text-content-soft">예치금</p>
           <span
             className={`rounded px-2 py-0.5 text-xs ${ESCROW_CLASS[campaign.escrowStatus]}`}
           >
@@ -301,7 +301,7 @@ export default function AdminCampaignDetailPage() {
           </span>
         </div>
         {campaign.fundedAt && (
-          <p className="mb-2 text-xs text-gray-500">
+          <p className="mb-2 text-xs text-muted">
             완료 시각: {new Date(campaign.fundedAt).toLocaleString("ko-KR")}
           </p>
         )}
@@ -313,28 +313,28 @@ export default function AdminCampaignDetailPage() {
             >
               예치금 입금완료 처리
             </button>
-            <p className="mt-2 text-xs text-gray-500">
+            <p className="mt-2 text-xs text-muted">
               관리자가 임의로 예치금 완료 처리합니다. 캠페인이 DRAFT 상태라면 모집중으로 전환되어
               크리에이터에게 노출됩니다.
             </p>
           </div>
         ) : (
-          <p className="text-xs text-gray-500">
+          <p className="text-xs text-muted">
             이미 예치금이 완료되었거나 정산/환불된 캠페인입니다.
           </p>
         )}
       </div>
 
       {/* 상태 변경 */}
-      <div className="mb-6 rounded border border-gray-200 p-4">
-        <p className="mb-2 text-sm font-medium text-gray-700">상태 변경</p>
+      <div className="mb-6 rounded border border-line p-4">
+        <p className="mb-2 text-sm font-medium text-content-soft">상태 변경</p>
         <div className="flex flex-wrap gap-2">
           {(["OPEN", "CLOSED"] as CampaignStatus[]).map((s) => (
             <button
               key={s}
               onClick={() => handleStatus(s)}
               disabled={campaign.status === s}
-              className="rounded border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400"
+              className="rounded border border-line-strong px-3 py-1.5 text-sm text-content-soft hover:bg-surface-muted disabled:cursor-not-allowed disabled:bg-surface-chip disabled:text-faint"
             >
               {CAMPAIGN_STATUS_LABEL[s]}
             </button>
@@ -343,59 +343,59 @@ export default function AdminCampaignDetailPage() {
       </div>
 
       {/* 설명 */}
-      <div className="mb-6 rounded border border-gray-200 p-6">
-        <h2 className="mb-3 text-lg font-semibold text-gray-900">설명</h2>
-        <p className="whitespace-pre-wrap text-sm text-gray-700">{campaign.description}</p>
+      <div className="mb-6 rounded border border-line p-6">
+        <h2 className="mb-3 text-lg font-semibold text-foreground">설명</h2>
+        <p className="whitespace-pre-wrap text-sm text-content-soft">{campaign.description}</p>
         {campaign.requirements && (
           <>
-            <h3 className="mt-5 mb-2 text-sm font-semibold text-gray-900">요구사항</h3>
-            <p className="whitespace-pre-wrap text-sm text-gray-700">{campaign.requirements}</p>
+            <h3 className="mt-5 mb-2 text-sm font-semibold text-foreground">요구사항</h3>
+            <p className="whitespace-pre-wrap text-sm text-content-soft">{campaign.requirements}</p>
           </>
         )}
         {campaign.thumbnailUrl && (
           <div className="mt-5">
-            <p className="mb-2 text-xs text-gray-500">썸네일</p>
+            <p className="mb-2 text-xs text-muted">썸네일</p>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={campaign.thumbnailUrl}
               alt="썸네일"
-              className="max-h-60 rounded border border-gray-200"
+              className="max-h-60 rounded border border-line"
             />
           </div>
         )}
       </div>
 
       {/* 지원자 */}
-      <div className="rounded border border-gray-200 p-6">
-        <h2 className="mb-4 text-lg font-semibold text-gray-900">
+      <div className="rounded border border-line p-6">
+        <h2 className="mb-4 text-lg font-semibold text-foreground">
           지원자 ({campaign.applications.length})
         </h2>
         {campaign.applications.length === 0 ? (
-          <p className="text-sm text-gray-500">아직 지원자가 없습니다.</p>
+          <p className="text-sm text-muted">아직 지원자가 없습니다.</p>
         ) : (
           <div className="space-y-4">
             {campaign.applications.map((app) => (
-              <div key={app.id} className="rounded border border-gray-200 p-4">
+              <div key={app.id} className="rounded border border-line p-4">
                 <div className="mb-3 flex flex-wrap items-start justify-between gap-2">
                   <div>
                     <div className="flex items-center gap-2">
                       <Link
                         href={`/admin/members/${app.creator.id}`}
-                        className="font-medium text-gray-900 hover:underline"
+                        className="font-medium text-foreground hover:underline"
                       >
                         {app.creator.name}
                       </Link>
                       <ApplicationStatusBadge status={app.status} />
                     </div>
-                    <p className="text-xs text-gray-500">{app.creator.email}</p>
+                    <p className="text-xs text-muted">{app.creator.email}</p>
                   </div>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-muted">
                     지원일: {new Date(app.appliedAt).toLocaleDateString("ko-KR")}
                   </p>
                 </div>
 
                 {app.creator.creatorProfile && (
-                  <div className="mb-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-600">
+                  <div className="mb-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted">
                     {app.creator.creatorProfile.gender && (
                       <span>성별: {app.creator.creatorProfile.gender}</span>
                     )}
@@ -415,14 +415,14 @@ export default function AdminCampaignDetailPage() {
                 )}
 
                 {app.message && (
-                  <div className="mb-3 rounded bg-gray-50 p-3 text-sm text-gray-700">
+                  <div className="mb-3 rounded bg-surface-muted p-3 text-sm text-content-soft">
                     &ldquo;{app.message}&rdquo;
                   </div>
                 )}
 
                 {!app.videoFileKey && app.submissionUrl && (
                   <div className="mb-3 text-sm">
-                    <span className="text-gray-500">제출 URL (레거시): </span>
+                    <span className="text-muted">제출 URL (레거시): </span>
                     {isSafeExternalLink(app.submissionUrl) ? (
                       <a
                         href={app.submissionUrl}
@@ -444,7 +444,7 @@ export default function AdminCampaignDetailPage() {
                 )}
                 {app.submissions && app.submissions.length > 0 && (
                   <div className="mb-3">
-                    <p className="mb-2 text-xs font-semibold text-gray-500">
+                    <p className="mb-2 text-xs font-semibold text-muted">
                       제출 이력
                       {(app.resubmissionCount ?? 0) > 0 && ` (재제출 ${app.resubmissionCount}회)`}
                     </p>
@@ -453,7 +453,7 @@ export default function AdminCampaignDetailPage() {
                 )}
 
                 {app.rewardPaidAmount !== null && (
-                  <p className="mb-3 text-sm text-gray-700">
+                  <p className="mb-3 text-sm text-content-soft">
                     정산액: ₩{app.rewardPaidAmount.toLocaleString("ko-KR")}
                   </p>
                 )}

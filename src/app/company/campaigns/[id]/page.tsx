@@ -222,7 +222,7 @@ export default function CompanyCampaignDetailPage() {
     data.applicationCount === 0 &&
     (data.escrowStatus === "FUNDED" || data.escrowStatus === "PENDING_DEPOSIT");
 
-  if (loading) return <p className="text-gray-500">불러오는 중...</p>;
+  if (loading) return <p className="text-muted">불러오는 중...</p>;
   if (!data) return <p className="text-red-600">{error || "데이터 없음"}</p>;
 
   return (
@@ -230,19 +230,19 @@ export default function CompanyCampaignDetailPage() {
       <div className="flex items-start justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="inline-flex rounded bg-gray-100 px-2 py-0.5 text-xs text-gray-700">
+            <span className="inline-flex rounded bg-surface-chip px-2 py-0.5 text-xs text-content-soft">
               {ESCROW_LABEL[data.escrowStatus]}
             </span>
-            <span className="text-xs text-gray-500">{data.status}</span>
+            <span className="text-xs text-muted">{data.status}</span>
           </div>
-          <h1 className="mt-2 text-2xl font-bold text-gray-900">{data.title}</h1>
-          <p className="mt-1 text-sm text-gray-500">{data.brandName}</p>
+          <h1 className="mt-2 text-2xl font-bold text-foreground">{data.title}</h1>
+          <p className="mt-1 text-sm text-muted">{data.brandName}</p>
         </div>
         <div className="flex flex-wrap gap-2">
           {canEdit && (
             <Link
               href={`/company/campaigns/${data.id}/edit`}
-              className="rounded border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50"
+              className="rounded border border-line-strong px-3 py-1.5 text-sm text-content-soft hover:bg-surface-muted"
             >
               수정
             </Link>
@@ -275,22 +275,22 @@ export default function CompanyCampaignDetailPage() {
         <div className="rounded bg-red-50 p-3 text-sm text-red-600">{error}</div>
       )}
 
-      <section className="rounded-lg border border-gray-200 p-5">
-        <h2 className="text-sm font-semibold text-gray-500">예치금</h2>
+      <section className="rounded-lg border border-line p-5">
+        <h2 className="text-sm font-semibold text-muted">예치금</h2>
         <div className="mt-3 grid grid-cols-3 gap-4">
           <div>
-            <p className="text-xs text-gray-500">1인당 보상</p>
-            <p className="mt-1 font-bold text-gray-900">
+            <p className="text-xs text-muted">1인당 보상</p>
+            <p className="mt-1 font-bold text-foreground">
               {data.rewardAmount.toLocaleString()}원
             </p>
           </div>
           <div>
-            <p className="text-xs text-gray-500">모집 인원</p>
-            <p className="mt-1 font-bold text-gray-900">{data.maxParticipants}명</p>
+            <p className="text-xs text-muted">모집 인원</p>
+            <p className="mt-1 font-bold text-foreground">{data.maxParticipants}명</p>
           </div>
           <div>
-            <p className="text-xs text-gray-500">총 예산</p>
-            <p className="mt-1 font-bold text-gray-900">
+            <p className="text-xs text-muted">총 예산</p>
+            <p className="mt-1 font-bold text-foreground">
               {data.totalBudget.toLocaleString()}원
             </p>
           </div>
@@ -326,20 +326,20 @@ export default function CompanyCampaignDetailPage() {
         )}
 
         {data.escrowStatus === "REFUNDED" && (
-          <div className="mt-5 rounded bg-gray-100 p-4 text-sm text-gray-700">
+          <div className="mt-5 rounded bg-surface-chip p-4 text-sm text-content-soft">
             환불 처리된 캠페인입니다.
           </div>
         )}
 
         {data.escrowTransactions.length > 0 && (
           <div className="mt-5">
-            <h3 className="text-xs font-semibold text-gray-500">예치금 이력</h3>
-            <ul className="mt-2 divide-y divide-gray-200 rounded border border-gray-200">
+            <h3 className="text-xs font-semibold text-muted">예치금 이력</h3>
+            <ul className="mt-2 divide-y divide-line rounded border border-line">
               {data.escrowTransactions.map((tx) => (
                 <li key={tx.id} className="flex items-center justify-between px-3 py-2 text-xs">
-                  <span className="text-gray-700">{tx.type}</span>
-                  <span className="text-gray-900">{tx.amount.toLocaleString()}원</span>
-                  <span className="text-gray-400">{new Date(tx.createdAt).toLocaleString()}</span>
+                  <span className="text-content-soft">{tx.type}</span>
+                  <span className="text-foreground">{tx.amount.toLocaleString()}원</span>
+                  <span className="text-faint">{new Date(tx.createdAt).toLocaleString()}</span>
                 </li>
               ))}
             </ul>
@@ -347,11 +347,11 @@ export default function CompanyCampaignDetailPage() {
         )}
       </section>
 
-      <section className="rounded-lg border border-gray-200 p-5">
-        <h2 className="text-sm font-semibold text-gray-500">캠페인 내용</h2>
-        <p className="mt-3 whitespace-pre-wrap text-sm text-gray-700">{data.description}</p>
+      <section className="rounded-lg border border-line p-5">
+        <h2 className="text-sm font-semibold text-muted">캠페인 내용</h2>
+        <p className="mt-3 whitespace-pre-wrap text-sm text-content-soft">{data.description}</p>
         {data.requirements && (
-          <div className="mt-4 rounded bg-gray-50 p-3 text-sm text-gray-700">
+          <div className="mt-4 rounded bg-surface-muted p-3 text-sm text-content-soft">
             <p className="font-semibold">제출 요구사항</p>
             <p className="mt-1 whitespace-pre-wrap">{data.requirements}</p>
           </div>
@@ -361,20 +361,20 @@ export default function CompanyCampaignDetailPage() {
       <div className="flex justify-end">
         <Link
           href={`/company/campaigns/${data.id}/performance`}
-          className="rounded border border-gray-300 px-3 py-1.5 text-xs text-gray-700 hover:bg-gray-50"
+          className="rounded border border-line-strong px-3 py-1.5 text-xs text-content-soft hover:bg-surface-muted"
         >
           성과 리포트 보기 →
         </Link>
       </div>
 
-      <section className="rounded-lg border border-gray-200 p-5">
-        <h2 className="text-sm font-semibold text-gray-500">
+      <section className="rounded-lg border border-line p-5">
+        <h2 className="text-sm font-semibold text-muted">
           지원자 ({data.applicationCount})
         </h2>
         {data.applications.length === 0 ? (
-          <p className="mt-3 text-sm text-gray-500">아직 지원자가 없습니다.</p>
+          <p className="mt-3 text-sm text-muted">아직 지원자가 없습니다.</p>
         ) : (
-          <ul className="mt-3 divide-y divide-gray-200">
+          <ul className="mt-3 divide-y divide-line">
             {data.applications.map((a) => (
               <li key={a.id} className="py-3">
                 <div className="flex items-start justify-between gap-4">
@@ -382,11 +382,11 @@ export default function CompanyCampaignDetailPage() {
                     <div className="flex items-center gap-2">
                       <Link
                         href={`/creators/${a.creator.id}`}
-                        className="font-medium text-gray-900 hover:text-primary hover:underline"
+                        className="font-medium text-foreground hover:text-primary hover:underline"
                       >
                         {a.creator.name}
                       </Link>
-                      <span className="rounded bg-gray-100 px-2 py-0.5 text-xs text-gray-700">
+                      <span className="rounded bg-surface-chip px-2 py-0.5 text-xs text-content-soft">
                         {APP_LABEL[a.status]}
                       </span>
                       <Link
@@ -396,9 +396,9 @@ export default function CompanyCampaignDetailPage() {
                         상세 프로필 →
                       </Link>
                     </div>
-                    <p className="mt-0.5 text-xs text-gray-500">{a.creator.email}</p>
+                    <p className="mt-0.5 text-xs text-muted">{a.creator.email}</p>
                     {a.message && (
-                      <p className="mt-2 whitespace-pre-wrap text-xs text-gray-600">
+                      <p className="mt-2 whitespace-pre-wrap text-xs text-muted">
                         지원 메시지: {a.message}
                       </p>
                     )}
@@ -418,13 +418,13 @@ export default function CompanyCampaignDetailPage() {
                       </div>
                     )}
                     {a.rewardPaidAmount != null && (
-                      <p className="mt-1 text-xs text-gray-500">
+                      <p className="mt-1 text-xs text-muted">
                         지급: {a.rewardPaidAmount.toLocaleString()}원
                       </p>
                     )}
                     {a.submissions.length > 0 && (
                       <div className="mt-3">
-                        <p className="mb-2 text-xs font-semibold text-gray-500">
+                        <p className="mb-2 text-xs font-semibold text-muted">
                           제출 이력
                           {(a.resubmissionCount ?? 0) > 0 && ` (재제출 ${a.resubmissionCount}회)`}
                         </p>
@@ -445,7 +445,7 @@ export default function CompanyCampaignDetailPage() {
                         <button
                           disabled={rowActingId === a.id}
                           onClick={() => reviewApplication(a.id, "REJECT")}
-                          className="rounded border border-gray-300 px-3 py-1 text-xs text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                          className="rounded border border-line-strong px-3 py-1 text-xs text-content-soft hover:bg-surface-muted disabled:opacity-50"
                         >
                           탈락
                         </button>
@@ -490,7 +490,7 @@ export default function CompanyCampaignDetailPage() {
                     {a.status === "SETTLED" && (
                       <button
                         onClick={() => setReviewModal({ appId: a.id, creatorName: a.creator.name })}
-                        className="rounded border border-gray-300 px-3 py-1 text-xs text-gray-700 hover:bg-gray-50"
+                        className="rounded border border-line-strong px-3 py-1 text-xs text-content-soft hover:bg-surface-muted"
                       >
                         리뷰 작성
                       </button>
@@ -505,9 +505,9 @@ export default function CompanyCampaignDetailPage() {
 
       {reviewModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="w-full max-w-md rounded-xl bg-white p-6">
-            <h3 className="mb-1 text-lg font-semibold text-gray-900">크리에이터 리뷰 작성</h3>
-            <p className="mb-4 text-sm text-gray-500">{reviewModal.creatorName}</p>
+          <div className="w-full max-w-md rounded-xl bg-surface p-6">
+            <h3 className="mb-1 text-lg font-semibold text-foreground">크리에이터 리뷰 작성</h3>
+            <p className="mb-4 text-sm text-muted">{reviewModal.creatorName}</p>
             <ReviewForm
               applicationId={reviewModal.appId}
               onSubmitted={() => {
@@ -522,9 +522,9 @@ export default function CompanyCampaignDetailPage() {
 
       {changesModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="w-full max-w-md rounded-xl bg-white p-6">
-            <h3 className="mb-1 text-lg font-semibold text-gray-900">수정 요청 사유</h3>
-            <p className="mb-4 text-sm text-gray-500">
+          <div className="w-full max-w-md rounded-xl bg-surface p-6">
+            <h3 className="mb-1 text-lg font-semibold text-foreground">수정 요청 사유</h3>
+            <p className="mb-4 text-sm text-muted">
               크리에이터에게 전달되는 피드백입니다. 무엇을 어떻게 수정해야 할지 구체적으로 작성해주세요.
             </p>
             <textarea
@@ -532,12 +532,12 @@ export default function CompanyCampaignDetailPage() {
               onChange={(e) => setChangesComment(e.target.value)}
               rows={4}
               placeholder="예: 로고 노출 시간이 3초 미만입니다. 중반부 이후에도 3초 이상 노출되도록 편집해주세요."
-              className="block w-full rounded border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-gray-500 focus:outline-none"
+              className="block w-full rounded border border-line-strong px-3 py-2 text-sm text-foreground placeholder-faint focus:border-gray-500 focus:outline-none"
             />
             <div className="mt-4 flex justify-end gap-2">
               <button
                 onClick={() => setChangesModal(null)}
-                className="rounded border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50"
+                className="rounded border border-line-strong px-3 py-1.5 text-sm text-content-soft hover:bg-surface-muted"
               >
                 취소
               </button>

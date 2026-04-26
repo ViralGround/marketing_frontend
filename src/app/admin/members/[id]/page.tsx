@@ -89,7 +89,7 @@ export default function AdminMemberDetailPage() {
   };
 
   if (loading || !member) {
-    return <p className="text-gray-500">불러오는 중...</p>;
+    return <p className="text-muted">불러오는 중...</p>;
   }
 
   const statusLabel = (s: MemberStatus) =>
@@ -105,14 +105,14 @@ export default function AdminMemberDetailPage() {
     <div>
       <button
         onClick={() => router.push("/admin/members")}
-        className="mb-4 text-sm text-gray-500 hover:text-gray-900"
+        className="mb-4 text-sm text-muted hover:text-foreground"
       >
         &larr; 회원 목록으로
       </button>
 
       <div className="mb-6 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <h1 className="text-2xl font-bold text-gray-900">{member.name}</h1>
+          <h1 className="text-2xl font-bold text-foreground">{member.name}</h1>
           <span className={`rounded px-2 py-0.5 text-xs ${statusClass(member.status)}`}>
             {statusLabel(member.status)}
           </span>
@@ -126,30 +126,30 @@ export default function AdminMemberDetailPage() {
       </div>
 
       {/* 기본 정보 */}
-      <div className="mb-6 rounded border border-gray-200 p-6">
-        <h2 className="mb-4 text-lg font-semibold text-gray-900">기본 정보</h2>
+      <div className="mb-6 rounded border border-line p-6">
+        <h2 className="mb-4 text-lg font-semibold text-foreground">기본 정보</h2>
         <dl className="grid grid-cols-2 gap-4 text-sm">
           <div>
-            <dt className="text-gray-500">이메일</dt>
-            <dd className="mt-1 text-gray-900">{member.email}</dd>
+            <dt className="text-muted">이메일</dt>
+            <dd className="mt-1 text-foreground">{member.email}</dd>
           </div>
           <div>
-            <dt className="text-gray-500">가입일</dt>
-            <dd className="mt-1 text-gray-900">
+            <dt className="text-muted">가입일</dt>
+            <dd className="mt-1 text-foreground">
               {new Date(member.createdAt).toLocaleString("ko-KR")}
             </dd>
           </div>
           <div>
-            <dt className="text-gray-500">캠페인 지원</dt>
-            <dd className="mt-1 text-gray-900">{member.applicationCount}건</dd>
+            <dt className="text-muted">캠페인 지원</dt>
+            <dd className="mt-1 text-foreground">{member.applicationCount}건</dd>
           </div>
         </dl>
       </div>
 
       {/* 승인 관리 */}
-      <div className="mb-6 rounded border border-gray-200 p-6">
-        <h2 className="mb-4 text-lg font-semibold text-gray-900">승인 관리</h2>
-        <p className="mb-4 text-sm text-gray-500">
+      <div className="mb-6 rounded border border-line p-6">
+        <h2 className="mb-4 text-lg font-semibold text-foreground">승인 관리</h2>
+        <p className="mb-4 text-sm text-muted">
           현재 상태:{" "}
           <span className={`rounded px-2 py-0.5 text-xs ${statusClass(member.status)}`}>
             {statusLabel(member.status)}
@@ -173,7 +173,7 @@ export default function AdminMemberDetailPage() {
           <button
             onClick={() => handleStatusChange("PENDING")}
             disabled={member.status === "PENDING"}
-            className="rounded border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+            className="rounded border border-line-strong px-4 py-2 text-sm text-content-soft hover:bg-surface-muted disabled:cursor-not-allowed disabled:opacity-50"
           >
             대기로 되돌리기
           </button>
@@ -188,56 +188,56 @@ export default function AdminMemberDetailPage() {
 
       {/* 크리에이터 프로필 / 설문 응답 */}
       {member.creatorProfile && (
-        <div className="mb-6 rounded border border-gray-200 p-6">
-          <h2 className="mb-4 text-lg font-semibold text-gray-900">설문 응답</h2>
+        <div className="mb-6 rounded border border-line p-6">
+          <h2 className="mb-4 text-lg font-semibold text-foreground">설문 응답</h2>
           <dl className="grid grid-cols-2 gap-4 text-sm">
             <div>
-              <dt className="text-gray-500">성별</dt>
-              <dd className="mt-1 text-gray-900">
+              <dt className="text-muted">성별</dt>
+              <dd className="mt-1 text-foreground">
                 {member.creatorProfile.gender
                   ? GENDER_LABEL[member.creatorProfile.gender]
                   : "-"}
               </dd>
             </div>
             <div>
-              <dt className="text-gray-500">나이</dt>
-              <dd className="mt-1 text-gray-900">
+              <dt className="text-muted">나이</dt>
+              <dd className="mt-1 text-foreground">
                 {member.creatorProfile.age ?? "-"}
               </dd>
             </div>
             <div>
-              <dt className="text-gray-500">주 사용 편집 툴</dt>
-              <dd className="mt-1 text-gray-900">
+              <dt className="text-muted">주 사용 편집 툴</dt>
+              <dd className="mt-1 text-foreground">
                 {member.creatorProfile.editingTool
                   ? EDITING_TOOL_LABEL[member.creatorProfile.editingTool]
                   : "-"}
               </dd>
             </div>
             <div>
-              <dt className="text-gray-500">얼굴 공개</dt>
-              <dd className="mt-1 text-gray-900">
+              <dt className="text-muted">얼굴 공개</dt>
+              <dd className="mt-1 text-foreground">
                 {member.creatorProfile.faceExposure ? "가능" : "불가능"}
               </dd>
             </div>
             <div>
-              <dt className="text-gray-500">인스타그램</dt>
-              <dd className="mt-1 text-gray-900">
+              <dt className="text-muted">인스타그램</dt>
+              <dd className="mt-1 text-foreground">
                 {member.creatorProfile.instagramId
                   ? `@${member.creatorProfile.instagramId}`
                   : "-"}
               </dd>
             </div>
             <div>
-              <dt className="text-gray-500">틱톡</dt>
-              <dd className="mt-1 text-gray-900">
+              <dt className="text-muted">틱톡</dt>
+              <dd className="mt-1 text-foreground">
                 {member.creatorProfile.tiktokId
                   ? `@${member.creatorProfile.tiktokId}`
                   : "-"}
               </dd>
             </div>
             <div>
-              <dt className="text-gray-500">유튜브</dt>
-              <dd className="mt-1 text-gray-900">
+              <dt className="text-muted">유튜브</dt>
+              <dd className="mt-1 text-foreground">
                 {member.creatorProfile.youtubeId
                   ? `@${member.creatorProfile.youtubeId}`
                   : "-"}

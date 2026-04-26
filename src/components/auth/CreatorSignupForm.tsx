@@ -108,9 +108,9 @@ export default function CreatorSignupForm() {
 
       {/* 기본 정보 */}
       <section className="space-y-4">
-        <h2 className="text-sm font-semibold text-gray-500">기본 정보</h2>
+        <h2 className="text-sm font-semibold text-muted">기본 정보</h2>
         <div>
-          <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+          <label htmlFor="name" className="block text-sm font-medium text-content-soft">
             활동명 (닉네임)
           </label>
           <input
@@ -120,7 +120,7 @@ export default function CreatorSignupForm() {
             placeholder="채널에서 사용할 활동명"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="mt-1 block w-full rounded border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-gray-500 focus:outline-none"
+            className="mt-1 block w-full rounded border border-line-strong px-3 py-2 text-foreground placeholder-faint focus:border-gray-500 focus:outline-none"
           />
         </div>
         <EmailVerificationField
@@ -129,7 +129,7 @@ export default function CreatorSignupForm() {
           onVerified={setVerifiedToken}
         />
         <div>
-          <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+          <label htmlFor="password" className="block text-sm font-medium text-content-soft">
             비밀번호 (8자 이상)
           </label>
           <input
@@ -139,17 +139,17 @@ export default function CreatorSignupForm() {
             minLength={8}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="mt-1 block w-full rounded border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-gray-500 focus:outline-none"
+            className="mt-1 block w-full rounded border border-line-strong px-3 py-2 text-foreground placeholder-faint focus:border-gray-500 focus:outline-none"
           />
         </div>
       </section>
 
       {/* 설문 */}
-      <section className="space-y-4 border-t border-gray-200 pt-6">
-        <h2 className="text-sm font-semibold text-gray-500">가입 설문</h2>
+      <section className="space-y-4 border-t border-line pt-6">
+        <h2 className="text-sm font-semibold text-muted">가입 설문</h2>
 
         <div>
-          <p className="mb-2 block text-sm font-medium text-gray-700">성별</p>
+          <p className="mb-2 block text-sm font-medium text-content-soft">성별</p>
           <div className="flex gap-2">
             {GENDER_OPTIONS.map((g) => (
               <label
@@ -157,7 +157,7 @@ export default function CreatorSignupForm() {
                 className={`flex-1 cursor-pointer rounded border px-3 py-2 text-center text-sm ${
                   gender === g.value
                     ? "border-gray-900 bg-gray-900 text-white"
-                    : "border-gray-300 text-gray-700 hover:bg-gray-50"
+                    : "border-line-strong text-content-soft hover:bg-surface-muted"
                 }`}
               >
                 <input
@@ -175,14 +175,14 @@ export default function CreatorSignupForm() {
         </div>
 
         <div>
-          <label htmlFor="birthYear" className="block text-sm font-medium text-gray-700">
+          <label htmlFor="birthYear" className="block text-sm font-medium text-content-soft">
             출생연도
           </label>
           <select
             id="birthYear"
             value={birthYear}
             onChange={(e) => setBirthYear(e.target.value)}
-            className="mt-1 block w-full rounded border border-gray-300 px-3 py-2 text-gray-900 focus:border-gray-500 focus:outline-none"
+            className="mt-1 block w-full rounded border border-line-strong px-3 py-2 text-foreground focus:border-gray-500 focus:outline-none"
           >
             <option value="">몇년생인지 선택해주세요</option>
             {Array.from({ length: 51 }, (_, i) => 2010 - i).map((y) => (
@@ -194,7 +194,7 @@ export default function CreatorSignupForm() {
         </div>
 
         <div>
-          <p className="mb-2 block text-sm font-medium text-gray-700">
+          <p className="mb-2 block text-sm font-medium text-content-soft">
             얼굴 공개 가능 여부
           </p>
           <div className="flex gap-2">
@@ -207,7 +207,7 @@ export default function CreatorSignupForm() {
                 className={`flex-1 cursor-pointer rounded border px-3 py-2 text-center text-sm ${
                   faceExposure === opt.value
                     ? "border-gray-900 bg-gray-900 text-white"
-                    : "border-gray-300 text-gray-700 hover:bg-gray-50"
+                    : "border-line-strong text-content-soft hover:bg-surface-muted"
                 }`}
               >
                 <input
@@ -225,7 +225,7 @@ export default function CreatorSignupForm() {
         </div>
 
         <div>
-          <label htmlFor="editingTool" className="block text-sm font-medium text-gray-700">
+          <label htmlFor="editingTool" className="block text-sm font-medium text-content-soft">
             주로 사용하는 편집 툴
           </label>
           <select
@@ -233,7 +233,7 @@ export default function CreatorSignupForm() {
             required
             value={editingTool}
             onChange={(e) => setEditingTool(e.target.value as EditingTool)}
-            className="mt-1 block w-full rounded border border-gray-300 px-3 py-2 text-gray-900 focus:border-gray-500 focus:outline-none"
+            className="mt-1 block w-full rounded border border-line-strong px-3 py-2 text-foreground focus:border-gray-500 focus:outline-none"
           >
             <option value="">선택해주세요</option>
             {EDITING_TOOL_OPTIONS.map((t) => (
@@ -245,8 +245,8 @@ export default function CreatorSignupForm() {
         </div>
 
         <div className="space-y-3">
-          <p className="block text-sm font-medium text-gray-700">
-            SNS 아이디 <span className="text-gray-400">(선택, 경험 있으신 분만)</span>
+          <p className="block text-sm font-medium text-content-soft">
+            SNS 아이디 <span className="text-faint">(선택, 경험 있으신 분만)</span>
           </p>
           <div>
             <label htmlFor="instagramId" className="sr-only">인스타그램</label>
@@ -256,7 +256,7 @@ export default function CreatorSignupForm() {
               placeholder="인스타그램 아이디 (@ 없이)"
               value={instagramId}
               onChange={(e) => setInstagramId(e.target.value)}
-              className="block w-full rounded border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-gray-500 focus:outline-none"
+              className="block w-full rounded border border-line-strong px-3 py-2 text-foreground placeholder-faint focus:border-gray-500 focus:outline-none"
             />
           </div>
           <div>
@@ -267,7 +267,7 @@ export default function CreatorSignupForm() {
               placeholder="틱톡 아이디 (@ 없이)"
               value={tiktokId}
               onChange={(e) => setTiktokId(e.target.value)}
-              className="block w-full rounded border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-gray-500 focus:outline-none"
+              className="block w-full rounded border border-line-strong px-3 py-2 text-foreground placeholder-faint focus:border-gray-500 focus:outline-none"
             />
           </div>
           <div>
@@ -278,13 +278,13 @@ export default function CreatorSignupForm() {
               placeholder="유튜브 채널명 또는 핸들 (@ 없이)"
               value={youtubeId}
               onChange={(e) => setYoutubeId(e.target.value)}
-              className="block w-full rounded border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-gray-500 focus:outline-none"
+              className="block w-full rounded border border-line-strong px-3 py-2 text-foreground placeholder-faint focus:border-gray-500 focus:outline-none"
             />
           </div>
         </div>
       </section>
 
-      <p className="text-xs text-gray-500">
+      <p className="text-xs text-muted">
         가입 신청 후 관리자가 검토하면 승인 결과를 이메일로 알려드려요. 승인 전에는 로그인할 수 없습니다.
       </p>
 

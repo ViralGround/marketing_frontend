@@ -41,7 +41,7 @@ export default function CampaignPerformancePage() {
       .finally(() => setLoading(false));
   }, [id]);
 
-  if (loading) return <p className="mx-auto max-w-4xl px-4 py-10 text-gray-500">불러오는 중...</p>;
+  if (loading) return <p className="mx-auto max-w-4xl px-4 py-10 text-muted">불러오는 중...</p>;
   if (error || !data)
     return <p className="mx-auto max-w-4xl px-4 py-10 text-red-600">{error || "데이터 없음"}</p>;
 
@@ -49,12 +49,12 @@ export default function CampaignPerformancePage() {
     <div className="mx-auto max-w-4xl px-4 py-10">
       <Link
         href={`/company/campaigns/${data.campaignId}`}
-        className="text-sm text-gray-500 hover:text-gray-900"
+        className="text-sm text-muted hover:text-foreground"
       >
         &larr; 캠페인 상세로
       </Link>
-      <h1 className="mt-2 text-3xl font-bold text-gray-900">{data.campaignTitle}</h1>
-      <p className="mt-1 text-sm text-gray-500">지원 영상 성과 리포트</p>
+      <h1 className="mt-2 text-3xl font-bold text-foreground">{data.campaignTitle}</h1>
+      <p className="mt-1 text-sm text-muted">지원 영상 성과 리포트</p>
 
       <div className="my-8">
         <KPICards
@@ -68,20 +68,20 @@ export default function CampaignPerformancePage() {
       </div>
 
       <section>
-        <h2 className="mb-3 text-lg font-semibold text-gray-900">크리에이터별 성과</h2>
+        <h2 className="mb-3 text-lg font-semibold text-foreground">크리에이터별 성과</h2>
         {data.items.length === 0 ? (
-          <p className="text-sm text-gray-400">정산 완료된 지원자가 없습니다.</p>
+          <p className="text-sm text-faint">정산 완료된 지원자가 없습니다.</p>
         ) : (
           <ul className="space-y-3">
             {data.items.map((it) => (
               <li
                 key={it.applicationId}
-                className="rounded border border-gray-200 p-4"
+                className="rounded border border-line p-4"
               >
                 <div className="flex items-center justify-between gap-3">
                   <Link
                     href={`/creators/${it.creatorId}`}
-                    className="font-semibold text-gray-900 hover:underline"
+                    className="font-semibold text-foreground hover:underline"
                   >
                     {it.creatorName}
                   </Link>
@@ -96,13 +96,13 @@ export default function CampaignPerformancePage() {
                     </a>
                   )}
                 </div>
-                <p className="mt-1 text-xs text-gray-600">
+                <p className="mt-1 text-xs text-muted">
                   조회 {it.views.toLocaleString("ko-KR")} · 좋아요{" "}
                   {it.likes.toLocaleString("ko-KR")} · 댓글{" "}
                   {it.comments.toLocaleString("ko-KR")}
                 </p>
                 {it.recordedAt && (
-                  <p className="mt-0.5 text-xs text-gray-400">
+                  <p className="mt-0.5 text-xs text-faint">
                     기록: {new Date(it.recordedAt).toLocaleDateString("ko-KR")}
                   </p>
                 )}

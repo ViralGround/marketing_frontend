@@ -10,6 +10,16 @@
   --primary-dark: #5B21B6;
   --primary-bg: #F5F3FF;
   --section-alt: #FAFAFA;
+
+  /* 시맨틱 토큰 — bg-white / text-gray-* / border-gray-* 등 하드코딩 회색을 흡수. */
+  --surface: #ffffff;
+  --surface-muted: #fafafa;
+  --surface-chip: #f3f4f6;
+  --content-soft: #374151;
+  --muted: #6b7280;
+  --faint: #9ca3af;
+  --line: #e5e7eb;
+  --line-strong: #d1d5db;
 }
 
 @theme inline {
@@ -20,6 +30,14 @@
   --color-primary-dark: var(--primary-dark);
   --color-primary-bg: var(--primary-bg);
   --color-section-alt: var(--section-alt);
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
+  --color-surface-chip: var(--surface-chip);
+  --color-content-soft: var(--content-soft);
+  --color-muted: var(--muted);
+  --color-faint: var(--faint);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
@@ -34,6 +52,15 @@ html.dark {
   --primary-dark: #7C3AED;
   --primary-bg: #1a1025;
   --section-alt: #111111;
+
+  --surface: #111111;
+  --surface-muted: #1a1a1a;
+  --surface-chip: #1f2937;
+  --content-soft: #d1d5db;
+  --muted: #9ca3af;
+  --faint: #6b7280;
+  --line: #262626;
+  --line-strong: #3f3f46;
 }
 
 body {

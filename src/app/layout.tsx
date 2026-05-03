@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import ConditionalHeader from "@/components/layout/ConditionalHeader";
+import Footer from "@/components/layout/Footer";
 import AuthInit from "@/components/auth/AuthInit";
 
 const geistSans = Geist({
@@ -57,6 +58,7 @@ export default function RootLayout({
         <AuthInit />
         <ConditionalHeader />
         <main className="flex-1">{children}</main>
+        <Footer />
       </body>
     </html>
   );

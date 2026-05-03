@@ -4,11 +4,16 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 import EmailVerificationField from "@/components/auth/EmailVerificationField";
+import AgreementSection, {
+  EMPTY_AGREEMENT,
+  type AgreementValue,
+} from "@/components/auth/AgreementSection";
 
 export default function CompanySignupForm() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [agreement, setAgreement] = useState<AgreementValue>(EMPTY_AGREEMENT);
 
   const [email, setEmail] = useState("");
   const [verifiedToken, setVerifiedToken] = useState<string | null>(null);
@@ -30,6 +35,10 @@ export default function CompanySignupForm() {
       setError("이메일 인증을 완료해주세요");
       return;
     }
+    if (!agreement.age14 || !agreement.terms || !agreement.privacy) {
+      setError("필수 약관에 모두 동의해주세요");
+      return;
+    }
     setLoading(true);
 
     try {
@@ -46,6 +55,10 @@ export default function CompanySignupForm() {
         address: address.trim() || null,
         homepage: homepage.trim() || null,
         industry: industry.trim() || null,
+        agreedTerms: agreement.terms,
+        agreedPrivacy: agreement.privacy,
+        agreedAge14: agreement.age14,
+        marketingOptIn: agreement.marketing,
       });
       router.push(`/login/company`);
     } catch (err: unknown) {
@@ -225,6 +238,8 @@ export default function CompanySignupForm() {
           />
         </div>
       </section>
+
+      <AgreementSection role="COMPANY" value={agreement} onChange={setAgreement} />
 
       <p className="text-xs text-muted">
         이메일 인증을 완료한 뒤 가입하기를 눌러주세요. 가입 후 바로 로그인할 수 있습니다.

@@ -5,6 +5,10 @@ import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 import AlertModal from "@/components/ui/AlertModal";
 import EmailVerificationField from "@/components/auth/EmailVerificationField";
+import AgreementSection, {
+  EMPTY_AGREEMENT,
+  type AgreementValue,
+} from "@/components/auth/AgreementSection";
 
 type Gender = "MALE" | "FEMALE";
 type EditingTool =
@@ -29,11 +33,16 @@ const GENDER_OPTIONS: { value: Gender; label: string }[] = [
   { value: "MALE", label: "남성" },
 ];
 
+const MIN_AGE = 14;
+const MAX_AGE = 64;
+
 export default function CreatorSignupForm() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [validationModal, setValidationModal] = useState("");
+  const [pendingModalOpen, setPendingModalOpen] = useState(false);
+  const [agreement, setAgreement] = useState<AgreementValue>(EMPTY_AGREEMENT);
 
   // 기본 정보
   const [email, setEmail] = useState("");
@@ -59,6 +68,9 @@ export default function CreatorSignupForm() {
     if (!birthYear) return setValidationModal("출생연도를 선택해주세요");
     if (!faceExposure) return setValidationModal("얼굴 공개 여부를 선택해주세요");
     if (!editingTool) return setValidationModal("주로 사용하는 편집 툴을 선택해주세요");
+    if (!agreement.age14 || !agreement.terms || !agreement.privacy || !agreement.thirdParty) {
+      return setValidationModal("필수 약관에 모두 동의해주세요");
+    }
 
     setLoading(true);
     try {
@@ -75,8 +87,13 @@ export default function CreatorSignupForm() {
         instagramId: instagramId.trim() || null,
         tiktokId: tiktokId.trim() || null,
         youtubeId: youtubeId.trim() || null,
+        agreedTerms: agreement.terms,
+        agreedPrivacy: agreement.privacy,
+        agreedAge14: agreement.age14,
+        agreedThirdParty: agreement.thirdParty,
+        marketingOptIn: agreement.marketing,
       });
-      router.push(`/login?pending=1`);
+      setPendingModalOpen(true);
     } catch (err: unknown) {
       const status =
         typeof err === "object" &&
@@ -185,12 +202,16 @@ export default function CreatorSignupForm() {
             className="mt-1 block w-full rounded border border-line-strong px-3 py-2 text-foreground focus:border-gray-500 focus:outline-none"
           >
             <option value="">몇년생인지 선택해주세요</option>
-            {Array.from({ length: 51 }, (_, i) => 2010 - i).map((y) => (
+            {Array.from(
+              { length: MAX_AGE - MIN_AGE + 1 },
+              (_, i) => new Date().getFullYear() - MIN_AGE - i,
+            ).map((y) => (
               <option key={y} value={y}>
                 {y}년생
               </option>
             ))}
           </select>
+          <p className="mt-1 text-xs text-faint">만 14세 이상부터 가입할 수 있습니다.</p>
         </div>
 
         <div>
@@ -284,6 +305,8 @@ export default function CreatorSignupForm() {
         </div>
       </section>
 
+      <AgreementSection role="CREATOR" value={agreement} onChange={setAgreement} />
+
       <p className="text-xs text-muted">
         가입 신청 후 관리자가 검토하면 승인 결과를 이메일로 알려드려요. 승인 전에는 로그인할 수 없습니다.
       </p>
@@ -301,6 +324,13 @@ export default function CreatorSignupForm() {
         title="필수 항목을 확인해주세요"
         message={validationModal}
         onClose={() => setValidationModal("")}
+      />
+
+      <AlertModal
+        open={pendingModalOpen}
+        title="가입 신청이 접수되었습니다"
+        message={"관리자 승인 후 이메일로 결과를 알려드려요.\n승인 전에는 로그인할 수 없습니다."}
+        onClose={() => router.push("/login")}
       />
     </form>
   );

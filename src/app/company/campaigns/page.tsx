@@ -23,6 +23,7 @@ interface CampaignItem {
   status: CampaignStatus;
   escrowStatus: EscrowStatus;
   deadline: string | null;
+  thumbnailUrl: string | null;
   createdAt: string;
   applicationCount: number;
 }
@@ -94,13 +95,27 @@ export default function CompanyCampaignsPage() {
               {campaigns.map((c) => (
                 <tr key={c.id} className="hover:bg-surface-muted">
                   <td className="px-4 py-3">
-                    <Link
-                      href={`/company/campaigns/${c.id}`}
-                      className="font-medium text-foreground hover:underline"
-                    >
-                      {c.title}
-                    </Link>
-                    <p className="text-xs text-muted">{c.brandName}</p>
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-16 flex-shrink-0 overflow-hidden rounded bg-surface-chip">
+                        {c.thumbnailUrl && (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={c.thumbnailUrl}
+                            alt={c.title}
+                            className="h-full w-full object-cover"
+                          />
+                        )}
+                      </div>
+                      <div className="min-w-0">
+                        <Link
+                          href={`/company/campaigns/${c.id}`}
+                          className="font-medium text-foreground hover:underline"
+                        >
+                          {c.title}
+                        </Link>
+                        <p className="text-xs text-muted">{c.brandName}</p>
+                      </div>
+                    </div>
                   </td>
                   <td className="px-4 py-3 text-content-soft">
                     {c.rewardAmount.toLocaleString()}원 × {c.maxParticipants}명

@@ -54,6 +54,7 @@ interface Detail {
   escrowStatus: EscrowStatus;
   deadline: string | null;
   requirements: string | null;
+  thumbnailUrl: string | null;
   depositRequestedAt: string | null;
   fundedAt: string | null;
   createdAt: string;
@@ -227,6 +228,17 @@ export default function CompanyCampaignDetailPage() {
 
   return (
     <div className="mx-auto max-w-4xl space-y-8">
+      {data.thumbnailUrl && (
+        <div className="aspect-video overflow-hidden rounded-xl bg-surface-chip">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={data.thumbnailUrl}
+            alt={data.title}
+            className="h-full w-full object-cover"
+          />
+        </div>
+      )}
+
       <div className="flex items-start justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">

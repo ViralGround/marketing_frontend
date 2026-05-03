@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import api from "@/lib/api";
 import { decodeJwtPayload, removeTokens, setTokens } from "@/lib/auth";
@@ -12,23 +12,15 @@ export default function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [info, setInfo] = useState("");
   const [warning, setWarning] = useState("");
   const [loading, setLoading] = useState(false);
   const { setUser } = useAuthStore();
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  useEffect(() => {
-    if (searchParams.get("pending") === "1") {
-      setInfo("가입 신청이 접수되었습니다. 관리자 승인 후 로그인할 수 있어요.");
-    }
-  }, [searchParams]);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    setInfo("");
     setWarning("");
     setLoading(true);
 
@@ -118,9 +110,6 @@ export default function LoginForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      {info && !error && (
-        <div className="rounded bg-blue-50 p-3 text-sm text-blue-700">{info}</div>
-      )}
       {error && (
         <div className="rounded bg-red-50 p-3 text-sm text-red-600">{error}</div>
       )}

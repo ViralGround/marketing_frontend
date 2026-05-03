@@ -49,7 +49,15 @@ export default function ProfileSetupPage() {
 
   return (
     <div className="flex min-h-[calc(100vh-65px)] items-center justify-center">
-      <div className="w-full max-w-md space-y-6 rounded border border-line bg-surface p-8">
+      <div className="w-full max-w-md">
+        <button
+          type="button"
+          onClick={() => router.push("/creator/mypage")}
+          className="mb-4 text-sm text-muted hover:text-foreground"
+        >
+          &larr; 마이페이지로
+        </button>
+        <div className="space-y-6 rounded border border-line bg-surface p-8">
         <div>
           <h1 className="text-2xl font-bold text-foreground">프로필 작성</h1>
           <p className="mt-1 text-sm text-muted">
@@ -185,6 +193,7 @@ export default function ProfileSetupPage() {
             {loading ? "저장 중..." : "프로필 완성하기"}
           </button>
         </form>
+        </div>
       </div>
     </div>
   );

@@ -1,9 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 import AlertModal from "@/components/ui/AlertModal";
+import ImageUploader from "@/components/ui/ImageUploader";
 
 export interface CampaignFormInitial {
   id?: number;
@@ -37,7 +38,10 @@ export default function CampaignForm({
   const [rewardAmount, setRewardAmount] = useState(
     initial?.rewardAmount?.toString() ?? "30000",
   );
-  const [thumbnailUrl, setThumbnailUrl] = useState(initial?.thumbnailUrl ?? "");
+  const [previewUrl, setPreviewUrl] = useState<string | null>(initial?.thumbnailUrl ?? null);
+  const [thumbnailIntent, setThumbnailIntent] = useState<
+    { changed: false } | { changed: true; fileKey: string | null }
+  >({ changed: false });
   const [requirements, setRequirements] = useState(initial?.requirements ?? "");
   const [deadline, setDeadline] = useState(
     initial?.deadline ? initial.deadline.slice(0, 10) : "",
@@ -46,18 +50,6 @@ export default function CampaignForm({
     initial?.maxParticipants?.toString() ?? "10",
   );
   const [immediatelyOpen, setImmediatelyOpen] = useState(true);
-
-  const trimmedThumb = thumbnailUrl.trim();
-  const thumbnailUrlValid = useMemo(() => {
-    if (!trimmedThumb) return null;
-    try {
-      const u = new URL(trimmedThumb);
-      return u.protocol === "http:" || u.protocol === "https:";
-    } catch {
-      return false;
-    }
-  }, [trimmedThumb]);
-  const [thumbBroken, setThumbBroken] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -75,9 +67,6 @@ export default function CampaignForm({
     if (!Number.isInteger(maxP) || maxP < 1) {
       return setWarning("최대 참여자 수는 1 이상의 정수여야 합니다");
     }
-    if (trimmedThumb && thumbnailUrlValid === false) {
-      return setWarning("썸네일 URL 형식이 올바르지 않습니다");
-    }
 
     setLoading(true);
 
@@ -86,11 +75,15 @@ export default function CampaignForm({
       description: description.trim(),
       brandName: brandName.trim(),
       rewardAmount: reward,
-      thumbnailUrl: trimmedThumb || null,
       requirements: requirements.trim() || null,
       deadline: deadline ? `${deadline}T00:00:00` : null,
       maxParticipants: maxP,
     };
+    if (mode === "create") {
+      payload.thumbnailFileKey = thumbnailIntent.changed ? thumbnailIntent.fileKey : null;
+    } else if (thumbnailIntent.changed) {
+      payload.thumbnailFileKey = thumbnailIntent.fileKey ?? "";
+    }
 
     try {
       if (mode === "create") {
@@ -217,42 +210,16 @@ export default function CampaignForm({
       </div>
 
       <div>
-        <label htmlFor="thumbnailUrl" className="block text-sm font-medium text-content-soft">
-          썸네일 이미지 URL <span className="text-faint">(선택)</span>
+        <label className="mb-1 block text-sm font-medium text-content-soft">
+          썸네일 <span className="text-faint">(선택)</span>
         </label>
-        <input
-          id="thumbnailUrl"
-          type="text"
-          value={thumbnailUrl}
-          onChange={(e) => {
-            setThumbnailUrl(e.target.value);
-            setThumbBroken(false);
+        <ImageUploader
+          previewUrl={previewUrl}
+          onChange={(fileKey) => {
+            setThumbnailIntent({ changed: true, fileKey });
+            setPreviewUrl(null);
           }}
-          placeholder="https://..."
-          className="mt-1 block w-full rounded border border-line-strong px-3 py-2 text-foreground placeholder-faint focus:border-gray-500 focus:outline-none"
         />
-        {trimmedThumb && thumbnailUrlValid === false && (
-          <p className="mt-1 text-xs text-red-600">
-            올바른 URL 이어야 합니다 (http:// 또는 https://)
-          </p>
-        )}
-        {trimmedThumb && thumbnailUrlValid && !thumbBroken && (
-          <div className="mt-2">
-            <p className="mb-1 text-xs text-muted">미리보기</p>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={trimmedThumb}
-              alt="썸네일 미리보기"
-              className="max-h-48 rounded border border-line"
-              onError={() => setThumbBroken(true)}
-            />
-          </div>
-        )}
-        {trimmedThumb && thumbnailUrlValid && thumbBroken && (
-          <p className="mt-1 text-xs text-red-600">
-            이미지를 불러올 수 없는 URL 입니다
-          </p>
-        )}
       </div>
 
       {mode === "create" && (

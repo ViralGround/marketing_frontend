@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import api from "@/lib/api";
+import ImageUploader from "@/components/ui/ImageUploader";
 
 type CampaignStatus = "DRAFT" | "OPEN" | "CLOSED";
 type EscrowStatus =
@@ -45,7 +46,10 @@ export default function EditCampaignPage() {
   const [rewardAmount, setRewardAmount] = useState("");
   const [maxParticipants, setMaxParticipants] = useState("");
   const [deadline, setDeadline] = useState("");
-  const [thumbnailUrl, setThumbnailUrl] = useState("");
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [thumbnailIntent, setThumbnailIntent] = useState<
+    { changed: false } | { changed: true; fileKey: string | null }
+  >({ changed: false });
 
   useEffect(() => {
     if (!id) return;
@@ -61,7 +65,7 @@ export default function EditCampaignPage() {
         setRewardAmount(String(d.rewardAmount));
         setMaxParticipants(String(d.maxParticipants));
         setDeadline(d.deadline ? d.deadline.slice(0, 16) : "");
-        setThumbnailUrl(d.thumbnailUrl ?? "");
+        setPreviewUrl(d.thumbnailUrl ?? null);
       })
       .catch(() => setError("캠페인을 불러오지 못했습니다"))
       .finally(() => setLoading(false));
@@ -95,9 +99,11 @@ export default function EditCampaignPage() {
         brandName,
         description,
         requirements: requirements.trim() || null,
-        thumbnailUrl: thumbnailUrl.trim() || null,
         deadline: deadline || null,
       };
+      if (thumbnailIntent.changed) {
+        payload.thumbnailFileKey = thumbnailIntent.fileKey ?? "";
+      }
       if (canEditBudget) {
         payload.rewardAmount = Number(rewardAmount);
         payload.maxParticipants = Number(maxParticipants);
@@ -244,16 +250,16 @@ export default function EditCampaignPage() {
             />
           </div>
           <div>
-            <label htmlFor="thumbnailUrl" className="block text-sm font-medium text-content-soft">
-              썸네일 URL <span className="text-faint">(선택)</span>
+            <label className="mb-1 block text-sm font-medium text-content-soft">
+              썸네일 <span className="text-faint">(선택)</span>
             </label>
-            <input
-              id="thumbnailUrl"
-              type="url"
+            <ImageUploader
+              previewUrl={previewUrl}
               disabled={readOnly}
-              value={thumbnailUrl}
-              onChange={(e) => setThumbnailUrl(e.target.value)}
-              className={inputCls}
+              onChange={(fileKey) => {
+                setThumbnailIntent({ changed: true, fileKey });
+                setPreviewUrl(null);
+              }}
             />
           </div>
         </section>

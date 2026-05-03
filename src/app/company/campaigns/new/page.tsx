@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
+import ImageUploader from "@/components/ui/ImageUploader";
 
 export default function NewCampaignPage() {
   const router = useRouter();
@@ -14,7 +15,7 @@ export default function NewCampaignPage() {
   const [brandName, setBrandName] = useState("");
   const [rewardAmount, setRewardAmount] = useState("");
   const [maxParticipants, setMaxParticipants] = useState("");
-  const [thumbnailUrl, setThumbnailUrl] = useState("");
+  const [thumbnailFileKey, setThumbnailFileKey] = useState<string | null>(null);
   const [requirements, setRequirements] = useState("");
   const [deadline, setDeadline] = useState("");
 
@@ -36,7 +37,7 @@ export default function NewCampaignPage() {
         brandName,
         rewardAmount: Number(rewardAmount),
         maxParticipants: Number(maxParticipants),
-        thumbnailUrl: thumbnailUrl.trim() || null,
+        thumbnailFileKey,
         requirements: requirements.trim() || null,
         deadline: deadline || null,
       });
@@ -176,15 +177,12 @@ export default function NewCampaignPage() {
             />
           </div>
           <div>
-            <label htmlFor="thumbnailUrl" className="block text-sm font-medium text-content-soft">
-              썸네일 URL <span className="text-faint">(선택)</span>
+            <label className="mb-1 block text-sm font-medium text-content-soft">
+              썸네일 <span className="text-faint">(선택)</span>
             </label>
-            <input
-              id="thumbnailUrl"
-              type="url"
-              value={thumbnailUrl}
-              onChange={(e) => setThumbnailUrl(e.target.value)}
-              className={inputCls}
+            <ImageUploader
+              previewUrl={null}
+              onChange={setThumbnailFileKey}
             />
           </div>
         </section>

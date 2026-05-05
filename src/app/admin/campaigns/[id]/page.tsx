@@ -40,6 +40,8 @@ interface CampaignDetail {
   escrowStatus: EscrowStatus;
   fundedAt: string | null;
   createdAt: string;
+  hidden: boolean;
+  hiddenAt: string | null;
   applications: Application[];
 }
 
@@ -157,12 +159,49 @@ export default function AdminCampaignDetailPage() {
   };
 
   const handleDelete = async () => {
-    if (!confirm("캠페인을 삭제하시겠습니까? 모든 지원 내역도 함께 삭제됩니다.")) return;
+    if (
+      !confirm(
+        "캠페인을 삭제하시겠습니까? 지원자나 예치금 거래가 있으면 삭제할 수 없으며, 그 경우 '숨김' 처리를 사용해주세요.",
+      )
+    )
+      return;
     try {
       await api.delete(`/admin/campaigns/${id}`);
       router.push("/admin/campaigns");
-    } catch {
-      setErrorMessage("삭제에 실패했습니다");
+    } catch (err: unknown) {
+      const msg =
+        typeof err === "object" &&
+        err !== null &&
+        "response" in err &&
+        (err as { response?: { data?: { message?: string } } }).response?.data
+          ?.message;
+      setErrorMessage(msg || "삭제에 실패했습니다");
+    }
+  };
+
+  const handleToggleVisibility = async () => {
+    if (!campaign) return;
+    const next = !campaign.hidden;
+    const label = next ? "숨김" : "다시 노출";
+    if (
+      !confirm(
+        next
+          ? "이 캠페인을 숨김 처리할까요? 크리에이터에게 더 이상 보이지 않게 됩니다."
+          : "이 캠페인을 다시 노출할까요? 크리에이터에게 보이게 됩니다.",
+      )
+    )
+      return;
+    try {
+      await api.patch(`/admin/campaigns/${id}/visibility`, { hidden: next });
+      load();
+    } catch (err: unknown) {
+      const msg =
+        typeof err === "object" &&
+        err !== null &&
+        "response" in err &&
+        (err as { response?: { data?: { message?: string } } }).response?.data
+          ?.message;
+      setErrorMessage(msg || `${label} 처리에 실패했습니다`);
     }
   };
 
@@ -242,7 +281,14 @@ export default function AdminCampaignDetailPage() {
       <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="text-sm text-muted">{campaign.brandName}</p>
-          <h1 className="mt-1 text-2xl font-bold text-foreground">{campaign.title}</h1>
+          <div className="mt-1 flex flex-wrap items-center gap-2">
+            <h1 className="text-2xl font-bold text-foreground">{campaign.title}</h1>
+            {campaign.hidden && (
+              <span className="rounded bg-zinc-200 px-2 py-0.5 text-xs text-zinc-700">
+                숨김 (사용자 미노출)
+              </span>
+            )}
+          </div>
         </div>
         <div className="flex flex-wrap gap-2">
           <button
@@ -250,6 +296,12 @@ export default function AdminCampaignDetailPage() {
             className="rounded border border-line-strong px-3 py-1.5 text-sm text-content-soft hover:bg-surface-muted"
           >
             수정
+          </button>
+          <button
+            onClick={handleToggleVisibility}
+            className="rounded border border-line-strong px-3 py-1.5 text-sm text-content-soft hover:bg-surface-muted"
+          >
+            {campaign.hidden ? "다시 노출" : "숨김 처리"}
           </button>
           <button
             onClick={handleDelete}

@@ -26,6 +26,7 @@ interface CampaignItem {
   escrowStatus: EscrowStatus;
   applicationCount: number;
   createdAt: string;
+  hidden: boolean;
 }
 
 type Filter = "ALL" | CampaignStatus;
@@ -176,11 +177,19 @@ export default function AdminCampaignsPage() {
             </thead>
             <tbody className="divide-y divide-line">
               {campaigns.map((c) => (
-                <tr key={c.id} className="hover:bg-surface-muted">
+                <tr
+                  key={c.id}
+                  className={`hover:bg-surface-muted ${c.hidden ? "opacity-60" : ""}`}
+                >
                   <td className="px-4 py-3 font-medium text-foreground">
                     <Link href={`/admin/campaigns/${c.id}`} className="hover:underline">
                       {c.title}
                     </Link>
+                    {c.hidden && (
+                      <span className="ml-2 rounded bg-zinc-200 px-1.5 py-0.5 text-[10px] text-zinc-700">
+                        숨김
+                      </span>
+                    )}
                   </td>
                   <td className="px-4 py-3 text-muted">{c.brandName}</td>
                   <td className="px-4 py-3 text-foreground">

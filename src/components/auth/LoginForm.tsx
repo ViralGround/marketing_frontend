@@ -97,7 +97,7 @@ export default function LoginForm() {
       } else if (status === 404 && code === "USER_NOT_FOUND") {
         setWarning("존재하지 않는 계정입니다. 이메일을 확인해주세요.");
       } else if (status === 403 && code === "PENDING_APPROVAL") {
-        setError("아직 관리자 승인이 완료되지 않았습니다. 승인되면 이메일로 알려드릴게요.");
+        setError("아직 관리자 승인이 완료되지 않았습니다. 승인까지 영업일 기준 일주일 이상 걸릴 수 있으며, 승인되면 이메일로 알려드릴게요.");
       } else if (status === 403 && code === "REJECTED") {
         setError("가입이 거절되었습니다. 자세한 문의는 관리자에게 연락해주세요.");
       } else {

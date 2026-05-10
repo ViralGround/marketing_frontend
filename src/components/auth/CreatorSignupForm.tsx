@@ -308,7 +308,7 @@ export default function CreatorSignupForm() {
       <AgreementSection role="CREATOR" value={agreement} onChange={setAgreement} />
 
       <p className="text-xs text-muted">
-        가입 신청 후 관리자가 검토하면 승인 결과를 이메일로 알려드려요. 승인 전에는 로그인할 수 없습니다.
+        가입 신청 후 관리자가 검토하며, 승인까지 영업일 기준 일주일 이상 걸릴 수 있어요. 승인 결과는 이메일로 알려드리며, 승인 전에는 로그인할 수 없습니다.
       </p>
 
       <button
@@ -329,7 +329,7 @@ export default function CreatorSignupForm() {
       <AlertModal
         open={pendingModalOpen}
         title="가입 신청이 접수되었습니다"
-        message={"관리자 승인 후 이메일로 결과를 알려드려요.\n승인 전에는 로그인할 수 없습니다."}
+        message={"승인까지 영업일 기준 일주일 이상 걸릴 수 있어요.\n관리자 승인 후 이메일로 결과를 알려드리며, 승인 전에는 로그인할 수 없습니다."}
         onClose={() => router.push("/login")}
       />
     </form>

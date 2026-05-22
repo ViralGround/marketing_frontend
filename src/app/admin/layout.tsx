@@ -44,6 +44,12 @@ export default function AdminLayout({
           >
             예치금 확인
           </Link>
+          <Link
+            href="/admin/contacts"
+            className="block rounded px-3 py-2 text-sm text-content-soft hover:bg-gray-200"
+          >
+            상담 신청
+          </Link>
         </nav>
         <div className="mt-8 border-t border-line pt-4">
           <button

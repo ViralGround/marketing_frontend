@@ -21,7 +21,8 @@ export default function BusinessHeroSection() {
               <br />
               <span className="text-primary">성과가 필요하다면</span>
               <br />
-              Viral Ground 가 
+              <span className="text-primary">Viral Ground </span> 가
+              <br />
               답입니다.
             </h1>
 

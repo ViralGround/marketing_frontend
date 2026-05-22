@@ -1,4 +1,3 @@
-import LandingHeader from "@/components/landing/LandingHeader";
 import HeroSection from "@/components/landing/HeroSection";
 import StatsSection from "@/components/landing/StatsSection";
 import PainPointSection from "@/components/landing/PainPointSection";
@@ -12,7 +11,6 @@ import Footer from "@/components/landing/Footer";
 export default function Home() {
   return (
     <>
-      <LandingHeader />
       <HeroSection />
       <StatsSection />
       <PainPointSection />

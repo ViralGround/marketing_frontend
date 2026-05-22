@@ -1,4 +1,3 @@
-import LandingHeader from "@/components/landing/LandingHeader";
 import BusinessHeroSection from "@/components/landing/business/BusinessHeroSection";
 import BusinessPerformanceSection from "@/components/landing/business/BusinessPerformanceSection";
 import BusinessFeaturesSection from "@/components/landing/business/BusinessFeaturesSection";
@@ -15,7 +14,6 @@ export const metadata = {
 export default function BusinessLandingPage() {
   return (
     <>
-      <LandingHeader />
       <BusinessHeroSection />
       <BusinessPerformanceSection />
       <BusinessFeaturesSection />

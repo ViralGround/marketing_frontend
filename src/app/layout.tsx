@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Space_Grotesk } from "next/font/google";
 import "./globals.css";
-import ConditionalHeader from "@/components/layout/ConditionalHeader";
+import Header from "@/components/layout/Header";
 import ConditionalFooter from "@/components/layout/ConditionalFooter";
 import AuthInit from "@/components/auth/AuthInit";
 
@@ -64,7 +64,7 @@ export default function RootLayout({
       </head>
       <body className="min-h-full flex flex-col">
         <AuthInit />
-        <ConditionalHeader />
+        <Header />
         <main className="flex-1">{children}</main>
         <ConditionalFooter />
       </body>

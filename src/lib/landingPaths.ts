@@ -1,5 +1,7 @@
-// 랜딩(공개) 페이지 경로 SSOT. 자체 LandingHeader/Footer 를 사용하므로
-// layout 의 기본 헤더/푸터를 같이 렌더하면 겹친다. 새 랜딩 페이지 추가 시 여기만 갱신.
+// 랜딩(공개) 페이지 경로 SSOT.
+// - Header.tsx 내부에서 토글·CTA 표시 여부를 분기할 때
+// - ConditionalFooter 가 자체 landing/Footer 와 layout/Footer 중첩 방지를 위해 layout 푸터를 숨길 때
+// 둘 다 사용된다. 새 랜딩 페이지 추가 시 여기만 갱신.
 const LANDING_PATHS = ["/", "/business"] as const;
 
 export function isLandingPath(pathname: string | null | undefined): boolean {

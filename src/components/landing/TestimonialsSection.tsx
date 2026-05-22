@@ -1,5 +1,6 @@
 "use client";
 
+import Badge from "@/components/ui/Badge";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 
 const testimonials = [
@@ -46,9 +47,9 @@ export default function TestimonialsSection() {
               className="rounded-2xl border border-line bg-section-alt p-7 transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
             >
               {/* 수입 배지 */}
-              <div className="mb-4 inline-flex rounded-full bg-primary/10 px-3 py-1 text-sm font-semibold text-primary">
+              <Badge className="mb-4 px-3 py-1 text-sm font-semibold">
                 {t.income}
-              </div>
+              </Badge>
               <p className="text-sm text-muted leading-relaxed">
                 &ldquo;{t.text}&rdquo;
               </p>

@@ -15,9 +15,9 @@ function StatItem({
 
   return (
     <div className="text-center">
-      <p className="text-3xl font-bold text-primary md:text-4xl">
+      <p className="text-4xl font-black tracking-tight text-primary md:text-5xl">
         <span ref={ref}>0</span>
-        {suffix}
+        <span className="text-2xl font-bold text-primary/70">{suffix}</span>
       </p>
       <p className="mt-2 text-sm text-muted">{label}</p>
     </div>

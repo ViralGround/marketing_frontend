@@ -22,7 +22,7 @@ export default function BottomCTA() {
         </p>
         <Link
           href="/signup/creator"
-          className="mt-8 inline-block rounded-xl bg-surface px-10 py-4 text-lg font-semibold text-primary shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5"
+          className="mt-8 inline-flex items-center justify-center rounded-full bg-surface px-10 py-4 text-lg font-semibold text-primary shadow-lg transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl"
         >
           무료로 시작하기
         </Link>

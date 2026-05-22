@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Plus } from "lucide-react";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 
 const faqs = [
@@ -40,13 +41,12 @@ function FAQItem({ q, a }: { q: string; a: string }) {
         className="flex w-full items-center justify-between py-5 text-left"
       >
         <span className="text-base font-medium text-foreground pr-4">{q}</span>
-        <span
-          className={`flex-shrink-0 text-xl text-primary transition-transform duration-300 ${
+        <Plus
+          className={`h-5 w-5 flex-shrink-0 text-primary transition-transform duration-300 ${
             open ? "rotate-45" : ""
           }`}
-        >
-          +
-        </span>
+          strokeWidth={2.5}
+        />
       </button>
       <div
         className={`overflow-hidden transition-all duration-300 ${

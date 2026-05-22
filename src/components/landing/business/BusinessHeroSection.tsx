@@ -21,7 +21,8 @@ export default function BusinessHeroSection() {
               <br />
               <span className="text-primary">성과가 필요하다면</span>
               <br />
-              Viral Ground 가 답입니다.
+              Viral Ground 가 
+              답입니다.
             </h1>
 
             <p className="mt-6 max-w-xl text-lg text-muted md:text-xl">
@@ -54,8 +55,8 @@ export default function BusinessHeroSection() {
           </div>
 
           {/* 우측 메트릭 카드 — 직전 캠페인 실측 성과 강조 */}
-          <div className="grid grid-cols-3 gap-3">
-            <div className="col-span-2 row-span-2 relative overflow-hidden rounded-3xl bg-gradient-to-br from-foreground to-foreground/80 p-8 text-background shadow-xl">
+          <div className="space-y-4">
+            <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-foreground to-foreground/80 p-8 text-background shadow-xl">
               <p className="text-base font-bold tracking-tight text-background md:text-lg">
                 직전 캠페인 · 최대 ROAS
               </p>
@@ -68,20 +69,14 @@ export default function BusinessHeroSection() {
               <div className="absolute -right-8 -bottom-8 h-40 w-40 rounded-full bg-primary/30 blur-2xl" />
             </div>
 
-            <div className="rounded-2xl bg-surface p-5 shadow-md border border-line">
+            <div className="rounded-2xl border border-line bg-surface p-6 shadow-sm">
               <p className="text-sm font-semibold text-muted">CPV (조회수당 비용)</p>
-              <p className="mt-2 text-4xl font-black text-primary md:text-5xl">
-                4.16<span className="text-lg font-bold text-muted">원</span>
+              <p className="mt-2 text-5xl font-black tracking-tight text-primary md:text-6xl">
+                4.16<span className="text-xl font-bold text-muted">원</span>
               </p>
-              <p className="mt-2 text-[11px] text-faint">
-                일반 캠페인 10~30원
+              <p className="mt-3 text-xs text-faint">
+                일반 캠페인 10~30원 대비 최대 7배 효율
               </p>
-            </div>
-
-            <div className="rounded-2xl bg-primary p-5 text-white shadow-md">
-              <p className="text-sm font-semibold text-white/90">예치금 보호</p>
-              <p className="mt-2 text-4xl font-black md:text-5xl">100%</p>
-              <p className="mt-2 text-[11px] text-white/70">에스크로 기반</p>
             </div>
           </div>
         </div>

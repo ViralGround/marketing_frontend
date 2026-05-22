@@ -1,6 +1,6 @@
 "use client";
 
-import { Users, ShieldCheck, Lock, TrendingUp } from "lucide-react";
+import { Users, ShieldCheck, TrendingUp } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 
@@ -22,11 +22,6 @@ const strengths: Strength[] = [
     desc: "관리자 검수를 거친 크리에이터만 캠페인에 매칭됩니다. 검증되지 않은 채널에 광고가 노출될 위험을 차단합니다.",
   },
   {
-    icon: Lock,
-    title: "에스크로 예치금 100%",
-    desc: "캠페인 단위로 예치금이 안전하게 보관되며, 결과물 승인 후에만 크리에이터에게 지급됩니다.",
-  },
-  {
     icon: TrendingUp,
     title: "첫 달 안에 성과",
     desc: "‘성과를 보여주지 못하는 마케팅 회사’ 와는 일하지 마세요. 첫 캠페인부터 측정 가능한 KPI로 보고합니다.",
@@ -46,7 +41,7 @@ export default function BusinessFeaturesSection() {
           ‘아는 사람이 하는 마케팅’의 결과는 다릅니다
         </p>
 
-        <div className="mt-12 grid gap-6 sm:grid-cols-2">
+        <div className="mt-12 grid gap-6 sm:grid-cols-2 md:grid-cols-3">
           {strengths.map(({ icon: Icon, title, desc }) => (
             <div
               key={title}

@@ -63,7 +63,7 @@ export default function BusinessCasesSection() {
               </li>
               <li>
                 <span className="font-semibold text-foreground">EMV ≥ 3배</span>{" "}
-                — 시장 평균 CPM 기준 1,440만 원 효과를 500만 원으로 달성.
+                — 시장 평균 CPM 기준 환산 시 3배 이상의 노출 효과.
               </li>
               <li>
                 <span className="font-semibold text-foreground">높은 인게이지먼트</span>{" "}

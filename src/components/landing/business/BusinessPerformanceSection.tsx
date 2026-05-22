@@ -12,7 +12,7 @@ export default function BusinessPerformanceSection() {
         <div className="text-center">
           <Badge>직전 마케팅 성과</Badge>
           <h2 className="mt-4 text-3xl font-bold text-foreground md:text-4xl">
-            예산 500만 원, 결과는 숫자로 말합니다
+            결과는 숫자로 증명합니다
           </h2>
           <p className="mt-3 text-muted">
             한 캠페인 기준 실제 운영 데이터
@@ -51,9 +51,9 @@ export default function BusinessPerformanceSection() {
               120<span className="text-3xl font-bold text-muted">만</span>
             </p>
             <p className="mt-3 text-sm text-muted leading-relaxed">
-              500만 원 예산으로 달성. 평균 CPM 기준으로는
+              시장 평균 CPM 기준으로는
               <br />
-              1,440만 원 예산이 필요한 노출입니다.
+              <b>약 3배 예산이 필요한 노출량</b>입니다.
             </p>
           </div>
         </div>
@@ -64,7 +64,7 @@ export default function BusinessPerformanceSection() {
             한 줄 요약 · 보고용
           </p>
           <p className="mt-3 text-lg text-foreground leading-relaxed md:text-xl">
-            “예산 500만 원으로 120만 뷰를 달성, 시장 평균 대비
+            “단일 캠페인에서 120만 뷰를 달성, 시장 평균 대비
             <span className="font-semibold text-primary"> 50% 이상 저렴한 CPM 4,160원선
               (CPV 4.16원)</span>
             의 초고효율 성과를 기록하며 브랜드 인지도를 폭발적으로 확장했습니다.”

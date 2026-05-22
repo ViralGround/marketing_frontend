@@ -102,7 +102,7 @@ export default function CompanyCampaignsPage() {
                           <img
                             src={c.thumbnailUrl}
                             alt={c.title}
-                            className="h-full w-full object-cover"
+                            className="h-full w-full object-contain"
                           />
                         )}
                       </div>

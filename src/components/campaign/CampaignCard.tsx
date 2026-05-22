@@ -41,7 +41,7 @@ export default function CampaignCard({
           <img
             src={thumbnailUrl}
             alt={title}
-            className="h-full w-full object-cover transition group-hover:scale-105"
+            className="h-full w-full object-contain transition group-hover:scale-105"
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center text-gray-300">

@@ -84,7 +84,7 @@ export default function CreatorCampaignDetailPage() {
           <img
             src={campaign.thumbnailUrl}
             alt={campaign.title}
-            className="h-full w-full object-cover"
+            className="h-full w-full object-contain"
           />
         </div>
       )}

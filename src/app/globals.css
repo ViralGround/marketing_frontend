@@ -1,25 +1,39 @@
 @import "tailwindcss";
+/* Pretendard — 한국어 가독성·트렌드. dynamic-subset 으로 사용된 글자만 로드. */
+@import "pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css";
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/*
+ * 디자인 토큰 SSOT — 자세한 가이드라인은 docs/design-system.md 참고.
+ * 색상은 톤 다운된 보라 (Linear/Notion 계열) 로 차분한 신뢰감을 표현.
+ */
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #0f1115;
+
+  /* 메인 — Viral Ground 시그니처 보라. surface/line 은 토스 톤의 차분한 회색 계조 유지. */
   --primary: #7C3AED;
   --primary-light: #A78BFA;
   --primary-dark: #5B21B6;
   --primary-bg: #F5F3FF;
-  --section-alt: #FAFAFA;
+  --section-alt: #F7F8FA;
 
-  /* 시맨틱 토큰 — bg-white / text-gray-* / border-gray-* 등 하드코딩 회색을 흡수. */
+  /* 시맨틱 surface·content — 토스 톤의 깔끔한 회색 계조. */
   --surface: #ffffff;
-  --surface-muted: #fafafa;
-  --surface-chip: #f3f4f6;
-  --content-soft: #374151;
-  --muted: #6b7280;
-  --faint: #9ca3af;
-  --line: #e5e7eb;
-  --line-strong: #d1d5db;
+  --surface-muted: #F7F8FA;
+  --surface-chip: #EEF0F4;
+  --content-soft: #3A3F4B;
+  --muted: #6B7280;
+  --faint: #9CA3AF;
+  --line: #E5E8EE;
+  --line-strong: #D2D6DC;
+
+  /* 상태 색상 — 운영 알림/배지에 일관되게 사용. */
+  --success: #16A34A;
+  --warning: #D97706;
+  --error:   #DC2626;
+  --info:    #2563EB;
 }
 
 @theme inline {
@@ -38,7 +52,12 @@
   --color-faint: var(--faint);
   --color-line: var(--line);
   --color-line-strong: var(--line-strong);
-  --font-sans: var(--font-geist-sans);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-error: var(--error);
+  --color-info: var(--info);
+  /* 본문은 Pretendard, 영문 헤드라인·로고는 Space Grotesk(brand) — 영문 fallback 으로 Geist 유지. */
+  --font-sans: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, var(--font-geist-sans), sans-serif;
   --font-mono: var(--font-geist-mono);
   --font-brand: var(--font-brand);
 }
@@ -46,28 +65,36 @@
 /* 다크모드는 layout.tsx 의 pre-hydration 스크립트가 OS 설정과 localStorage 를
    읽어 <html> 에 .dark 를 부착한다. @media 조건은 사용하지 않는다. */
 html.dark {
-  --background: #0a0a0a;
-  --foreground: #ededed;
+  --background: #0B0D12;
+  --foreground: #ECEEF3;
+
   --primary: #A78BFA;
   --primary-light: #C4B5FD;
   --primary-dark: #7C3AED;
-  --primary-bg: #1a1025;
-  --section-alt: #111111;
+  --primary-bg: #1A1025;
+  --section-alt: #11141B;
 
-  --surface: #111111;
-  --surface-muted: #1a1a1a;
-  --surface-chip: #1f2937;
-  --content-soft: #d1d5db;
-  --muted: #9ca3af;
-  --faint: #6b7280;
-  --line: #262626;
-  --line-strong: #3f3f46;
+  --surface: #131722;
+  --surface-muted: #1A1F2C;
+  --surface-chip: #232A3A;
+  --content-soft: #CED3DD;
+  --muted: #8B92A1;
+  --faint: #5F6675;
+  --line: #232A3A;
+  --line-strong: #353D4F;
+
+  --success: #4ADE80;
+  --warning: #FBBF24;
+  --error:   #F87171;
+  --info:    #60A5FA;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* 스크롤 애니메이션 */

@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import api from "@/lib/api";
+import Button from "@/components/ui/Button";
 
 const ALLOWED_TYPES = ["video/mp4", "video/quicktime", "video/webm"];
 const MAX_SIZE_BYTES = 500 * 1024 * 1024; // 500MB
@@ -111,8 +112,10 @@ export default function VideoUploader({ applicationId, onUploaded, onCancel }: P
           validateAndSet(e.dataTransfer.files[0]);
         }}
         onClick={() => !loading && inputRef.current?.click()}
-        className={`cursor-pointer rounded-lg border-2 border-dashed p-8 text-center transition ${
-          dragging ? "border-gray-900 bg-surface-muted" : "border-line-strong hover:border-gray-400"
+        className={`cursor-pointer rounded-2xl border-2 border-dashed p-8 text-center transition-colors ${
+          dragging
+            ? "border-primary bg-primary-bg"
+            : "border-line-strong hover:border-primary/40 hover:bg-surface-muted"
         } ${loading ? "pointer-events-none opacity-60" : ""}`}
       >
         {file ? (
@@ -139,38 +142,28 @@ export default function VideoUploader({ applicationId, onUploaded, onCancel }: P
 
       {loading && (
         <div className="mt-4">
-          <div className="mb-1 flex justify-between text-xs text-muted">
+          <div className="mb-1.5 flex justify-between text-xs font-medium text-muted">
             <span>업로드 중</span>
             <span>{progress}%</span>
           </div>
-          <div className="h-2 overflow-hidden rounded bg-surface-chip">
+          <div className="h-2 overflow-hidden rounded-full bg-surface-chip">
             <div
-              className="h-full bg-gray-900 transition-all"
+              className="h-full bg-primary transition-all"
               style={{ width: `${progress}%` }}
             />
           </div>
         </div>
       )}
 
-      {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
+      {error && <p className="mt-3 text-sm text-error">{error}</p>}
 
-      <div className="mt-4 flex justify-end gap-2">
-        <button
-          type="button"
-          onClick={onCancel}
-          disabled={loading}
-          className="rounded border border-line-strong px-3 py-1.5 text-sm text-content-soft hover:bg-surface-muted disabled:opacity-50"
-        >
+      <div className="mt-5 flex justify-end gap-2">
+        <Button variant="secondary" size="sm" onClick={onCancel} disabled={loading}>
           취소
-        </button>
-        <button
-          type="button"
-          onClick={handleSubmit}
-          disabled={!file || loading}
-          className="rounded bg-gray-900 px-3 py-1.5 text-sm text-white hover:bg-gray-700 disabled:opacity-50"
-        >
+        </Button>
+        <Button size="sm" onClick={handleSubmit} disabled={!file || loading}>
           {loading ? "업로드 중..." : "업로드 후 제출"}
-        </button>
+        </Button>
       </div>
     </div>
   );

@@ -7,6 +7,9 @@ import api from "@/lib/api";
 import CampaignForm from "@/components/admin/CampaignForm";
 import ApplicationStatusBadge from "@/components/campaign/ApplicationStatusBadge";
 import AlertModal from "@/components/ui/AlertModal";
+import Badge from "@/components/ui/Badge";
+import Button from "@/components/ui/Button";
+import Card from "@/components/ui/Card";
 import SubmissionTimeline from "@/components/submission/SubmissionTimeline";
 
 type CampaignStatus = "OPEN" | "CLOSED";
@@ -45,6 +48,8 @@ interface CampaignDetail {
   applications: Application[];
 }
 
+type Tone = "primary" | "success" | "warning" | "error" | "info" | "neutral";
+
 const ESCROW_LABEL: Record<EscrowStatus, string> = {
   NONE: "미신청",
   PENDING_DEPOSIT: "입금 대기",
@@ -55,14 +60,14 @@ const ESCROW_LABEL: Record<EscrowStatus, string> = {
   REFUNDED: "환불",
 };
 
-const ESCROW_CLASS: Record<EscrowStatus, string> = {
-  NONE: "bg-surface-chip text-muted",
-  PENDING_DEPOSIT: "bg-amber-100 text-amber-700",
-  DEPOSIT_CONFIRMING: "bg-orange-100 text-orange-700",
-  FUNDED: "bg-emerald-100 text-emerald-700",
-  PARTIALLY_RELEASED: "bg-indigo-100 text-indigo-700",
-  RELEASED: "bg-blue-100 text-blue-700",
-  REFUNDED: "bg-red-100 text-red-700",
+const ESCROW_TONE: Record<EscrowStatus, Tone> = {
+  NONE: "neutral",
+  PENDING_DEPOSIT: "warning",
+  DEPOSIT_CONFIRMING: "warning",
+  FUNDED: "success",
+  PARTIALLY_RELEASED: "primary",
+  RELEASED: "info",
+  REFUNDED: "error",
 };
 
 const FORCE_COMPLETE_STATES: EscrowStatus[] = [
@@ -245,11 +250,11 @@ export default function AdminCampaignDetailPage() {
       <div className="mx-auto max-w-2xl">
         <button
           onClick={() => setEditMode(false)}
-          className="mb-4 text-sm text-muted hover:text-foreground"
+          className="mb-6 text-sm font-medium text-muted transition-colors hover:text-foreground"
         >
           &larr; 취소
         </button>
-        <h1 className="mb-6 text-2xl font-bold text-foreground">캠페인 수정</h1>
+        <h1 className="mb-8 text-3xl font-bold tracking-tight text-foreground">캠페인 수정</h1>
         <CampaignForm
           mode="edit"
           initial={{
@@ -273,98 +278,80 @@ export default function AdminCampaignDetailPage() {
     <div>
       <button
         onClick={() => router.push("/admin/campaigns")}
-        className="mb-4 text-sm text-muted hover:text-foreground"
+        className="mb-6 text-sm font-medium text-muted transition-colors hover:text-foreground"
       >
         &larr; 캠페인 목록으로
       </button>
 
-      <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
+      <div className="mb-8 flex flex-wrap items-start justify-between gap-3">
         <div>
-          <p className="text-sm text-muted">{campaign.brandName}</p>
+          <p className="text-sm font-medium text-muted">{campaign.brandName}</p>
           <div className="mt-1 flex flex-wrap items-center gap-2">
-            <h1 className="text-2xl font-bold text-foreground">{campaign.title}</h1>
-            {campaign.hidden && (
-              <span className="rounded bg-zinc-200 px-2 py-0.5 text-xs text-zinc-700">
-                숨김 (사용자 미노출)
-              </span>
-            )}
+            <h1 className="text-3xl font-bold tracking-tight text-foreground">{campaign.title}</h1>
+            {campaign.hidden && <Badge tone="neutral">숨김 (사용자 미노출)</Badge>}
           </div>
         </div>
         <div className="flex flex-wrap gap-2">
-          <button
-            onClick={() => setEditMode(true)}
-            className="rounded border border-line-strong px-3 py-1.5 text-sm text-content-soft hover:bg-surface-muted"
-          >
+          <Button variant="secondary" size="sm" onClick={() => setEditMode(true)}>
             수정
-          </button>
-          <button
-            onClick={handleToggleVisibility}
-            className="rounded border border-line-strong px-3 py-1.5 text-sm text-content-soft hover:bg-surface-muted"
-          >
+          </Button>
+          <Button variant="secondary" size="sm" onClick={handleToggleVisibility}>
             {campaign.hidden ? "다시 노출" : "숨김 처리"}
-          </button>
-          <button
-            onClick={handleDelete}
-            className="rounded border border-red-300 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50"
-          >
+          </Button>
+          <Button variant="ghost" size="sm" onClick={handleDelete}>
             삭제
-          </button>
+          </Button>
         </div>
       </div>
 
       {/* 요약 */}
       <div className="mb-6 grid grid-cols-2 gap-4 md:grid-cols-4">
-        <div className="rounded border border-line p-4">
-          <p className="text-sm text-muted">보상</p>
-          <p className="mt-1 text-xl font-bold text-foreground">
+        <Card className="p-5">
+          <p className="text-xs font-medium text-muted">보상</p>
+          <p className="mt-1 text-xl font-bold tracking-tight text-foreground">
             ₩{campaign.rewardAmount.toLocaleString("ko-KR")}
           </p>
-        </div>
-        <div className="rounded border border-line p-4">
-          <p className="text-sm text-muted">지원자</p>
-          <p className="mt-1 text-xl font-bold text-foreground">
+        </Card>
+        <Card className="p-5">
+          <p className="text-xs font-medium text-muted">지원자</p>
+          <p className="mt-1 text-xl font-bold tracking-tight text-foreground">
             {campaign.applications.length} / {campaign.maxParticipants}
           </p>
-        </div>
-        <div className="rounded border border-line p-4">
-          <p className="text-sm text-muted">마감일</p>
-          <p className="mt-1 text-xl font-bold text-foreground">
+        </Card>
+        <Card className="p-5">
+          <p className="text-xs font-medium text-muted">마감일</p>
+          <p className="mt-1 text-xl font-bold tracking-tight text-foreground">
             {campaign.deadline
               ? new Date(campaign.deadline).toLocaleDateString("ko-KR")
               : "-"}
           </p>
-        </div>
-        <div className="rounded border border-line p-4">
-          <p className="text-sm text-muted">상태</p>
-          <p className="mt-1 text-xl font-bold text-foreground">
+        </Card>
+        <Card className="p-5">
+          <p className="text-xs font-medium text-muted">상태</p>
+          <p className="mt-1 text-xl font-bold tracking-tight text-foreground">
             {CAMPAIGN_STATUS_LABEL[campaign.status]}
           </p>
-        </div>
+        </Card>
       </div>
 
       {/* 예치금 */}
-      <div className="mb-6 rounded border border-line p-4">
-        <div className="mb-2 flex items-center justify-between">
-          <p className="text-sm font-medium text-content-soft">예치금</p>
-          <span
-            className={`rounded px-2 py-0.5 text-xs ${ESCROW_CLASS[campaign.escrowStatus]}`}
-          >
+      <Card className="mb-6 p-5">
+        <div className="mb-3 flex items-center justify-between">
+          <p className="text-sm font-semibold text-content-soft">예치금</p>
+          <Badge tone={ESCROW_TONE[campaign.escrowStatus]}>
             {ESCROW_LABEL[campaign.escrowStatus]}
-          </span>
+          </Badge>
         </div>
         {campaign.fundedAt && (
-          <p className="mb-2 text-xs text-muted">
+          <p className="mb-3 text-xs text-muted">
             완료 시각: {new Date(campaign.fundedAt).toLocaleString("ko-KR")}
           </p>
         )}
         {FORCE_COMPLETE_STATES.includes(campaign.escrowStatus) ? (
           <div>
-            <button
-              onClick={handleForceCompleteEscrow}
-              className="rounded bg-emerald-600 px-3 py-1.5 text-sm text-white hover:bg-emerald-700"
-            >
+            <Button size="sm" onClick={handleForceCompleteEscrow}>
               예치금 입금완료 처리
-            </button>
+            </Button>
             <p className="mt-2 text-xs text-muted">
               관리자가 임의로 예치금 완료 처리합니다. 캠페인이 DRAFT 상태라면 모집중으로 전환되어
               크리에이터에게 노출됩니다.
@@ -375,65 +362,73 @@ export default function AdminCampaignDetailPage() {
             이미 예치금이 완료되었거나 정산/환불된 캠페인입니다.
           </p>
         )}
-      </div>
+      </Card>
 
       {/* 상태 변경 */}
-      <div className="mb-6 rounded border border-line p-4">
-        <p className="mb-2 text-sm font-medium text-content-soft">상태 변경</p>
+      <Card className="mb-6 p-5">
+        <p className="mb-3 text-sm font-semibold text-content-soft">상태 변경</p>
         <div className="flex flex-wrap gap-2">
           {(["OPEN", "CLOSED"] as CampaignStatus[]).map((s) => (
-            <button
+            <Button
               key={s}
+              variant="secondary"
+              size="sm"
               onClick={() => handleStatus(s)}
               disabled={campaign.status === s}
-              className="rounded border border-line-strong px-3 py-1.5 text-sm text-content-soft hover:bg-surface-muted disabled:cursor-not-allowed disabled:bg-surface-chip disabled:text-faint"
             >
               {CAMPAIGN_STATUS_LABEL[s]}
-            </button>
+            </Button>
           ))}
         </div>
-      </div>
+      </Card>
 
       {/* 설명 */}
-      <div className="mb-6 rounded border border-line p-6">
-        <h2 className="mb-3 text-lg font-semibold text-foreground">설명</h2>
-        <p className="whitespace-pre-wrap text-sm text-content-soft">{campaign.description}</p>
+      <Card className="mb-6">
+        <h2 className="mb-4 text-lg font-semibold text-foreground">설명</h2>
+        <p className="whitespace-pre-wrap text-sm leading-relaxed text-content-soft">
+          {campaign.description}
+        </p>
         {campaign.requirements && (
           <>
-            <h3 className="mt-5 mb-2 text-sm font-semibold text-foreground">요구사항</h3>
-            <p className="whitespace-pre-wrap text-sm text-content-soft">{campaign.requirements}</p>
+            <h3 className="mt-6 mb-2 text-sm font-semibold text-foreground">요구사항</h3>
+            <p className="whitespace-pre-wrap text-sm leading-relaxed text-content-soft">
+              {campaign.requirements}
+            </p>
           </>
         )}
         {campaign.thumbnailUrl && (
-          <div className="mt-5">
-            <p className="mb-2 text-xs text-muted">썸네일</p>
+          <div className="mt-6">
+            <p className="mb-2 text-xs font-medium text-muted">썸네일</p>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={campaign.thumbnailUrl}
               alt="썸네일"
-              className="max-h-60 rounded border border-line"
+              className="max-h-60 rounded-2xl border border-line"
             />
           </div>
         )}
-      </div>
+      </Card>
 
       {/* 지원자 */}
-      <div className="rounded border border-line p-6">
-        <h2 className="mb-4 text-lg font-semibold text-foreground">
+      <Card>
+        <h2 className="mb-5 text-lg font-semibold text-foreground">
           지원자 ({campaign.applications.length})
         </h2>
         {campaign.applications.length === 0 ? (
           <p className="text-sm text-muted">아직 지원자가 없습니다.</p>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-3">
             {campaign.applications.map((app) => (
-              <div key={app.id} className="rounded border border-line p-4">
+              <div
+                key={app.id}
+                className="rounded-2xl border border-line bg-surface p-5"
+              >
                 <div className="mb-3 flex flex-wrap items-start justify-between gap-2">
                   <div>
                     <div className="flex items-center gap-2">
                       <Link
                         href={`/admin/members/${app.creator.id}`}
-                        className="font-medium text-foreground hover:underline"
+                        className="font-medium text-foreground hover:text-primary"
                       >
                         {app.creator.name}
                       </Link>
@@ -467,7 +462,7 @@ export default function AdminCampaignDetailPage() {
                 )}
 
                 {app.message && (
-                  <div className="mb-3 rounded bg-surface-muted p-3 text-sm text-content-soft">
+                  <div className="mb-3 rounded-xl bg-surface-muted p-3 text-sm text-content-soft">
                     &ldquo;{app.message}&rdquo;
                   </div>
                 )}
@@ -480,17 +475,17 @@ export default function AdminCampaignDetailPage() {
                         href={app.submissionUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-blue-600 underline"
+                        className="text-primary underline-offset-2 hover:underline"
                       >
                         {app.submissionUrl}
                       </a>
                     ) : (
-                      <span className="text-red-600">유효하지 않은 링크</span>
+                      <span className="text-error">유효하지 않은 링크</span>
                     )}
                   </div>
                 )}
                 {app.status === "CHANGES_REQUESTED" && app.reviewComment && (
-                  <div className="mb-3 rounded bg-orange-50 p-2 text-xs text-orange-800">
+                  <div className="mb-3 rounded-xl border border-warning/30 bg-warning/5 p-3 text-xs text-warning">
                     <span className="font-semibold">수정 요청 사유:</span> {app.reviewComment}
                   </div>
                 )}
@@ -506,60 +501,78 @@ export default function AdminCampaignDetailPage() {
 
                 {app.rewardPaidAmount !== null && (
                   <p className="mb-3 text-sm text-content-soft">
-                    정산액: ₩{app.rewardPaidAmount.toLocaleString("ko-KR")}
+                    정산액:{" "}
+                    <span className="font-semibold text-foreground">
+                      ₩{app.rewardPaidAmount.toLocaleString("ko-KR")}
+                    </span>
                   </p>
                 )}
 
                 <div className="flex flex-wrap gap-2">
                   {app.status === "PENDING" && (
                     <>
-                      <button
-                        onClick={() => handleApplicationAction(app.id, "APPROVED", app.creator.name)}
-                        className="rounded bg-green-600 px-3 py-1.5 text-xs text-white hover:bg-green-700"
+                      <Button
+                        size="sm"
+                        onClick={() =>
+                          handleApplicationAction(app.id, "APPROVED", app.creator.name)
+                        }
                       >
                         승인
-                      </button>
-                      <button
-                        onClick={() => handleApplicationAction(app.id, "REJECTED", app.creator.name)}
-                        className="rounded border border-red-300 px-3 py-1.5 text-xs text-red-600 hover:bg-red-50"
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={() =>
+                          handleApplicationAction(app.id, "REJECTED", app.creator.name)
+                        }
                       >
                         거절
-                      </button>
+                      </Button>
                     </>
                   )}
                   {app.status === "SUBMITTED" && (
                     <>
-                      <button
-                        onClick={() => handleApplicationAction(app.id, "SETTLED", app.creator.name)}
-                        className="rounded bg-purple-600 px-3 py-1.5 text-xs text-white hover:bg-purple-700"
+                      <Button
+                        size="sm"
+                        onClick={() =>
+                          handleApplicationAction(app.id, "SETTLED", app.creator.name)
+                        }
                       >
                         승인·정산
-                      </button>
-                      <button
-                        onClick={() => handleApplicationAction(app.id, "CHANGES_REQUESTED", app.creator.name)}
-                        className="rounded border border-amber-300 px-3 py-1.5 text-xs text-amber-700 hover:bg-amber-50"
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={() =>
+                          handleApplicationAction(
+                            app.id,
+                            "CHANGES_REQUESTED",
+                            app.creator.name,
+                          )
+                        }
                       >
                         수정 요청
-                      </button>
-                      <button
-                        onClick={() => handleApplicationAction(app.id, "REJECTED", app.creator.name)}
-                        className="rounded border border-red-300 px-3 py-1.5 text-xs text-red-600 hover:bg-red-50"
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() =>
+                          handleApplicationAction(app.id, "REJECTED", app.creator.name)
+                        }
                       >
                         거절
-                      </button>
+                      </Button>
                     </>
                   )}
                   {app.status === "CHANGES_REQUESTED" && (
-                    <span className="rounded bg-orange-100 px-3 py-1.5 text-xs text-orange-700">
-                      재제출 대기 중
-                    </span>
+                    <Badge tone="warning">재제출 대기 중</Badge>
                   )}
                 </div>
               </div>
             ))}
           </div>
         )}
-      </div>
+      </Card>
 
       <AlertModal
         open={!!errorMessage}

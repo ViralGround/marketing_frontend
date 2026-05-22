@@ -8,6 +8,9 @@ import SubmissionTimeline, {
   type SubmissionHistoryItem,
 } from "@/components/submission/SubmissionTimeline";
 import ReviewForm from "@/components/review/ReviewForm";
+import Badge from "@/components/ui/Badge";
+import Button from "@/components/ui/Button";
+import Card from "@/components/ui/Card";
 
 type CampaignStatus = "DRAFT" | "OPEN" | "CLOSED";
 type EscrowStatus =
@@ -69,6 +72,8 @@ interface Detail {
   }>;
 }
 
+type Tone = "primary" | "success" | "warning" | "error" | "info" | "neutral";
+
 const ESCROW_LABEL: Record<EscrowStatus, string> = {
   NONE: "-",
   PENDING_DEPOSIT: "입금 대기",
@@ -76,6 +81,21 @@ const ESCROW_LABEL: Record<EscrowStatus, string> = {
   FUNDED: "예치 완료",
   PARTIALLY_RELEASED: "지급 진행중",
   REFUNDED: "환불됨",
+};
+
+const ESCROW_TONE: Record<EscrowStatus, Tone> = {
+  NONE: "neutral",
+  PENDING_DEPOSIT: "warning",
+  DEPOSIT_CONFIRMING: "warning",
+  FUNDED: "success",
+  PARTIALLY_RELEASED: "primary",
+  REFUNDED: "error",
+};
+
+const CAMPAIGN_STATUS_LABEL: Record<CampaignStatus, string> = {
+  DRAFT: "작성중",
+  OPEN: "모집중",
+  CLOSED: "종료",
 };
 
 const APP_LABEL: Record<AppStatus, string> = {
@@ -86,6 +106,18 @@ const APP_LABEL: Record<AppStatus, string> = {
   CHANGES_REQUESTED: "수정 요청 중",
   SETTLED: "정산 완료",
 };
+
+const APP_TONE: Record<AppStatus, Tone> = {
+  PENDING: "warning",
+  APPROVED: "success",
+  REJECTED: "error",
+  SUBMITTED: "info",
+  CHANGES_REQUESTED: "warning",
+  SETTLED: "primary",
+};
+
+const TEXTAREA_CLASS =
+  "block w-full rounded-lg border border-line-strong bg-surface px-3 py-2.5 text-sm text-foreground placeholder-faint transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20";
 
 export default function CompanyCampaignDetailPage() {
   const params = useParams<{ id: string }>();
@@ -135,7 +167,7 @@ export default function CompanyCampaignDetailPage() {
     callAction(async () => {
       if (!data) return { message: "" };
       const { data: res } = await api.post<{ message: string }>(
-        `/company/campaigns/${data.id}/deposit-request`
+        `/company/campaigns/${data.id}/deposit-request`,
       );
       return res;
     });
@@ -145,7 +177,7 @@ export default function CompanyCampaignDetailPage() {
     if (!confirm("캠페인을 취소하시겠어요? 예치금은 환불 처리됩니다.")) return;
     callAction(async () => {
       const { data: res } = await api.post<{ message: string }>(
-        `/company/campaigns/${data.id}/cancel`
+        `/company/campaigns/${data.id}/cancel`,
       );
       return res;
     });
@@ -172,13 +204,8 @@ export default function CompanyCampaignDetailPage() {
 
   const reviewApplication = async (
     appId: number,
-    action:
-      | "APPROVE"
-      | "REJECT"
-      | "APPROVE_VIDEO"
-      | "REQUEST_CHANGES"
-      | "REJECT_VIDEO",
-    opts?: { rewardPaidAmount?: number; reviewComment?: string }
+    action: "APPROVE" | "REJECT" | "APPROVE_VIDEO" | "REQUEST_CHANGES" | "REJECT_VIDEO",
+    opts?: { rewardPaidAmount?: number; reviewComment?: string },
   ) => {
     setRowActingId(appId);
     setMessage("");
@@ -186,7 +213,7 @@ export default function CompanyCampaignDetailPage() {
     try {
       const { data: res } = await api.patch<{ message: string }>(
         `/company/applications/${appId}`,
-        { action, ...opts }
+        { action, ...opts },
       );
       setMessage(res.message);
       load();
@@ -213,9 +240,7 @@ export default function CompanyCampaignDetailPage() {
     data.escrowStatus !== "REFUNDED" &&
     data.status !== "CLOSED";
   const canDelete =
-    data &&
-    data.escrowStatus === "PENDING_DEPOSIT" &&
-    data.applicationCount === 0;
+    data && data.escrowStatus === "PENDING_DEPOSIT" && data.applicationCount === 0;
   const canCancel =
     data &&
     data.status !== "CLOSED" &&
@@ -224,12 +249,12 @@ export default function CompanyCampaignDetailPage() {
     (data.escrowStatus === "FUNDED" || data.escrowStatus === "PENDING_DEPOSIT");
 
   if (loading) return <p className="text-muted">불러오는 중...</p>;
-  if (!data) return <p className="text-red-600">{error || "데이터 없음"}</p>;
+  if (!data) return <p className="text-error">{error || "데이터 없음"}</p>;
 
   return (
     <div className="mx-auto max-w-4xl space-y-8">
       {data.thumbnailUrl && (
-        <div className="aspect-video overflow-hidden rounded-xl bg-surface-chip">
+        <div className="aspect-video overflow-hidden rounded-2xl bg-surface-chip">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={data.thumbnailUrl}
@@ -239,206 +264,219 @@ export default function CompanyCampaignDetailPage() {
         </div>
       )}
 
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2">
-            <span className="inline-flex rounded bg-surface-chip px-2 py-0.5 text-xs text-content-soft">
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge tone={ESCROW_TONE[data.escrowStatus]}>
               {ESCROW_LABEL[data.escrowStatus]}
+            </Badge>
+            <span className="text-xs font-medium text-muted">
+              {CAMPAIGN_STATUS_LABEL[data.status]}
             </span>
-            <span className="text-xs text-muted">{data.status}</span>
           </div>
-          <h1 className="mt-2 text-2xl font-bold text-foreground">{data.title}</h1>
-          <p className="mt-1 text-sm text-muted">{data.brandName}</p>
+          <h1 className="mt-3 text-3xl font-bold tracking-tight text-foreground md:text-4xl">
+            {data.title}
+          </h1>
+          <p className="mt-1 text-sm font-medium text-muted">{data.brandName}</p>
         </div>
         <div className="flex flex-wrap gap-2">
           {canEdit && (
-            <Link
-              href={`/company/campaigns/${data.id}/edit`}
-              className="rounded border border-line-strong px-3 py-1.5 text-sm text-content-soft hover:bg-surface-muted"
-            >
-              수정
+            <Link href={`/company/campaigns/${data.id}/edit`}>
+              <Button variant="secondary" size="sm">
+                수정
+              </Button>
             </Link>
           )}
           {canCancel && (
-            <button
-              onClick={cancelCampaign}
-              disabled={acting}
-              className="rounded border border-amber-300 px-3 py-1.5 text-sm text-amber-700 hover:bg-amber-50 disabled:opacity-50"
-            >
+            <Button variant="secondary" size="sm" onClick={cancelCampaign} disabled={acting}>
               캠페인 취소
-            </button>
+            </Button>
           )}
           {canDelete && (
-            <button
-              onClick={deleteCampaign}
-              disabled={acting}
-              className="rounded border border-red-300 px-3 py-1.5 text-sm text-red-700 hover:bg-red-50 disabled:opacity-50"
-            >
+            <Button variant="ghost" size="sm" onClick={deleteCampaign} disabled={acting}>
               삭제
-            </button>
+            </Button>
           )}
         </div>
       </div>
 
       {message && (
-        <div className="rounded bg-green-50 p-3 text-sm text-green-700">{message}</div>
+        <div className="rounded-xl border border-success/30 bg-success/5 p-3 text-sm text-success">
+          {message}
+        </div>
       )}
       {error && (
-        <div className="rounded bg-red-50 p-3 text-sm text-red-600">{error}</div>
+        <div className="rounded-xl border border-error/30 bg-error/5 p-3 text-sm text-error">
+          {error}
+        </div>
       )}
 
-      <section className="rounded-lg border border-line p-5">
-        <h2 className="text-sm font-semibold text-muted">예치금</h2>
-        <div className="mt-3 grid grid-cols-3 gap-4">
+      <Card>
+        <h2 className="text-sm font-semibold uppercase tracking-wider text-muted">예치금</h2>
+        <div className="mt-4 grid grid-cols-3 gap-4">
           <div>
-            <p className="text-xs text-muted">1인당 보상</p>
-            <p className="mt-1 font-bold text-foreground">
+            <p className="text-xs font-medium text-muted">1인당 보상</p>
+            <p className="mt-1 text-lg font-bold tracking-tight text-foreground">
               {data.rewardAmount.toLocaleString()}원
             </p>
           </div>
           <div>
-            <p className="text-xs text-muted">모집 인원</p>
-            <p className="mt-1 font-bold text-foreground">{data.maxParticipants}명</p>
+            <p className="text-xs font-medium text-muted">모집 인원</p>
+            <p className="mt-1 text-lg font-bold tracking-tight text-foreground">
+              {data.maxParticipants}명
+            </p>
           </div>
           <div>
-            <p className="text-xs text-muted">총 예산</p>
-            <p className="mt-1 font-bold text-foreground">
+            <p className="text-xs font-medium text-muted">총 예산</p>
+            <p className="mt-1 text-lg font-bold tracking-tight text-foreground">
               {data.totalBudget.toLocaleString()}원
             </p>
           </div>
         </div>
 
         {data.escrowStatus === "PENDING_DEPOSIT" && (
-          <div className="mt-5 rounded bg-amber-50 p-4 text-sm text-amber-800">
+          <div className="mt-6 rounded-xl border border-warning/30 bg-warning/5 p-5 text-sm text-warning">
             <p className="font-semibold">예치금 입금을 기다리고 있습니다.</p>
-            <p className="mt-1">
-              아래 계좌로 <span className="font-bold">{data.totalBudget.toLocaleString()}원</span>을 입금한 뒤 &quot;계좌이체 완료&quot; 버튼을 눌러주세요. 관리자 확인 후 캠페인이 공개됩니다.
+            <p className="mt-2">
+              아래 계좌로{" "}
+              <span className="font-bold">{data.totalBudget.toLocaleString()}원</span>을 입금한
+              뒤 &quot;계좌이체 완료&quot; 버튼을 눌러주세요. 관리자 확인 후 캠페인이 공개됩니다.
             </p>
             <p className="mt-2 text-xs">예치 계좌: 국민은행 000-00-0000-000 (주)바이럴그라운드</p>
-            <button
-              onClick={requestDeposit}
-              disabled={acting}
-              className="mt-4 rounded bg-amber-600 px-4 py-2 text-sm font-medium text-white hover:bg-amber-700 disabled:opacity-50"
-            >
+            <Button size="sm" onClick={requestDeposit} disabled={acting} className="mt-4">
               {acting ? "요청 중..." : "계좌이체 완료 (관리자에게 확인 요청)"}
-            </button>
+            </Button>
           </div>
         )}
 
         {data.escrowStatus === "DEPOSIT_CONFIRMING" && (
-          <div className="mt-5 rounded bg-blue-50 p-4 text-sm text-blue-800">
+          <div className="mt-6 rounded-xl border border-info/30 bg-info/5 p-4 text-sm text-info">
             관리자가 입금을 확인하고 있습니다. 확인이 완료되면 메일로 알려드립니다.
           </div>
         )}
 
         {data.escrowStatus === "FUNDED" && (
-          <div className="mt-5 rounded bg-green-50 p-4 text-sm text-green-800">
+          <div className="mt-6 rounded-xl border border-success/30 bg-success/5 p-4 text-sm text-success">
             예치금 입금이 확인되어 캠페인이 공개되었습니다.
           </div>
         )}
 
         {data.escrowStatus === "REFUNDED" && (
-          <div className="mt-5 rounded bg-surface-chip p-4 text-sm text-content-soft">
+          <div className="mt-6 rounded-xl bg-surface-chip p-4 text-sm text-content-soft">
             환불 처리된 캠페인입니다.
           </div>
         )}
 
         {data.escrowTransactions.length > 0 && (
-          <div className="mt-5">
-            <h3 className="text-xs font-semibold text-muted">예치금 이력</h3>
-            <ul className="mt-2 divide-y divide-line rounded border border-line">
+          <div className="mt-6">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted">
+              예치금 이력
+            </h3>
+            <ul className="mt-3 divide-y divide-line overflow-hidden rounded-xl border border-line">
               {data.escrowTransactions.map((tx) => (
-                <li key={tx.id} className="flex items-center justify-between px-3 py-2 text-xs">
-                  <span className="text-content-soft">{tx.type}</span>
-                  <span className="text-foreground">{tx.amount.toLocaleString()}원</span>
-                  <span className="text-faint">{new Date(tx.createdAt).toLocaleString()}</span>
+                <li
+                  key={tx.id}
+                  className="flex items-center justify-between gap-3 px-4 py-2.5 text-xs"
+                >
+                  <span className="font-medium text-content-soft">{tx.type}</span>
+                  <span className="font-semibold text-foreground">
+                    {tx.amount.toLocaleString()}원
+                  </span>
+                  <span className="text-faint">
+                    {new Date(tx.createdAt).toLocaleString()}
+                  </span>
                 </li>
               ))}
             </ul>
           </div>
         )}
-      </section>
+      </Card>
 
-      <section className="rounded-lg border border-line p-5">
-        <h2 className="text-sm font-semibold text-muted">캠페인 내용</h2>
-        <p className="mt-3 whitespace-pre-wrap text-sm text-content-soft">{data.description}</p>
+      <Card>
+        <h2 className="text-sm font-semibold uppercase tracking-wider text-muted">캠페인 내용</h2>
+        <p className="mt-4 whitespace-pre-wrap text-sm leading-relaxed text-content-soft">
+          {data.description}
+        </p>
         {data.requirements && (
-          <div className="mt-4 rounded bg-surface-muted p-3 text-sm text-content-soft">
-            <p className="font-semibold">제출 요구사항</p>
-            <p className="mt-1 whitespace-pre-wrap">{data.requirements}</p>
+          <div className="mt-5 rounded-xl bg-surface-muted p-4 text-sm text-content-soft">
+            <p className="font-semibold text-foreground">제출 요구사항</p>
+            <p className="mt-1.5 whitespace-pre-wrap leading-relaxed">{data.requirements}</p>
           </div>
         )}
-      </section>
+      </Card>
 
       <div className="flex justify-end">
-        <Link
-          href={`/company/campaigns/${data.id}/performance`}
-          className="rounded border border-line-strong px-3 py-1.5 text-xs text-content-soft hover:bg-surface-muted"
-        >
-          성과 리포트 보기 →
+        <Link href={`/company/campaigns/${data.id}/performance`}>
+          <Button variant="secondary" size="sm">
+            성과 리포트 보기 →
+          </Button>
         </Link>
       </div>
 
-      <section className="rounded-lg border border-line p-5">
-        <h2 className="text-sm font-semibold text-muted">
+      <Card>
+        <h2 className="text-sm font-semibold uppercase tracking-wider text-muted">
           지원자 ({data.applicationCount})
         </h2>
         {data.applications.length === 0 ? (
-          <p className="mt-3 text-sm text-muted">아직 지원자가 없습니다.</p>
+          <p className="mt-4 text-sm text-muted">아직 지원자가 없습니다.</p>
         ) : (
-          <ul className="mt-3 divide-y divide-line">
+          <ul className="mt-4 divide-y divide-line">
             {data.applications.map((a) => (
-              <li key={a.id} className="py-3">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2">
+              <li key={a.id} className="py-4 first:pt-0 last:pb-0">
+                <div className="flex flex-wrap items-start justify-between gap-4">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
                       <Link
                         href={`/creators/${a.creator.id}`}
-                        className="font-medium text-foreground hover:text-primary hover:underline"
+                        className="font-medium text-foreground hover:text-primary"
                       >
                         {a.creator.name}
                       </Link>
-                      <span className="rounded bg-surface-chip px-2 py-0.5 text-xs text-content-soft">
-                        {APP_LABEL[a.status]}
-                      </span>
+                      <Badge tone={APP_TONE[a.status]}>{APP_LABEL[a.status]}</Badge>
                       <Link
                         href={`/creators/${a.creator.id}`}
-                        className="text-xs text-primary hover:underline"
+                        className="text-xs font-medium text-primary underline-offset-2 hover:underline"
                       >
                         상세 프로필 →
                       </Link>
                     </div>
-                    <p className="mt-0.5 text-xs text-muted">{a.creator.email}</p>
+                    <p className="mt-1 text-xs text-muted">{a.creator.email}</p>
                     {a.message && (
                       <p className="mt-2 whitespace-pre-wrap text-xs text-muted">
                         지원 메시지: {a.message}
                       </p>
                     )}
-                    {!a.videoFileKey && a.submissionUrl && isSafeExternalLink(a.submissionUrl) && (
-                      <a
-                        href={a.submissionUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="mt-2 inline-block text-xs text-blue-600 underline"
-                      >
-                        외부 링크 보기 (레거시) →
-                      </a>
-                    )}
+                    {!a.videoFileKey &&
+                      a.submissionUrl &&
+                      isSafeExternalLink(a.submissionUrl) && (
+                        <a
+                          href={a.submissionUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="mt-2 inline-block text-xs font-medium text-primary underline-offset-2 hover:underline"
+                        >
+                          외부 링크 보기 (레거시) →
+                        </a>
+                      )}
                     {a.status === "CHANGES_REQUESTED" && a.reviewComment && (
-                      <div className="mt-2 rounded bg-orange-50 p-2 text-xs text-orange-800">
+                      <div className="mt-2 rounded-xl border border-warning/30 bg-warning/5 p-3 text-xs text-warning">
                         <span className="font-semibold">수정 요청 사유:</span> {a.reviewComment}
                       </div>
                     )}
                     {a.rewardPaidAmount != null && (
-                      <p className="mt-1 text-xs text-muted">
-                        지급: {a.rewardPaidAmount.toLocaleString()}원
+                      <p className="mt-1.5 text-xs text-muted">
+                        지급:{" "}
+                        <span className="font-semibold text-foreground">
+                          {a.rewardPaidAmount.toLocaleString()}원
+                        </span>
                       </p>
                     )}
                     {a.submissions.length > 0 && (
                       <div className="mt-3">
                         <p className="mb-2 text-xs font-semibold text-muted">
                           제출 이력
-                          {(a.resubmissionCount ?? 0) > 0 && ` (재제출 ${a.resubmissionCount}회)`}
+                          {(a.resubmissionCount ?? 0) > 0 &&
+                            ` (재제출 ${a.resubmissionCount}회)`}
                         </p>
                         <SubmissionTimeline submissions={a.submissions} />
                       </div>
@@ -447,65 +485,69 @@ export default function CompanyCampaignDetailPage() {
                   <div className="flex flex-wrap gap-2">
                     {a.status === "PENDING" && (
                       <>
-                        <button
+                        <Button
+                          size="sm"
                           disabled={rowActingId === a.id}
                           onClick={() => reviewApplication(a.id, "APPROVE")}
-                          className="rounded bg-green-600 px-3 py-1 text-xs text-white hover:bg-green-700 disabled:opacity-50"
                         >
                           선정
-                        </button>
-                        <button
+                        </Button>
+                        <Button
+                          variant="secondary"
+                          size="sm"
                           disabled={rowActingId === a.id}
                           onClick={() => reviewApplication(a.id, "REJECT")}
-                          className="rounded border border-line-strong px-3 py-1 text-xs text-content-soft hover:bg-surface-muted disabled:opacity-50"
                         >
                           탈락
-                        </button>
+                        </Button>
                       </>
                     )}
                     {a.status === "SUBMITTED" && (
                       <>
-                        <button
+                        <Button
+                          size="sm"
                           disabled={rowActingId === a.id}
                           onClick={() => reviewApplication(a.id, "APPROVE_VIDEO")}
-                          className="rounded bg-green-600 px-3 py-1 text-xs text-white hover:bg-green-700 disabled:opacity-50"
                         >
                           승인 · 정산
-                        </button>
-                        <button
+                        </Button>
+                        <Button
+                          variant="secondary"
+                          size="sm"
                           disabled={rowActingId === a.id}
                           onClick={() => {
                             setChangesModal({ appId: a.id });
                             setChangesComment("");
                           }}
-                          className="rounded border border-amber-300 px-3 py-1 text-xs text-amber-700 hover:bg-amber-50 disabled:opacity-50"
                         >
                           수정 요청
-                        </button>
-                        <button
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
                           disabled={rowActingId === a.id}
                           onClick={() => {
                             if (!confirm("이 영상을 최종 거절하시겠어요?")) return;
                             reviewApplication(a.id, "REJECT_VIDEO");
                           }}
-                          className="rounded border border-red-300 px-3 py-1 text-xs text-red-700 hover:bg-red-50 disabled:opacity-50"
                         >
                           거절
-                        </button>
+                        </Button>
                       </>
                     )}
                     {a.status === "CHANGES_REQUESTED" && (
-                      <span className="rounded bg-orange-100 px-3 py-1 text-xs text-orange-700">
-                        크리에이터 재제출 대기 중
-                      </span>
+                      <Badge tone="warning">크리에이터 재제출 대기 중</Badge>
                     )}
                     {a.status === "SETTLED" && (
-                      <button
-                        onClick={() => setReviewModal({ appId: a.id, creatorName: a.creator.name })}
-                        className="rounded border border-line-strong px-3 py-1 text-xs text-content-soft hover:bg-surface-muted"
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={() =>
+                          setReviewModal({ appId: a.id, creatorName: a.creator.name })
+                        }
                       >
                         리뷰 작성
-                      </button>
+                      </Button>
                     )}
                   </div>
                 </div>
@@ -513,13 +555,13 @@ export default function CompanyCampaignDetailPage() {
             ))}
           </ul>
         )}
-      </section>
+      </Card>
 
       {reviewModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="w-full max-w-md rounded-xl bg-surface p-6">
+          <div className="w-full max-w-md rounded-2xl bg-surface p-6 shadow-2xl">
             <h3 className="mb-1 text-lg font-semibold text-foreground">크리에이터 리뷰 작성</h3>
-            <p className="mb-4 text-sm text-muted">{reviewModal.creatorName}</p>
+            <p className="mb-5 text-sm text-muted">{reviewModal.creatorName}</p>
             <ReviewForm
               applicationId={reviewModal.appId}
               onSubmitted={() => {
@@ -534,9 +576,9 @@ export default function CompanyCampaignDetailPage() {
 
       {changesModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="w-full max-w-md rounded-xl bg-surface p-6">
+          <div className="w-full max-w-md rounded-2xl bg-surface p-6 shadow-2xl">
             <h3 className="mb-1 text-lg font-semibold text-foreground">수정 요청 사유</h3>
-            <p className="mb-4 text-sm text-muted">
+            <p className="mb-5 text-sm text-muted">
               크리에이터에게 전달되는 피드백입니다. 무엇을 어떻게 수정해야 할지 구체적으로 작성해주세요.
             </p>
             <textarea
@@ -544,16 +586,14 @@ export default function CompanyCampaignDetailPage() {
               onChange={(e) => setChangesComment(e.target.value)}
               rows={4}
               placeholder="예: 로고 노출 시간이 3초 미만입니다. 중반부 이후에도 3초 이상 노출되도록 편집해주세요."
-              className="block w-full rounded border border-line-strong px-3 py-2 text-sm text-foreground placeholder-faint focus:border-gray-500 focus:outline-none"
+              className={TEXTAREA_CLASS}
             />
-            <div className="mt-4 flex justify-end gap-2">
-              <button
-                onClick={() => setChangesModal(null)}
-                className="rounded border border-line-strong px-3 py-1.5 text-sm text-content-soft hover:bg-surface-muted"
-              >
+            <div className="mt-5 flex justify-end gap-2">
+              <Button variant="secondary" size="sm" onClick={() => setChangesModal(null)}>
                 취소
-              </button>
-              <button
+              </Button>
+              <Button
+                size="sm"
                 onClick={async () => {
                   if (!changesModal || !changesComment.trim()) return;
                   await reviewApplication(changesModal.appId, "REQUEST_CHANGES", {
@@ -562,10 +602,9 @@ export default function CompanyCampaignDetailPage() {
                   setChangesModal(null);
                 }}
                 disabled={!changesComment.trim() || rowActingId === changesModal.appId}
-                className="rounded bg-amber-600 px-3 py-1.5 text-sm text-white hover:bg-amber-700 disabled:opacity-50"
               >
                 수정 요청 보내기
-              </button>
+              </Button>
             </div>
           </div>
         </div>

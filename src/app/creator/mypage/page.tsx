@@ -10,6 +10,8 @@ import StatCards from "@/components/creator/StatCards";
 import ApplicationStatusBadge from "@/components/campaign/ApplicationStatusBadge";
 import VideoUploader from "@/components/submission/VideoUploader";
 import ReviewForm from "@/components/review/ReviewForm";
+import Button from "@/components/ui/Button";
+import Card from "@/components/ui/Card";
 
 type AppStatus =
   | "PENDING"
@@ -130,20 +132,20 @@ export default function CreatorMyPage() {
   };
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-10">
-      <div className="mb-8">
-        <p className="text-sm text-muted">마이페이지</p>
-        <h1 className="mt-1 text-3xl font-bold text-foreground">
+    <div className="mx-auto max-w-5xl px-6 py-10 md:px-10">
+      <div className="mb-10">
+        <p className="text-sm font-medium text-muted">마이페이지</p>
+        <h1 className="mt-1 text-3xl font-bold tracking-tight text-foreground md:text-4xl">
           {user?.name ?? "크리에이터"} 님의 활동 요약
         </h1>
       </div>
 
       {/* 스탯 카드 */}
-      <div className="mb-8">
+      <div className="mb-10">
         {statsLoading || !stats ? (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             {[0, 1, 2].map((i) => (
-              <div key={i} className="h-32 animate-pulse rounded-xl bg-surface-chip" />
+              <div key={i} className="h-32 animate-pulse rounded-2xl bg-surface-chip" />
             ))}
           </div>
         ) : (
@@ -156,73 +158,87 @@ export default function CreatorMyPage() {
       </div>
 
       {/* 빠른 이동 */}
-      <div className="mb-10 grid grid-cols-1 gap-4 md:grid-cols-2">
+      <div className="mb-12 grid grid-cols-1 gap-4 md:grid-cols-3">
         <Link
           href="/creator/home"
-          className="group rounded-xl border border-line p-6 transition hover:border-gray-400 hover:shadow-sm"
+          className="group rounded-2xl border border-line bg-surface p-6 transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-sm"
         >
           <h2 className="mb-1 text-lg font-semibold text-foreground">캠페인 보러가기</h2>
           <p className="text-sm text-muted">새로 열린 광고 탐색</p>
-          <p className="mt-4 text-sm text-primary group-hover:underline">바로 가기 →</p>
+          <p className="mt-4 text-sm font-medium text-primary">바로 가기 →</p>
         </Link>
         <Link
           href="/profile/setup"
-          className="group rounded-xl border border-line p-6 transition hover:border-gray-400 hover:shadow-sm"
+          className="group rounded-2xl border border-line bg-surface p-6 transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-sm"
         >
           <h2 className="mb-1 text-lg font-semibold text-foreground">프로필 관리</h2>
           <p className="text-sm text-muted">활동 정보와 채널 업데이트</p>
-          <p className="mt-4 text-sm text-primary group-hover:underline">수정하기 →</p>
+          <p className="mt-4 text-sm font-medium text-primary">수정하기 →</p>
         </Link>
         <Link
           href="/creator/performance"
-          className="group rounded-xl border border-line p-6 transition hover:border-gray-400 hover:shadow-sm"
+          className="group rounded-2xl border border-line bg-surface p-6 transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-sm"
         >
           <h2 className="mb-1 text-lg font-semibold text-foreground">성과 대시보드</h2>
           <p className="text-sm text-muted">SNS 조회수·좋아요·댓글 입력 및 확인</p>
-          <p className="mt-4 text-sm text-primary group-hover:underline">보러 가기 →</p>
+          <p className="mt-4 text-sm font-medium text-primary">보러 가기 →</p>
         </Link>
       </div>
 
       {/* 내 지원 현황 */}
       <section>
-        <h2 className="mb-3 text-lg font-semibold text-foreground">내 지원 현황</h2>
-        <div className="mb-4 flex flex-wrap gap-1">
-          {(["ALL", "PENDING", "APPROVED", "SUBMITTED", "CHANGES_REQUESTED", "SETTLED", "REJECTED"] as Filter[]).map(
-            (f) => (
+        <h2 className="mb-4 text-lg font-semibold text-foreground">내 지원 현황</h2>
+        <div className="mb-5 flex flex-wrap gap-1.5">
+          {(
+            [
+              "ALL",
+              "PENDING",
+              "APPROVED",
+              "SUBMITTED",
+              "CHANGES_REQUESTED",
+              "SETTLED",
+              "REJECTED",
+            ] as Filter[]
+          ).map((f) => {
+            const active = filter === f;
+            return (
               <button
                 key={f}
                 onClick={() => setFilter(f)}
-                className={`rounded px-3 py-1.5 text-sm ${
-                  filter === f
-                    ? "bg-gray-900 text-white"
-                    : "border border-line-strong text-muted hover:bg-surface-muted"
+                className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
+                  active
+                    ? "bg-primary text-white"
+                    : "border border-line text-content-soft hover:border-primary/40 hover:text-primary"
                 }`}
               >
                 {FILTER_LABEL[f]}
               </button>
-            ),
-          )}
+            );
+          })}
         </div>
 
         {appsLoading ? (
           <p className="text-muted">불러오는 중...</p>
         ) : applications.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-line-strong p-12 text-center">
+          <Card className="border-dashed bg-surface-muted py-16 text-center">
             <p className="text-muted">아직 지원한 캠페인이 없어요.</p>
-            <Link href="/creator/home" className="mt-2 inline-block text-sm text-primary underline">
+            <Link
+              href="/creator/home"
+              className="mt-2 inline-block text-sm font-medium text-primary underline-offset-2 hover:underline"
+            >
               캠페인 탐색하러 가기
             </Link>
-          </div>
+          </Card>
         ) : (
           <div className="space-y-3">
             {applications.map((a) => (
               <div
                 key={a.id}
-                className="flex flex-wrap items-center gap-4 rounded-xl border border-line bg-surface p-4"
+                className="flex flex-wrap items-center gap-4 rounded-2xl border border-line bg-surface p-4 transition-colors hover:border-line-strong"
               >
                 <Link
                   href={`/creator/campaigns/${a.campaign.id}`}
-                  className="h-16 w-24 shrink-0 overflow-hidden rounded bg-surface-chip"
+                  className="h-16 w-24 shrink-0 overflow-hidden rounded-lg bg-surface-chip"
                 >
                   {a.campaign.thumbnailUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
@@ -232,57 +248,54 @@ export default function CreatorMyPage() {
                       className="h-full w-full object-contain"
                     />
                   ) : (
-                    <div className="flex h-full w-full items-center justify-center text-xs text-gray-300">
+                    <div className="flex h-full w-full items-center justify-center text-xs text-faint">
                       -
                     </div>
                   )}
                 </Link>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs text-muted">{a.campaign.brandName}</p>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-medium text-muted">{a.campaign.brandName}</p>
                   <Link
                     href={`/creator/campaigns/${a.campaign.id}`}
-                    className="block truncate font-semibold text-foreground hover:underline"
+                    className="block truncate font-semibold text-foreground hover:text-primary"
                   >
                     {a.campaign.title}
                   </Link>
-                  <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted">
+                  <div className="mt-1.5 flex flex-wrap items-center gap-2 text-xs text-muted">
                     <ApplicationStatusBadge status={a.status} />
                     <span>지원일: {new Date(a.appliedAt).toLocaleDateString("ko-KR")}</span>
                     {a.rewardPaidAmount !== null && (
-                      <span className="text-foreground">
+                      <span className="font-semibold text-foreground">
                         정산 ₩{a.rewardPaidAmount.toLocaleString("ko-KR")}
                       </span>
                     )}
                   </div>
                 </div>
                 <div className="flex flex-col items-end gap-2">
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap gap-2">
                     {(a.status === "APPROVED" || a.status === "SUBMITTED") && (
-                      <button
-                        onClick={() => openSubmitModal(a.id, a.campaign.title)}
-                        className="rounded bg-gray-900 px-3 py-1.5 text-xs text-white hover:bg-gray-700"
-                      >
+                      <Button size="sm" onClick={() => openSubmitModal(a.id, a.campaign.title)}>
                         {a.status === "APPROVED" ? "영상 업로드" : "영상 재업로드"}
-                      </button>
+                      </Button>
                     )}
                     {a.status === "CHANGES_REQUESTED" && (
-                      <button
-                        onClick={() => openSubmitModal(a.id, a.campaign.title)}
-                        className="rounded bg-amber-600 px-3 py-1.5 text-xs text-white hover:bg-amber-700"
-                      >
+                      <Button size="sm" onClick={() => openSubmitModal(a.id, a.campaign.title)}>
                         재제출
-                      </button>
+                      </Button>
                     )}
                     {a.status === "SETTLED" && (
-                      <button
-                        onClick={() => setReviewModal({ id: a.id, campaignTitle: a.campaign.title })}
-                        className="rounded border border-line-strong px-3 py-1.5 text-xs text-content-soft hover:bg-surface-muted"
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={() =>
+                          setReviewModal({ id: a.id, campaignTitle: a.campaign.title })
+                        }
                       >
                         리뷰 작성
-                      </button>
+                      </Button>
                     )}
                     {a.videoFileKey && a.status !== "CHANGES_REQUESTED" && (
-                      <span className="rounded bg-surface-chip px-3 py-1.5 text-xs text-content-soft">
+                      <span className="inline-flex items-center rounded-full bg-surface-chip px-3 py-1.5 text-xs font-medium text-content-soft">
                         영상 제출됨
                       </span>
                     )}
@@ -291,14 +304,14 @@ export default function CreatorMyPage() {
                         href={a.submissionUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="rounded border border-line-strong px-3 py-1.5 text-xs text-content-soft hover:bg-surface-muted"
+                        className="inline-flex items-center rounded-full border border-line-strong px-3 py-1.5 text-xs font-medium text-content-soft transition-colors hover:border-primary/40 hover:text-primary"
                       >
                         외부 링크 보기
                       </a>
                     )}
                   </div>
                   {a.status === "CHANGES_REQUESTED" && a.reviewComment && (
-                    <p className="max-w-xs rounded bg-orange-50 px-3 py-1.5 text-xs text-orange-800">
+                    <p className="max-w-xs rounded-xl border border-warning/30 bg-warning/5 px-3 py-2 text-xs text-warning">
                       <span className="font-semibold">수정 요청:</span> {a.reviewComment}
                     </p>
                   )}
@@ -310,40 +323,50 @@ export default function CreatorMyPage() {
       </section>
 
       {/* 계정 탈퇴 */}
-      <section className="mt-16 border-t border-line pt-8">
+      <section className="mt-20 border-t border-line pt-8">
         <h2 className="mb-1 text-sm font-semibold text-muted">계정 관리</h2>
-        <p className="mb-4 text-sm text-faint">탈퇴 시 모든 지원 내역이 삭제되며 복구할 수 없습니다.</p>
-        <button
-          onClick={() => { setWithdrawModal(true); setWithdrawError(""); }}
-          className="rounded border border-red-300 px-4 py-2 text-sm text-red-500 hover:bg-red-50"
+        <p className="mb-4 text-sm text-faint">
+          탈퇴 시 모든 지원 내역이 삭제되며 복구할 수 없습니다.
+        </p>
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={() => {
+            setWithdrawModal(true);
+            setWithdrawError("");
+          }}
         >
           회원 탈퇴
-        </button>
+        </Button>
       </section>
 
       {/* 탈퇴 확인 모달 */}
       {withdrawModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="w-full max-w-sm rounded-xl bg-surface p-6">
+          <div className="w-full max-w-sm rounded-2xl bg-surface p-6 shadow-2xl">
             <h3 className="mb-2 text-lg font-semibold text-foreground">정말 탈퇴하시겠어요?</h3>
-            <p className="mb-1 text-sm text-muted">탈퇴하면 모든 지원 내역과 계정 정보가 영구 삭제됩니다.</p>
-            <p className="mb-4 text-sm text-red-500">이 작업은 되돌릴 수 없습니다.</p>
-            {withdrawError && <p className="mb-3 text-sm text-red-600">{withdrawError}</p>}
+            <p className="mb-1 text-sm text-muted">
+              탈퇴하면 모든 지원 내역과 계정 정보가 영구 삭제됩니다.
+            </p>
+            <p className="mb-4 text-sm font-medium text-error">이 작업은 되돌릴 수 없습니다.</p>
+            {withdrawError && <p className="mb-3 text-sm text-error">{withdrawError}</p>}
             <div className="flex justify-end gap-2">
-              <button
+              <Button
+                variant="secondary"
+                size="sm"
                 onClick={() => setWithdrawModal(false)}
                 disabled={withdrawLoading}
-                className="rounded border border-line-strong px-3 py-1.5 text-sm text-content-soft hover:bg-surface-muted disabled:opacity-50"
               >
                 취소
-              </button>
-              <button
+              </Button>
+              <Button
+                size="sm"
                 onClick={handleWithdraw}
                 disabled={withdrawLoading}
-                className="rounded bg-red-500 px-3 py-1.5 text-sm text-white hover:bg-red-600 disabled:opacity-50"
+                className="!bg-error hover:!bg-error/90"
               >
                 {withdrawLoading ? "처리 중..." : "탈퇴하기"}
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -352,7 +375,7 @@ export default function CreatorMyPage() {
       {/* 리뷰 작성 모달 */}
       {reviewModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="w-full max-w-md rounded-xl bg-surface p-6">
+          <div className="w-full max-w-md rounded-2xl bg-surface p-6 shadow-2xl">
             <h3 className="mb-1 text-lg font-semibold text-foreground">기업 리뷰 작성</h3>
             <p className="mb-4 text-sm text-muted">{reviewModal.campaignTitle}</p>
             <ReviewForm
@@ -370,7 +393,7 @@ export default function CreatorMyPage() {
       {/* 제출 모달 */}
       {submitModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="w-full max-w-md rounded-xl bg-surface p-6">
+          <div className="w-full max-w-md rounded-2xl bg-surface p-6 shadow-2xl">
             <h3 className="mb-1 text-lg font-semibold text-foreground">영상 업로드</h3>
             <p className="mb-4 text-sm text-muted">{submitModal.campaignTitle}</p>
             <VideoUploader

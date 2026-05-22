@@ -3,7 +3,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import api from "@/lib/api";
+import Button from "@/components/ui/Button";
+import Card from "@/components/ui/Card";
 import ImageUploader from "@/components/ui/ImageUploader";
+import Input from "@/components/ui/Input";
 
 type CampaignStatus = "DRAFT" | "OPEN" | "CLOSED";
 type EscrowStatus =
@@ -29,6 +32,9 @@ interface Detail {
   thumbnailUrl: string | null;
   applicationCount: number;
 }
+
+const TEXTAREA_CLASS =
+  "block w-full rounded-lg border border-line-strong bg-surface px-3 py-2.5 text-sm text-foreground placeholder-faint transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:bg-surface-muted disabled:text-muted";
 
 export default function EditCampaignPage() {
   const params = useParams<{ id: string }>();
@@ -121,52 +127,53 @@ export default function EditCampaignPage() {
     }
   };
 
-  const inputCls =
-    "mt-1 block w-full rounded border border-line-strong px-3 py-2 text-foreground placeholder-faint focus:border-gray-500 focus:outline-none disabled:bg-surface-muted disabled:text-muted";
-
   if (loading) return <p className="text-muted">불러오는 중...</p>;
-  if (!detail) return <p className="text-red-600">{error || "데이터 없음"}</p>;
+  if (!detail) return <p className="text-error">{error || "데이터 없음"}</p>;
 
   return (
     <div className="mx-auto max-w-2xl">
-      <h1 className="text-2xl font-bold text-foreground">캠페인 수정</h1>
+      <h1 className="text-3xl font-bold tracking-tight text-foreground md:text-4xl">
+        캠페인 수정
+      </h1>
       {readOnly && (
-        <div className="mt-4 rounded bg-amber-50 p-3 text-sm text-amber-800">
+        <Card className="mt-5 border-warning/30 bg-warning/5 p-3 text-sm text-warning">
           현재 상태에서는 수정이 제한됩니다.
-        </div>
+        </Card>
       )}
 
-      <form onSubmit={handleSubmit} className="mt-6 space-y-6">
+      <form onSubmit={handleSubmit} className="mt-8 space-y-6">
         {error && (
-          <div className="rounded bg-red-50 p-3 text-sm text-red-600">{error}</div>
+          <div className="rounded-xl border border-error/30 bg-error/5 p-3 text-sm text-error">
+            {error}
+          </div>
         )}
 
         <div>
           <label htmlFor="title" className="block text-sm font-medium text-content-soft">
             캠페인 제목
           </label>
-          <input
+          <Input
             id="title"
             type="text"
             required
             disabled={readOnly}
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className={inputCls}
+            className="mt-1.5"
           />
         </div>
         <div>
           <label htmlFor="brandName" className="block text-sm font-medium text-content-soft">
             브랜드명
           </label>
-          <input
+          <Input
             id="brandName"
             type="text"
             required
             disabled={readOnly}
             value={brandName}
             onChange={(e) => setBrandName(e.target.value)}
-            className={inputCls}
+            className="mt-1.5"
           />
         </div>
         <div>
@@ -180,7 +187,7 @@ export default function EditCampaignPage() {
             disabled={readOnly}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            className={inputCls}
+            className={`${TEXTAREA_CLASS} mt-1.5`}
           />
         </div>
         <div>
@@ -193,23 +200,28 @@ export default function EditCampaignPage() {
             disabled={readOnly}
             value={requirements}
             onChange={(e) => setRequirements(e.target.value)}
-            className={inputCls}
+            className={`${TEXTAREA_CLASS} mt-1.5`}
           />
         </div>
 
-        <section className="space-y-4 border-t border-line pt-6">
-          <h2 className="text-sm font-semibold text-muted">보상 · 모집</h2>
+        <section className="space-y-5 border-t border-line pt-6">
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-muted">
+            보상 · 모집
+          </h2>
           {!canEditBudget && (
-            <p className="text-xs text-amber-700">
+            <p className="text-xs text-warning">
               지원자가 있거나 예치 완료 후에는 보상/모집 인원을 수정할 수 없습니다.
             </p>
           )}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label htmlFor="rewardAmount" className="block text-sm font-medium text-content-soft">
+              <label
+                htmlFor="rewardAmount"
+                className="block text-sm font-medium text-content-soft"
+              >
                 1인당 보상 (원)
               </label>
-              <input
+              <Input
                 id="rewardAmount"
                 type="number"
                 min={0}
@@ -217,14 +229,17 @@ export default function EditCampaignPage() {
                 disabled={readOnly || !canEditBudget}
                 value={rewardAmount}
                 onChange={(e) => setRewardAmount(e.target.value)}
-                className={inputCls}
+                className="mt-1.5"
               />
             </div>
             <div>
-              <label htmlFor="maxParticipants" className="block text-sm font-medium text-content-soft">
+              <label
+                htmlFor="maxParticipants"
+                className="block text-sm font-medium text-content-soft"
+              >
                 모집 인원
               </label>
-              <input
+              <Input
                 id="maxParticipants"
                 type="number"
                 min={1}
@@ -232,7 +247,7 @@ export default function EditCampaignPage() {
                 disabled={readOnly || !canEditBudget}
                 value={maxParticipants}
                 onChange={(e) => setMaxParticipants(e.target.value)}
-                className={inputCls}
+                className="mt-1.5"
               />
             </div>
           </div>
@@ -240,17 +255,17 @@ export default function EditCampaignPage() {
             <label htmlFor="deadline" className="block text-sm font-medium text-content-soft">
               모집 마감일 <span className="text-faint">(선택)</span>
             </label>
-            <input
+            <Input
               id="deadline"
               type="datetime-local"
               disabled={readOnly}
               value={deadline}
               onChange={(e) => setDeadline(e.target.value)}
-              className={inputCls}
+              className="mt-1.5"
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-content-soft">
+            <label className="mb-1.5 block text-sm font-medium text-content-soft">
               썸네일 <span className="text-faint">(선택)</span>
             </label>
             <ImageUploader
@@ -264,21 +279,17 @@ export default function EditCampaignPage() {
           </div>
         </section>
 
-        <div className="flex gap-3">
-          <button
-            type="submit"
-            disabled={saving || readOnly}
-            className="flex-1 rounded-lg bg-primary py-2.5 font-medium text-white hover:bg-primary-dark disabled:opacity-50"
-          >
+        <div className="flex gap-3 pt-2">
+          <Button type="submit" disabled={saving || readOnly} className="flex-1">
             {saving ? "저장 중..." : "저장"}
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
+            variant="secondary"
             onClick={() => router.push(`/company/campaigns/${detail.id}`)}
-            className="rounded-lg border border-line-strong px-5 py-2.5 text-content-soft hover:bg-surface-muted"
           >
             취소
-          </button>
+          </Button>
         </div>
       </form>
     </div>

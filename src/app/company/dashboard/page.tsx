@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import api from "@/lib/api";
+import Button from "@/components/ui/Button";
+import Card from "@/components/ui/Card";
 
 interface Summary {
   totalCampaigns: number;
@@ -26,15 +28,13 @@ export default function CompanyDashboardPage() {
 
   return (
     <div className="mx-auto max-w-5xl">
-      <h1 className="text-2xl font-bold text-foreground">대시보드</h1>
-      <p className="mt-1 text-sm text-muted">
-        캠페인 현황과 예치금 상태를 확인하세요.
-      </p>
+      <h1 className="text-3xl font-bold tracking-tight text-foreground md:text-4xl">대시보드</h1>
+      <p className="mt-2 text-sm text-muted">캠페인 현황과 예치금 상태를 확인하세요.</p>
 
       {loading ? (
-        <p className="mt-6 text-muted">불러오는 중...</p>
+        <p className="mt-8 text-muted">불러오는 중...</p>
       ) : summary ? (
-        <div className="mt-6 grid grid-cols-2 gap-4 md:grid-cols-5">
+        <div className="mt-8 grid grid-cols-2 gap-4 md:grid-cols-5">
           <SummaryCard label="전체 캠페인" value={summary.totalCampaigns} />
           <SummaryCard label="입금 대기" value={summary.pendingDeposit} />
           <SummaryCard label="입금 확인중" value={summary.depositConfirming} />
@@ -42,21 +42,15 @@ export default function CompanyDashboardPage() {
           <SummaryCard label="종료" value={summary.closed} />
         </div>
       ) : (
-        <p className="mt-6 text-muted">데이터를 불러오지 못했습니다.</p>
+        <p className="mt-8 text-muted">데이터를 불러오지 못했습니다.</p>
       )}
 
-      <div className="mt-8 flex gap-3">
-        <Link
-          href="/company/campaigns/new"
-          className="rounded bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-dark"
-        >
-          새 캠페인 등록
+      <div className="mt-10 flex flex-wrap gap-3">
+        <Link href="/company/campaigns/new">
+          <Button>새 캠페인 등록</Button>
         </Link>
-        <Link
-          href="/company/campaigns"
-          className="rounded border border-line-strong px-4 py-2 text-sm font-medium text-content-soft hover:bg-surface-muted"
-        >
-          내 캠페인 보기
+        <Link href="/company/campaigns">
+          <Button variant="secondary">내 캠페인 보기</Button>
         </Link>
       </div>
     </div>
@@ -65,9 +59,9 @@ export default function CompanyDashboardPage() {
 
 function SummaryCard({ label, value }: { label: string; value: number }) {
   return (
-    <div className="rounded-lg border border-line bg-surface p-4">
-      <p className="text-xs text-muted">{label}</p>
-      <p className="mt-1 text-2xl font-bold text-foreground">{value}</p>
-    </div>
+    <Card className="p-4 md:p-5">
+      <p className="text-xs font-medium text-muted">{label}</p>
+      <p className="mt-1 text-2xl font-bold tracking-tight text-foreground">{value}</p>
+    </Card>
   );
 }

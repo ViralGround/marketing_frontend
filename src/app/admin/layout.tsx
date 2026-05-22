@@ -22,46 +22,48 @@ export default function AdminLayout({
 
   return (
     <AuthGuard>
-    <div className="flex min-h-[calc(100vh-65px)]">
-      <aside className="w-56 border-r border-line bg-surface-muted p-4">
-        <h2 className="mb-6 text-lg font-bold text-foreground">관리자</h2>
-        <nav className="space-y-2">
-          <Link
-            href="/admin/members"
-            className="block rounded px-3 py-2 text-sm text-content-soft hover:bg-gray-200"
-          >
-            회원 관리
-          </Link>
-          <Link
-            href="/admin/campaigns"
-            className="block rounded px-3 py-2 text-sm text-content-soft hover:bg-gray-200"
-          >
-            캠페인 관리
-          </Link>
-          <Link
-            href="/admin/escrow"
-            className="block rounded px-3 py-2 text-sm text-content-soft hover:bg-gray-200"
-          >
-            예치금 확인
-          </Link>
-          <Link
-            href="/admin/contacts"
-            className="block rounded px-3 py-2 text-sm text-content-soft hover:bg-gray-200"
-          >
-            상담 신청
-          </Link>
-        </nav>
-        <div className="mt-8 border-t border-line pt-4">
-          <button
-            onClick={handleLogout}
-            className="text-sm text-red-500 hover:text-red-700"
-          >
-            로그아웃
-          </button>
-        </div>
-      </aside>
-      <div className="flex-1 p-8">{children}</div>
-    </div>
+      <div className="flex min-h-[calc(100vh-65px)]">
+        <aside className="w-56 border-r border-line bg-surface-muted p-5">
+          <h2 className="mb-6 px-3 text-xs font-semibold uppercase tracking-wider text-muted">
+            관리자
+          </h2>
+          <nav className="space-y-1">
+            <Link
+              href="/admin/members"
+              className="block rounded-lg px-3 py-2 text-sm font-medium text-content-soft transition-colors hover:bg-surface hover:text-foreground"
+            >
+              회원 관리
+            </Link>
+            <Link
+              href="/admin/campaigns"
+              className="block rounded-lg px-3 py-2 text-sm font-medium text-content-soft transition-colors hover:bg-surface hover:text-foreground"
+            >
+              캠페인 관리
+            </Link>
+            <Link
+              href="/admin/escrow"
+              className="block rounded-lg px-3 py-2 text-sm font-medium text-content-soft transition-colors hover:bg-surface hover:text-foreground"
+            >
+              예치금 확인
+            </Link>
+            <Link
+              href="/admin/contacts"
+              className="block rounded-lg px-3 py-2 text-sm font-medium text-content-soft transition-colors hover:bg-surface hover:text-foreground"
+            >
+              상담 신청
+            </Link>
+          </nav>
+          <div className="mt-8 border-t border-line pt-4">
+            <button
+              onClick={handleLogout}
+              className="rounded-lg px-3 py-2 text-sm font-medium text-muted transition-colors hover:bg-surface hover:text-error"
+            >
+              로그아웃
+            </button>
+          </div>
+        </aside>
+        <div className="flex-1 p-8 md:p-10">{children}</div>
+      </div>
     </AuthGuard>
   );
 }

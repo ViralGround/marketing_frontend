@@ -1,5 +1,7 @@
 "use client";
 
+import Badge from "@/components/ui/Badge";
+
 export type SubmissionReviewStatus =
   | "SUBMITTED"
   | "APPROVED"
@@ -18,14 +20,16 @@ export interface SubmissionHistoryItem {
   reviewedAt: string | null;
 }
 
+type Tone = "primary" | "success" | "warning" | "error" | "info" | "neutral";
+
 const STATUS_CONFIG: Record<
   SubmissionReviewStatus,
-  { label: string; className: string }
+  { label: string; tone: Tone }
 > = {
-  SUBMITTED: { label: "검토 대기", className: "bg-blue-100 text-blue-700" },
-  APPROVED: { label: "승인", className: "bg-green-100 text-green-700" },
-  CHANGES_REQUESTED: { label: "수정 요청", className: "bg-orange-100 text-orange-700" },
-  REJECTED: { label: "거절", className: "bg-red-100 text-red-700" },
+  SUBMITTED: { label: "검토 대기", tone: "info" },
+  APPROVED: { label: "승인", tone: "success" },
+  CHANGES_REQUESTED: { label: "수정 요청", tone: "warning" },
+  REJECTED: { label: "거절", tone: "error" },
 };
 
 export default function SubmissionTimeline({
@@ -44,15 +48,13 @@ export default function SubmissionTimeline({
         return (
           <li
             key={s.id}
-            className="rounded border border-line bg-surface-muted p-3 text-sm"
+            className="rounded-xl border border-line bg-surface-muted p-3 text-sm"
           >
-            <div className="mb-1 flex items-center gap-2">
-              <span className="text-xs text-muted">
+            <div className="mb-1.5 flex items-center gap-2">
+              <span className="text-xs font-medium text-muted">
                 {idx + 1}차 제출 · {formatDateTime(s.submittedAt)}
               </span>
-              <span className={`rounded px-2 py-0.5 text-xs ${cfg.className}`}>
-                {cfg.label}
-              </span>
+              <Badge tone={cfg.tone}>{cfg.label}</Badge>
             </div>
             {s.videoFileKey && (
               <p className="text-xs text-muted">
@@ -64,8 +66,8 @@ export default function SubmissionTimeline({
               <p className="text-xs text-muted">외부 URL 제출 (레거시)</p>
             )}
             {s.reviewComment && (
-              <div className="mt-2 rounded bg-surface p-2 text-xs text-content-soft">
-                <span className="text-muted">검토 의견:</span> {s.reviewComment}
+              <div className="mt-2 rounded-lg bg-surface p-2.5 text-xs text-content-soft">
+                <span className="font-medium text-muted">검토 의견:</span> {s.reviewComment}
                 {s.reviewedAt && (
                   <span className="ml-2 text-faint">
                     ({formatDateTime(s.reviewedAt)})

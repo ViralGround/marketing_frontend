@@ -3,6 +3,9 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import api from "@/lib/api";
+import Badge from "@/components/ui/Badge";
+import Button from "@/components/ui/Button";
+import Card from "@/components/ui/Card";
 
 type CampaignStatus = "DRAFT" | "OPEN" | "CLOSED";
 type EscrowStatus =
@@ -31,16 +34,18 @@ interface CampaignItem {
 
 type Filter = "ALL" | CampaignStatus;
 
+type Tone = "primary" | "success" | "warning" | "error" | "info" | "neutral";
+
 const STATUS_LABEL: Record<CampaignStatus, string> = {
   DRAFT: "예치금 대기",
   OPEN: "모집중",
   CLOSED: "마감",
 };
 
-const STATUS_CLASS: Record<CampaignStatus, string> = {
-  DRAFT: "bg-amber-100 text-amber-700",
-  OPEN: "bg-green-100 text-green-700",
-  CLOSED: "bg-gray-200 text-content-soft",
+const STATUS_TONE: Record<CampaignStatus, Tone> = {
+  DRAFT: "warning",
+  OPEN: "success",
+  CLOSED: "neutral",
 };
 
 const ESCROW_LABEL: Record<EscrowStatus, string> = {
@@ -53,14 +58,14 @@ const ESCROW_LABEL: Record<EscrowStatus, string> = {
   REFUNDED: "환불",
 };
 
-const ESCROW_CLASS: Record<EscrowStatus, string> = {
-  NONE: "bg-surface-chip text-muted",
-  PENDING_DEPOSIT: "bg-amber-100 text-amber-700",
-  DEPOSIT_CONFIRMING: "bg-orange-100 text-orange-700",
-  FUNDED: "bg-emerald-100 text-emerald-700",
-  PARTIALLY_RELEASED: "bg-indigo-100 text-indigo-700",
-  RELEASED: "bg-blue-100 text-blue-700",
-  REFUNDED: "bg-red-100 text-red-700",
+const ESCROW_TONE: Record<EscrowStatus, Tone> = {
+  NONE: "neutral",
+  PENDING_DEPOSIT: "warning",
+  DEPOSIT_CONFIRMING: "warning",
+  FUNDED: "success",
+  PARTIALLY_RELEASED: "primary",
+  RELEASED: "info",
+  REFUNDED: "error",
 };
 
 export default function AdminCampaignsPage() {
@@ -103,124 +108,123 @@ export default function AdminCampaignsPage() {
 
   return (
     <div>
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-foreground">캠페인 관리</h1>
-        <Link
-          href="/admin/campaigns/new"
-          className="rounded bg-gray-900 px-4 py-2 text-sm text-white hover:bg-gray-700"
-        >
-          + 새 캠페인
+      <div className="mb-8 flex items-center justify-between">
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">캠페인 관리</h1>
+        <Link href="/admin/campaigns/new">
+          <Button size="sm">+ 새 캠페인</Button>
         </Link>
       </div>
 
       {pendingEscrow > 0 && (
-        <div className="mb-4 flex items-center justify-between rounded border border-orange-200 bg-orange-50 p-3 text-sm text-orange-800">
-          <span>
-            예치금 확인 대기 캠페인이 <strong>{pendingEscrow}건</strong> 있습니다.
+        <Card className="mb-5 flex flex-wrap items-center justify-between gap-3 border-warning/30 bg-warning/5 p-4">
+          <span className="text-sm text-warning">
+            예치금 확인 대기 캠페인이 <strong className="font-semibold">{pendingEscrow}건</strong>{" "}
+            있습니다.
           </span>
-          <Link
-            href="/admin/escrow"
-            className="rounded bg-orange-600 px-3 py-1 text-xs text-white hover:bg-orange-700"
-          >
-            예치금 확인 페이지로
+          <Link href="/admin/escrow">
+            <Button size="sm" variant="secondary">
+              예치금 확인 페이지로
+            </Button>
           </Link>
-        </div>
+        </Card>
       )}
 
-      <div className="mb-4 flex gap-1">
-        {(["ALL", "DRAFT", "OPEN", "CLOSED"] as Filter[]).map((f) => (
-          <button
-            key={f}
-            type="button"
-            aria-pressed={filter === f}
-            onClick={() => setFilter(f)}
-            className={`rounded px-3 py-1.5 text-sm ${
-              filter === f
-                ? "bg-gray-900 text-white"
-                : "border border-line-strong text-muted hover:bg-surface-muted"
-            }`}
-          >
-            {f === "ALL" ? "전체" : STATUS_LABEL[f]}
-          </button>
-        ))}
+      <div className="mb-5 flex gap-1.5">
+        {(["ALL", "DRAFT", "OPEN", "CLOSED"] as Filter[]).map((f) => {
+          const active = filter === f;
+          return (
+            <button
+              key={f}
+              type="button"
+              aria-pressed={active}
+              onClick={() => setFilter(f)}
+              className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
+                active
+                  ? "bg-primary text-white"
+                  : "border border-line text-content-soft hover:border-primary/40 hover:text-primary"
+              }`}
+            >
+              {f === "ALL" ? "전체" : STATUS_LABEL[f]}
+            </button>
+          );
+        })}
       </div>
 
       {error ? (
-        <div className="rounded border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-          <p>{error}</p>
-          <button
-            type="button"
-            onClick={load}
-            className="mt-2 rounded bg-red-600 px-3 py-1 text-xs text-white hover:bg-red-700"
-          >
+        <Card className="border-error/30 bg-error/5">
+          <p className="text-sm text-error">{error}</p>
+          <Button size="sm" className="mt-3" onClick={load}>
             다시 시도
-          </button>
-        </div>
+          </Button>
+        </Card>
       ) : loading ? (
         <p className="text-muted">불러오는 중...</p>
       ) : campaigns.length === 0 ? (
-        <p className="text-muted">등록된 캠페인이 없습니다.</p>
+        <Card className="bg-surface-muted py-12 text-center text-muted">
+          등록된 캠페인이 없습니다.
+        </Card>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <thead className="border-b border-line text-xs text-muted uppercase">
-              <tr>
-                <th className="px-4 py-3">제목</th>
-                <th className="px-4 py-3">브랜드</th>
-                <th className="px-4 py-3">보상</th>
-                <th className="px-4 py-3">지원자</th>
-                <th className="px-4 py-3">상태</th>
-                <th className="px-4 py-3">예치금</th>
-                <th className="px-4 py-3">마감일</th>
-                <th className="px-4 py-3">생성일</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-line">
-              {campaigns.map((c) => (
-                <tr
-                  key={c.id}
-                  className={`hover:bg-surface-muted ${c.hidden ? "opacity-60" : ""}`}
-                >
-                  <td className="px-4 py-3 font-medium text-foreground">
-                    <Link href={`/admin/campaigns/${c.id}`} className="hover:underline">
-                      {c.title}
-                    </Link>
-                    {c.hidden && (
-                      <span className="ml-2 rounded bg-zinc-200 px-1.5 py-0.5 text-[10px] text-zinc-700">
-                        숨김
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3 text-muted">{c.brandName}</td>
-                  <td className="px-4 py-3 text-foreground">
-                    ₩{c.rewardAmount.toLocaleString("ko-KR")}
-                  </td>
-                  <td className="px-4 py-3 text-muted">
-                    {c.applicationCount} / {c.maxParticipants}
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className={`rounded px-2 py-0.5 text-xs ${STATUS_CLASS[c.status]}`}>
-                      {STATUS_LABEL[c.status]}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span
-                      className={`rounded px-2 py-0.5 text-xs ${ESCROW_CLASS[c.escrowStatus]}`}
-                    >
-                      {ESCROW_LABEL[c.escrowStatus]}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-muted">
-                    {c.deadline ? new Date(c.deadline).toLocaleDateString("ko-KR") : "-"}
-                  </td>
-                  <td className="px-4 py-3 text-muted">
-                    {new Date(c.createdAt).toLocaleDateString("ko-KR")}
-                  </td>
+        <Card className="overflow-hidden p-0">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead className="bg-surface-muted text-xs uppercase tracking-wider text-muted">
+                <tr>
+                  <th className="px-5 py-3 font-medium">제목</th>
+                  <th className="px-5 py-3 font-medium">브랜드</th>
+                  <th className="px-5 py-3 font-medium">보상</th>
+                  <th className="px-5 py-3 font-medium">지원자</th>
+                  <th className="px-5 py-3 font-medium">상태</th>
+                  <th className="px-5 py-3 font-medium">예치금</th>
+                  <th className="px-5 py-3 font-medium">마감일</th>
+                  <th className="px-5 py-3 font-medium">생성일</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody className="divide-y divide-line">
+                {campaigns.map((c) => (
+                  <tr
+                    key={c.id}
+                    className={`transition-colors hover:bg-surface-muted ${c.hidden ? "opacity-60" : ""}`}
+                  >
+                    <td className="px-5 py-3 font-medium text-foreground">
+                      <Link
+                        href={`/admin/campaigns/${c.id}`}
+                        className="hover:text-primary"
+                      >
+                        {c.title}
+                      </Link>
+                      {c.hidden && (
+                        <span className="ml-2">
+                          <Badge tone="neutral">숨김</Badge>
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-5 py-3 text-content-soft">{c.brandName}</td>
+                    <td className="px-5 py-3 font-medium text-foreground">
+                      ₩{c.rewardAmount.toLocaleString("ko-KR")}
+                    </td>
+                    <td className="px-5 py-3 text-content-soft">
+                      {c.applicationCount} / {c.maxParticipants}
+                    </td>
+                    <td className="px-5 py-3">
+                      <Badge tone={STATUS_TONE[c.status]}>{STATUS_LABEL[c.status]}</Badge>
+                    </td>
+                    <td className="px-5 py-3">
+                      <Badge tone={ESCROW_TONE[c.escrowStatus]}>
+                        {ESCROW_LABEL[c.escrowStatus]}
+                      </Badge>
+                    </td>
+                    <td className="px-5 py-3 text-muted">
+                      {c.deadline ? new Date(c.deadline).toLocaleDateString("ko-KR") : "-"}
+                    </td>
+                    <td className="px-5 py-3 text-muted">
+                      {new Date(c.createdAt).toLocaleDateString("ko-KR")}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Card>
       )}
     </div>
   );

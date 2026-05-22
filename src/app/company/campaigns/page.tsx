@@ -3,6 +3,9 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import api from "@/lib/api";
+import Badge from "@/components/ui/Badge";
+import Button from "@/components/ui/Button";
+import Card from "@/components/ui/Card";
 
 type CampaignStatus = "DRAFT" | "OPEN" | "CLOSED";
 type EscrowStatus =
@@ -28,6 +31,8 @@ interface CampaignItem {
   applicationCount: number;
 }
 
+type Tone = "primary" | "success" | "warning" | "error" | "info" | "neutral";
+
 const ESCROW_LABEL: Record<EscrowStatus, string> = {
   NONE: "-",
   PENDING_DEPOSIT: "입금 대기",
@@ -37,10 +42,25 @@ const ESCROW_LABEL: Record<EscrowStatus, string> = {
   REFUNDED: "환불됨",
 };
 
+const ESCROW_TONE: Record<EscrowStatus, Tone> = {
+  NONE: "neutral",
+  PENDING_DEPOSIT: "warning",
+  DEPOSIT_CONFIRMING: "warning",
+  FUNDED: "success",
+  PARTIALLY_RELEASED: "primary",
+  REFUNDED: "error",
+};
+
 const STATUS_LABEL: Record<CampaignStatus, string> = {
   DRAFT: "작성중",
   OPEN: "모집중",
   CLOSED: "종료",
+};
+
+const STATUS_TONE: Record<CampaignStatus, Tone> = {
+  DRAFT: "warning",
+  OPEN: "success",
+  CLOSED: "neutral",
 };
 
 export default function CompanyCampaignsPage() {
@@ -57,88 +77,85 @@ export default function CompanyCampaignsPage() {
 
   return (
     <div className="mx-auto max-w-5xl">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">내 캠페인</h1>
-          <p className="mt-1 text-sm text-muted">
-            등록한 캠페인과 예치금 상태를 확인하세요.
-          </p>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground md:text-4xl">
+            내 캠페인
+          </h1>
+          <p className="mt-2 text-sm text-muted">등록한 캠페인과 예치금 상태를 확인하세요.</p>
         </div>
-        <Link
-          href="/company/campaigns/new"
-          className="rounded bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-dark"
-        >
-          새 캠페인 등록
+        <Link href="/company/campaigns/new">
+          <Button>새 캠페인 등록</Button>
         </Link>
       </div>
 
       {loading ? (
-        <p className="mt-8 text-muted">불러오는 중...</p>
+        <p className="mt-10 text-muted">불러오는 중...</p>
       ) : campaigns.length === 0 ? (
-        <div className="mt-8 rounded-xl border border-dashed border-line-strong p-12 text-center text-muted">
+        <Card className="mt-10 border-dashed bg-surface-muted py-12 text-center text-muted">
           아직 등록한 캠페인이 없습니다.
-        </div>
+        </Card>
       ) : (
-        <div className="mt-6 overflow-hidden rounded-lg border border-line">
-          <table className="w-full text-sm">
-            <thead className="bg-surface-muted text-left text-xs text-muted">
-              <tr>
-                <th className="px-4 py-3">제목</th>
-                <th className="px-4 py-3">보상 × 모집</th>
-                <th className="px-4 py-3">총 예산</th>
-                <th className="px-4 py-3">예치 상태</th>
-                <th className="px-4 py-3">캠페인</th>
-                <th className="px-4 py-3">지원</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-line">
-              {campaigns.map((c) => (
-                <tr key={c.id} className="hover:bg-surface-muted">
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-3">
-                      <div className="h-10 w-16 flex-shrink-0 overflow-hidden rounded bg-surface-chip">
-                        {c.thumbnailUrl && (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
-                            src={c.thumbnailUrl}
-                            alt={c.title}
-                            className="h-full w-full object-contain"
-                          />
-                        )}
-                      </div>
-                      <div className="min-w-0">
-                        <Link
-                          href={`/company/campaigns/${c.id}`}
-                          className="font-medium text-foreground hover:underline"
-                        >
-                          {c.title}
-                        </Link>
-                        <p className="text-xs text-muted">{c.brandName}</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 text-content-soft">
-                    {c.rewardAmount.toLocaleString()}원 × {c.maxParticipants}명
-                  </td>
-                  <td className="px-4 py-3 font-medium text-foreground">
-                    {c.totalBudget.toLocaleString()}원
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className="inline-flex rounded bg-surface-chip px-2 py-0.5 text-xs text-content-soft">
-                      {ESCROW_LABEL[c.escrowStatus]}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-content-soft">
-                    {STATUS_LABEL[c.status]}
-                  </td>
-                  <td className="px-4 py-3 text-content-soft">
-                    {c.applicationCount}명
-                  </td>
+        <Card className="mt-8 overflow-hidden p-0">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-surface-muted text-left text-xs uppercase tracking-wider text-muted">
+                <tr>
+                  <th className="px-5 py-3 font-medium">제목</th>
+                  <th className="px-5 py-3 font-medium">보상 × 모집</th>
+                  <th className="px-5 py-3 font-medium">총 예산</th>
+                  <th className="px-5 py-3 font-medium">예치 상태</th>
+                  <th className="px-5 py-3 font-medium">캠페인</th>
+                  <th className="px-5 py-3 font-medium">지원</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody className="divide-y divide-line">
+                {campaigns.map((c) => (
+                  <tr key={c.id} className="transition-colors hover:bg-surface-muted">
+                    <td className="px-5 py-3">
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-16 flex-shrink-0 overflow-hidden rounded-lg bg-surface-chip">
+                          {c.thumbnailUrl && (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              src={c.thumbnailUrl}
+                              alt={c.title}
+                              className="h-full w-full object-contain"
+                            />
+                          )}
+                        </div>
+                        <div className="min-w-0">
+                          <Link
+                            href={`/company/campaigns/${c.id}`}
+                            className="font-medium text-foreground hover:text-primary"
+                          >
+                            {c.title}
+                          </Link>
+                          <p className="text-xs text-muted">{c.brandName}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-5 py-3 text-content-soft">
+                      {c.rewardAmount.toLocaleString()}원 × {c.maxParticipants}명
+                    </td>
+                    <td className="px-5 py-3 font-semibold text-foreground">
+                      {c.totalBudget.toLocaleString()}원
+                    </td>
+                    <td className="px-5 py-3">
+                      <Badge tone={ESCROW_TONE[c.escrowStatus]}>
+                        {ESCROW_LABEL[c.escrowStatus]}
+                      </Badge>
+                    </td>
+                    <td className="px-5 py-3">
+                      <Badge tone={STATUS_TONE[c.status]}>{STATUS_LABEL[c.status]}</Badge>
+                    </td>
+                    <td className="px-5 py-3 text-content-soft">{c.applicationCount}명</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Card>
       )}
     </div>
   );

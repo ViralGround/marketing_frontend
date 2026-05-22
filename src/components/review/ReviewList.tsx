@@ -1,5 +1,7 @@
 "use client";
 
+import Badge from "@/components/ui/Badge";
+
 export type ReviewAuthorRole = "CREATOR" | "COMPANY" | "ADMIN";
 
 export interface ReviewItem {
@@ -28,16 +30,14 @@ export default function ReviewList({ reviews }: { reviews: ReviewItem[] }) {
   return (
     <ul className="space-y-3">
       {reviews.map((r) => (
-        <li key={r.id} className="rounded border border-line p-4">
+        <li key={r.id} className="rounded-2xl border border-line bg-surface p-5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="font-medium text-foreground">{r.authorName}</span>
-              <span className="rounded bg-surface-chip px-2 py-0.5 text-xs text-muted">
-                {ROLE_LABEL[r.authorRole]}
-              </span>
-              <span className="text-sm text-yellow-500">
+              <Badge tone="neutral">{ROLE_LABEL[r.authorRole]}</Badge>
+              <span className="text-sm text-warning">
                 {"★".repeat(r.rating)}
-                <span className="text-gray-300">{"★".repeat(5 - r.rating)}</span>
+                <span className="text-faint">{"★".repeat(5 - r.rating)}</span>
               </span>
             </div>
             <span className="text-xs text-faint">
@@ -45,7 +45,9 @@ export default function ReviewList({ reviews }: { reviews: ReviewItem[] }) {
             </span>
           </div>
           {r.comment && (
-            <p className="mt-2 whitespace-pre-wrap text-sm text-content-soft">{r.comment}</p>
+            <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-content-soft">
+              {r.comment}
+            </p>
           )}
         </li>
       ))}

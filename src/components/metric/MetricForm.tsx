@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import api from "@/lib/api";
+import Button from "@/components/ui/Button";
+import Input from "@/components/ui/Input";
 
 interface Props {
   applicationId: number;
@@ -52,37 +54,30 @@ export default function MetricForm({ applicationId, initial, onSaved, onCancel }
         <NumberField label="댓글" value={comments} onChange={setComments} />
       </div>
 
-      <label htmlFor="metric-url" className="mt-4 block text-sm text-content-soft">
-        게시물 URL (선택, http/https)
+      <label
+        htmlFor="metric-url"
+        className="mt-5 block text-sm font-medium text-content-soft"
+      >
+        게시물 URL <span className="text-faint">(선택, http/https)</span>
       </label>
-      <input
+      <Input
         id="metric-url"
         type="url"
         value={externalUrl}
         onChange={(e) => setExternalUrl(e.target.value)}
         placeholder="https://www.instagram.com/p/..."
-        className="mt-1 block w-full rounded border border-line-strong px-3 py-2 text-sm text-foreground placeholder-faint focus:border-gray-500 focus:outline-none"
+        className="mt-1.5"
       />
 
-      {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+      {error && <p className="mt-3 text-sm text-error">{error}</p>}
 
-      <div className="mt-4 flex justify-end gap-2">
-        <button
-          type="button"
-          onClick={onCancel}
-          disabled={loading}
-          className="rounded border border-line-strong px-3 py-1.5 text-sm text-content-soft hover:bg-surface-muted disabled:opacity-50"
-        >
+      <div className="mt-5 flex justify-end gap-2">
+        <Button variant="secondary" size="sm" onClick={onCancel} disabled={loading}>
           취소
-        </button>
-        <button
-          type="button"
-          onClick={submit}
-          disabled={loading}
-          className="rounded bg-gray-900 px-3 py-1.5 text-sm text-white hover:bg-gray-700 disabled:opacity-50"
-        >
+        </Button>
+        <Button size="sm" onClick={submit} disabled={loading}>
           {loading ? "저장 중..." : "저장"}
-        </button>
+        </Button>
       </div>
     </div>
   );
@@ -99,13 +94,13 @@ function NumberField({
 }) {
   return (
     <div>
-      <label className="block text-sm text-content-soft">{label}</label>
-      <input
+      <label className="block text-sm font-medium text-content-soft">{label}</label>
+      <Input
         type="number"
         min={0}
         value={value}
         onChange={(e) => onChange(Math.max(0, Number(e.target.value) || 0))}
-        className="mt-1 block w-full rounded border border-line-strong px-3 py-2 text-sm text-foreground focus:border-gray-500 focus:outline-none"
+        className="mt-1.5"
       />
     </div>
   );

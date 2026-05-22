@@ -4,6 +4,9 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import api from "@/lib/api";
 import AlertModal from "@/components/ui/AlertModal";
+import Badge from "@/components/ui/Badge";
+import Button from "@/components/ui/Button";
+import Card from "@/components/ui/Card";
 
 type MemberStatus = "PENDING" | "APPROVED" | "REJECTED";
 
@@ -43,6 +46,18 @@ const GENDER_LABEL: Record<string, string> = {
   MALE: "남성",
   FEMALE: "여성",
   OTHER: "기타",
+};
+
+const STATUS_TONE: Record<MemberStatus, "warning" | "success" | "error"> = {
+  PENDING: "warning",
+  APPROVED: "success",
+  REJECTED: "error",
+};
+
+const STATUS_LABEL: Record<MemberStatus, string> = {
+  PENDING: "승인 대기",
+  APPROVED: "승인",
+  REJECTED: "거절",
 };
 
 export default function AdminMemberDetailPage() {
@@ -92,93 +107,79 @@ export default function AdminMemberDetailPage() {
     return <p className="text-muted">불러오는 중...</p>;
   }
 
-  const statusLabel = (s: MemberStatus) =>
-    s === "PENDING" ? "승인 대기" : s === "APPROVED" ? "승인" : "거절";
-  const statusClass = (s: MemberStatus) =>
-    s === "PENDING"
-      ? "bg-yellow-100 text-yellow-800"
-      : s === "APPROVED"
-        ? "bg-green-100 text-green-700"
-        : "bg-red-100 text-red-700";
-
   return (
     <div>
       <button
         onClick={() => router.push("/admin/members")}
-        className="mb-4 text-sm text-muted hover:text-foreground"
+        className="mb-6 text-sm font-medium text-muted transition-colors hover:text-foreground"
       >
         &larr; 회원 목록으로
       </button>
 
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-8 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <h1 className="text-2xl font-bold text-foreground">{member.name}</h1>
-          <span className={`rounded px-2 py-0.5 text-xs ${statusClass(member.status)}`}>
-            {statusLabel(member.status)}
-          </span>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">{member.name}</h1>
+          <Badge tone={STATUS_TONE[member.status]}>{STATUS_LABEL[member.status]}</Badge>
         </div>
-        <button
-          onClick={handleDelete}
-          className="rounded border border-red-300 px-4 py-2 text-sm text-red-600 hover:bg-red-50"
-        >
+        <Button variant="secondary" size="sm" onClick={handleDelete}>
           회원 삭제
-        </button>
+        </Button>
       </div>
 
       {/* 기본 정보 */}
-      <div className="mb-6 rounded border border-line p-6">
-        <h2 className="mb-4 text-lg font-semibold text-foreground">기본 정보</h2>
-        <dl className="grid grid-cols-2 gap-4 text-sm">
+      <Card className="mb-6">
+        <h2 className="mb-5 text-lg font-semibold text-foreground">기본 정보</h2>
+        <dl className="grid grid-cols-2 gap-5 text-sm">
           <div>
-            <dt className="text-muted">이메일</dt>
+            <dt className="text-xs font-medium text-muted">이메일</dt>
             <dd className="mt-1 text-foreground">{member.email}</dd>
           </div>
           <div>
-            <dt className="text-muted">가입일</dt>
+            <dt className="text-xs font-medium text-muted">가입일</dt>
             <dd className="mt-1 text-foreground">
               {new Date(member.createdAt).toLocaleString("ko-KR")}
             </dd>
           </div>
           <div>
-            <dt className="text-muted">캠페인 지원</dt>
+            <dt className="text-xs font-medium text-muted">캠페인 지원</dt>
             <dd className="mt-1 text-foreground">{member.applicationCount}건</dd>
           </div>
         </dl>
-      </div>
+      </Card>
 
       {/* 승인 관리 */}
-      <div className="mb-6 rounded border border-line p-6">
+      <Card className="mb-6">
         <h2 className="mb-4 text-lg font-semibold text-foreground">승인 관리</h2>
-        <p className="mb-4 text-sm text-muted">
-          현재 상태:{" "}
-          <span className={`rounded px-2 py-0.5 text-xs ${statusClass(member.status)}`}>
-            {statusLabel(member.status)}
-          </span>
+        <p className="mb-5 flex items-center gap-2 text-sm text-muted">
+          현재 상태:
+          <Badge tone={STATUS_TONE[member.status]}>{STATUS_LABEL[member.status]}</Badge>
         </p>
         <div className="flex flex-wrap gap-2">
-          <button
+          <Button
+            size="sm"
             onClick={() => handleStatusChange("APPROVED")}
             disabled={member.status === "APPROVED"}
-            className="rounded bg-green-600 px-4 py-2 text-sm text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
           >
             승인
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="secondary"
+            size="sm"
             onClick={() => handleStatusChange("REJECTED")}
             disabled={member.status === "REJECTED"}
-            className="rounded border border-red-300 px-4 py-2 text-sm text-red-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
           >
             거절
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={() => handleStatusChange("PENDING")}
             disabled={member.status === "PENDING"}
-            className="rounded border border-line-strong px-4 py-2 text-sm text-content-soft hover:bg-surface-muted disabled:cursor-not-allowed disabled:opacity-50"
           >
             대기로 되돌리기
-          </button>
+          </Button>
         </div>
-      </div>
+      </Card>
 
       <AlertModal
         open={!!errorMessage}
@@ -188,11 +189,11 @@ export default function AdminMemberDetailPage() {
 
       {/* 크리에이터 프로필 / 설문 응답 */}
       {member.creatorProfile && (
-        <div className="mb-6 rounded border border-line p-6">
-          <h2 className="mb-4 text-lg font-semibold text-foreground">설문 응답</h2>
-          <dl className="grid grid-cols-2 gap-4 text-sm">
+        <Card className="mb-6">
+          <h2 className="mb-5 text-lg font-semibold text-foreground">설문 응답</h2>
+          <dl className="grid grid-cols-2 gap-5 text-sm">
             <div>
-              <dt className="text-muted">성별</dt>
+              <dt className="text-xs font-medium text-muted">성별</dt>
               <dd className="mt-1 text-foreground">
                 {member.creatorProfile.gender
                   ? GENDER_LABEL[member.creatorProfile.gender]
@@ -200,13 +201,13 @@ export default function AdminMemberDetailPage() {
               </dd>
             </div>
             <div>
-              <dt className="text-muted">나이</dt>
+              <dt className="text-xs font-medium text-muted">나이</dt>
               <dd className="mt-1 text-foreground">
                 {member.creatorProfile.age ?? "-"}
               </dd>
             </div>
             <div>
-              <dt className="text-muted">주 사용 편집 툴</dt>
+              <dt className="text-xs font-medium text-muted">주 사용 편집 툴</dt>
               <dd className="mt-1 text-foreground">
                 {member.creatorProfile.editingTool
                   ? EDITING_TOOL_LABEL[member.creatorProfile.editingTool]
@@ -214,13 +215,13 @@ export default function AdminMemberDetailPage() {
               </dd>
             </div>
             <div>
-              <dt className="text-muted">얼굴 공개</dt>
+              <dt className="text-xs font-medium text-muted">얼굴 공개</dt>
               <dd className="mt-1 text-foreground">
                 {member.creatorProfile.faceExposure ? "가능" : "불가능"}
               </dd>
             </div>
             <div>
-              <dt className="text-muted">인스타그램</dt>
+              <dt className="text-xs font-medium text-muted">인스타그램</dt>
               <dd className="mt-1 text-foreground">
                 {member.creatorProfile.instagramId
                   ? `@${member.creatorProfile.instagramId}`
@@ -228,7 +229,7 @@ export default function AdminMemberDetailPage() {
               </dd>
             </div>
             <div>
-              <dt className="text-muted">틱톡</dt>
+              <dt className="text-xs font-medium text-muted">틱톡</dt>
               <dd className="mt-1 text-foreground">
                 {member.creatorProfile.tiktokId
                   ? `@${member.creatorProfile.tiktokId}`
@@ -236,7 +237,7 @@ export default function AdminMemberDetailPage() {
               </dd>
             </div>
             <div>
-              <dt className="text-muted">유튜브</dt>
+              <dt className="text-xs font-medium text-muted">유튜브</dt>
               <dd className="mt-1 text-foreground">
                 {member.creatorProfile.youtubeId
                   ? `@${member.creatorProfile.youtubeId}`
@@ -244,9 +245,8 @@ export default function AdminMemberDetailPage() {
               </dd>
             </div>
           </dl>
-        </div>
+        </Card>
       )}
-
     </div>
   );
 }

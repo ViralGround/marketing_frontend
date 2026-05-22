@@ -4,7 +4,9 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 import AlertModal from "@/components/ui/AlertModal";
+import Button from "@/components/ui/Button";
 import ImageUploader from "@/components/ui/ImageUploader";
+import Input from "@/components/ui/Input";
 
 export interface CampaignFormInitial {
   id?: number;
@@ -17,6 +19,9 @@ export interface CampaignFormInitial {
   deadline?: string | null;
   maxParticipants?: number;
 }
+
+const TEXTAREA_CLASS =
+  "block w-full rounded-lg border border-line-strong bg-surface px-3 py-2.5 text-sm text-foreground placeholder-faint transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20";
 
 export default function CampaignForm({
   mode,
@@ -108,21 +113,23 @@ export default function CampaignForm({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5">
+    <form onSubmit={handleSubmit} className="space-y-6">
       {error && (
-        <div className="rounded bg-red-50 p-3 text-sm text-red-600">{error}</div>
+        <div className="rounded-xl border border-error/30 bg-error/5 p-3 text-sm text-error">
+          {error}
+        </div>
       )}
 
       <div>
         <label htmlFor="title" className="block text-sm font-medium text-content-soft">
           캠페인 제목
         </label>
-        <input
+        <Input
           id="title"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="예: 신제품 바디워시 리뷰 영상"
-          className="mt-1 block w-full rounded border border-line-strong px-3 py-2 text-foreground placeholder-faint focus:border-gray-500 focus:outline-none"
+          className="mt-1.5"
         />
       </div>
 
@@ -130,12 +137,12 @@ export default function CampaignForm({
         <label htmlFor="brandName" className="block text-sm font-medium text-content-soft">
           브랜드명
         </label>
-        <input
+        <Input
           id="brandName"
           value={brandName}
           onChange={(e) => setBrandName(e.target.value)}
           placeholder="예: ABC 코스메틱"
-          className="mt-1 block w-full rounded border border-line-strong px-3 py-2 text-foreground placeholder-faint focus:border-gray-500 focus:outline-none"
+          className="mt-1.5"
         />
       </div>
 
@@ -149,7 +156,7 @@ export default function CampaignForm({
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           placeholder="캠페인 상세 설명"
-          className="mt-1 block w-full rounded border border-line-strong px-3 py-2 text-foreground placeholder-faint focus:border-gray-500 focus:outline-none"
+          className={`${TEXTAREA_CLASS} mt-1.5`}
         />
       </div>
 
@@ -163,7 +170,7 @@ export default function CampaignForm({
           value={requirements}
           onChange={(e) => setRequirements(e.target.value)}
           placeholder="예: 30초 이상 세로형 영상, 얼굴 공개 필요, 지정 해시태그 포함"
-          className="mt-1 block w-full rounded border border-line-strong px-3 py-2 text-foreground placeholder-faint focus:border-gray-500 focus:outline-none"
+          className={`${TEXTAREA_CLASS} mt-1.5`}
         />
       </div>
 
@@ -172,26 +179,26 @@ export default function CampaignForm({
           <label htmlFor="rewardAmount" className="block text-sm font-medium text-content-soft">
             보상 금액 (원)
           </label>
-          <input
+          <Input
             id="rewardAmount"
             type="number"
             min={0}
             value={rewardAmount}
             onChange={(e) => setRewardAmount(e.target.value)}
-            className="mt-1 block w-full rounded border border-line-strong px-3 py-2 text-foreground focus:border-gray-500 focus:outline-none"
+            className="mt-1.5"
           />
         </div>
         <div>
           <label htmlFor="maxParticipants" className="block text-sm font-medium text-content-soft">
             최대 참여자 수
           </label>
-          <input
+          <Input
             id="maxParticipants"
             type="number"
             min={1}
             value={maxParticipants}
             onChange={(e) => setMaxParticipants(e.target.value)}
-            className="mt-1 block w-full rounded border border-line-strong px-3 py-2 text-foreground focus:border-gray-500 focus:outline-none"
+            className="mt-1.5"
           />
         </div>
       </div>
@@ -200,17 +207,17 @@ export default function CampaignForm({
         <label htmlFor="deadline" className="block text-sm font-medium text-content-soft">
           마감일 <span className="text-faint">(선택)</span>
         </label>
-        <input
+        <Input
           id="deadline"
           type="date"
           value={deadline}
           onChange={(e) => setDeadline(e.target.value)}
-          className="mt-1 block w-full rounded border border-line-strong px-3 py-2 text-foreground focus:border-gray-500 focus:outline-none"
+          className="mt-1.5"
         />
       </div>
 
       <div>
-        <label className="mb-1 block text-sm font-medium text-content-soft">
+        <label className="mb-1.5 block text-sm font-medium text-content-soft">
           썸네일 <span className="text-faint">(선택)</span>
         </label>
         <ImageUploader
@@ -223,21 +230,21 @@ export default function CampaignForm({
       </div>
 
       {mode === "create" && (
-        <div className="rounded border border-line bg-surface-muted p-3">
-          <label className="flex items-start gap-2 text-sm text-gray-800">
+        <div className="rounded-2xl border border-line bg-surface-muted p-4">
+          <label className="flex items-start gap-2.5 text-sm text-content-soft">
             <input
               type="checkbox"
               checked={immediatelyOpen}
               onChange={(e) => setImmediatelyOpen(e.target.checked)}
-              className="mt-0.5"
+              className="mt-0.5 accent-primary"
             />
             <span>
-              <span className="font-medium">바로 모집 시작</span>
+              <span className="font-medium text-foreground">바로 모집 시작</span>
               <span className="text-muted"> (예치금 완료 상태로 생성)</span>
             </span>
           </label>
           {!immediatelyOpen && (
-            <p className="mt-2 pl-6 text-xs text-amber-700">
+            <p className="mt-2 pl-6 text-xs text-warning">
               예치금 대기 상태로 생성됩니다. 이후 상세 페이지에서 &quot;예치금 입금완료 처리&quot;를
               눌러야 크리에이터에게 노출됩니다.
             </p>
@@ -245,21 +252,13 @@ export default function CampaignForm({
         </div>
       )}
 
-      <div className="flex gap-2">
-        <button
-          type="submit"
-          disabled={loading}
-          className="rounded bg-gray-900 px-4 py-2 text-sm text-white hover:bg-gray-700 disabled:opacity-50"
-        >
+      <div className="flex gap-2 pt-2">
+        <Button type="submit" disabled={loading}>
           {loading ? "저장 중..." : mode === "create" ? "캠페인 생성" : "수정 저장"}
-        </button>
-        <button
-          type="button"
-          onClick={() => router.back()}
-          className="rounded border border-line-strong px-4 py-2 text-sm text-content-soft hover:bg-surface-muted"
-        >
+        </Button>
+        <Button type="button" variant="secondary" onClick={() => router.back()}>
           취소
-        </button>
+        </Button>
       </div>
 
       <AlertModal

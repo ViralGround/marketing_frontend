@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import api from "@/lib/api";
 import KPICards from "@/components/metric/KPICards";
+import Card from "@/components/ui/Card";
 
 interface Item {
   applicationId: number;
@@ -41,22 +42,27 @@ export default function CampaignPerformancePage() {
       .finally(() => setLoading(false));
   }, [id]);
 
-  if (loading) return <p className="mx-auto max-w-4xl px-4 py-10 text-muted">불러오는 중...</p>;
+  if (loading)
+    return <p className="mx-auto max-w-4xl px-6 py-10 text-muted">불러오는 중...</p>;
   if (error || !data)
-    return <p className="mx-auto max-w-4xl px-4 py-10 text-red-600">{error || "데이터 없음"}</p>;
+    return (
+      <p className="mx-auto max-w-4xl px-6 py-10 text-error">{error || "데이터 없음"}</p>
+    );
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-10">
+    <div className="mx-auto max-w-4xl px-6 py-10 md:px-10">
       <Link
         href={`/company/campaigns/${data.campaignId}`}
-        className="text-sm text-muted hover:text-foreground"
+        className="text-sm font-medium text-muted transition-colors hover:text-foreground"
       >
         &larr; 캠페인 상세로
       </Link>
-      <h1 className="mt-2 text-3xl font-bold text-foreground">{data.campaignTitle}</h1>
-      <p className="mt-1 text-sm text-muted">지원 영상 성과 리포트</p>
+      <h1 className="mt-3 text-3xl font-bold tracking-tight text-foreground md:text-4xl">
+        {data.campaignTitle}
+      </h1>
+      <p className="mt-2 text-sm text-muted">지원 영상 성과 리포트</p>
 
-      <div className="my-8">
+      <div className="my-10">
         <KPICards
           items={[
             { label: "완료 지원자", value: `${data.totals.completedCount}명` },
@@ -68,20 +74,22 @@ export default function CampaignPerformancePage() {
       </div>
 
       <section>
-        <h2 className="mb-3 text-lg font-semibold text-foreground">크리에이터별 성과</h2>
+        <h2 className="mb-4 text-lg font-semibold text-foreground">크리에이터별 성과</h2>
         {data.items.length === 0 ? (
-          <p className="text-sm text-faint">정산 완료된 지원자가 없습니다.</p>
+          <Card className="bg-surface-muted text-sm text-faint">
+            정산 완료된 지원자가 없습니다.
+          </Card>
         ) : (
           <ul className="space-y-3">
             {data.items.map((it) => (
               <li
                 key={it.applicationId}
-                className="rounded border border-line p-4"
+                className="rounded-2xl border border-line bg-surface p-5"
               >
-                <div className="flex items-center justify-between gap-3">
+                <div className="flex flex-wrap items-center justify-between gap-3">
                   <Link
                     href={`/creators/${it.creatorId}`}
-                    className="font-semibold text-foreground hover:underline"
+                    className="font-semibold text-foreground hover:text-primary"
                   >
                     {it.creatorName}
                   </Link>
@@ -90,13 +98,13 @@ export default function CampaignPerformancePage() {
                       href={it.externalUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-xs text-blue-600 underline"
+                      className="text-xs font-medium text-primary underline-offset-2 hover:underline"
                     >
                       게시물 보기 →
                     </a>
                   )}
                 </div>
-                <p className="mt-1 text-xs text-muted">
+                <p className="mt-1.5 text-xs text-muted">
                   조회 {it.views.toLocaleString("ko-KR")} · 좋아요{" "}
                   {it.likes.toLocaleString("ko-KR")} · 댓글{" "}
                   {it.comments.toLocaleString("ko-KR")}

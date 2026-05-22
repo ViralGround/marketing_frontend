@@ -4,6 +4,10 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import api from "@/lib/api";
 import AlertModal from "@/components/ui/AlertModal";
+import Badge from "@/components/ui/Badge";
+import Button from "@/components/ui/Button";
+import Card from "@/components/ui/Card";
+import Input from "@/components/ui/Input";
 
 type MemberStatus = "PENDING" | "APPROVED" | "REJECTED";
 
@@ -26,6 +30,18 @@ interface Stats {
 }
 
 type StatusFilter = "ALL" | "PENDING" | "APPROVED" | "REJECTED";
+
+const STATUS_TONE: Record<MemberStatus, "warning" | "success" | "error"> = {
+  PENDING: "warning",
+  APPROVED: "success",
+  REJECTED: "error",
+};
+
+const STATUS_LABEL: Record<MemberStatus, string> = {
+  PENDING: "대기",
+  APPROVED: "승인",
+  REJECTED: "거절",
+};
 
 export default function AdminMembersPage() {
   const [members, setMembers] = useState<MemberItem[]>([]);
@@ -84,85 +100,87 @@ export default function AdminMembersPage() {
     }
   };
 
-  const statusLabel = (status: MemberStatus) =>
-    status === "PENDING" ? "대기" : status === "APPROVED" ? "승인" : "거절";
-
-  const statusClass = (status: MemberStatus) =>
-    status === "PENDING"
-      ? "bg-yellow-100 text-yellow-800"
-      : status === "APPROVED"
-        ? "bg-green-100 text-green-700"
-        : "bg-red-100 text-red-700";
-
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-bold text-foreground">크리에이터 관리</h1>
+      <h1 className="mb-8 text-3xl font-bold tracking-tight text-foreground">크리에이터 관리</h1>
 
       {stats && (
-        <div className="mb-8 grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6">
-          <div className="rounded border border-line p-4">
-            <p className="text-sm text-muted">전체</p>
-            <p className="text-2xl font-bold text-foreground">{stats.total}명</p>
-          </div>
-          <div className="rounded border border-yellow-200 bg-yellow-50 p-4">
-            <p className="text-sm text-yellow-700">승인 대기</p>
-            <p className="text-2xl font-bold text-yellow-800">{stats.pendingCount}명</p>
-          </div>
-          <div className="rounded border border-line p-4">
-            <p className="text-sm text-muted">승인 완료</p>
-            <p className="text-2xl font-bold text-foreground">{stats.approvedCount}명</p>
-          </div>
-          <div className="rounded border border-line p-4">
-            <p className="text-sm text-muted">거절</p>
-            <p className="text-2xl font-bold text-foreground">{stats.rejectedCount}명</p>
-          </div>
-          <div className="rounded border border-line p-4">
-            <p className="text-sm text-muted">오늘 가입</p>
-            <p className="text-2xl font-bold text-foreground">{stats.todayCount}명</p>
-          </div>
-          <div className="rounded border border-line p-4">
-            <p className="text-sm text-muted">이번 주 가입</p>
-            <p className="text-2xl font-bold text-foreground">{stats.weekCount}명</p>
-          </div>
+        <div className="mb-8 grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6">
+          <Card className="p-4 md:p-5">
+            <p className="text-xs font-medium text-muted">전체</p>
+            <p className="mt-1 text-2xl font-bold tracking-tight text-foreground">{stats.total}명</p>
+          </Card>
+          <Card className="border-warning/30 bg-warning/5 p-4 md:p-5">
+            <p className="text-xs font-medium text-warning">승인 대기</p>
+            <p className="mt-1 text-2xl font-bold tracking-tight text-warning">
+              {stats.pendingCount}명
+            </p>
+          </Card>
+          <Card className="p-4 md:p-5">
+            <p className="text-xs font-medium text-muted">승인 완료</p>
+            <p className="mt-1 text-2xl font-bold tracking-tight text-foreground">
+              {stats.approvedCount}명
+            </p>
+          </Card>
+          <Card className="p-4 md:p-5">
+            <p className="text-xs font-medium text-muted">거절</p>
+            <p className="mt-1 text-2xl font-bold tracking-tight text-foreground">
+              {stats.rejectedCount}명
+            </p>
+          </Card>
+          <Card className="p-4 md:p-5">
+            <p className="text-xs font-medium text-muted">오늘 가입</p>
+            <p className="mt-1 text-2xl font-bold tracking-tight text-foreground">
+              {stats.todayCount}명
+            </p>
+          </Card>
+          <Card className="p-4 md:p-5">
+            <p className="text-xs font-medium text-muted">이번 주 가입</p>
+            <p className="mt-1 text-2xl font-bold tracking-tight text-foreground">
+              {stats.weekCount}명
+            </p>
+          </Card>
         </div>
       )}
 
-      <div className="mb-4 flex flex-wrap items-center gap-3">
-        <div className="flex gap-1">
-          {(["ALL", "PENDING", "APPROVED", "REJECTED"] as StatusFilter[]).map((s) => (
-            <button
-              key={s}
-              onClick={() => setStatusFilter(s)}
-              className={`rounded px-3 py-1.5 text-sm ${
-                statusFilter === s
-                  ? "bg-gray-900 text-white"
-                  : "border border-line-strong text-muted hover:bg-surface-muted"
-              }`}
-            >
-              {s === "ALL"
+      <div className="mb-6 flex flex-wrap items-center gap-3">
+        <div className="flex gap-1.5">
+          {(["ALL", "PENDING", "APPROVED", "REJECTED"] as StatusFilter[]).map((s) => {
+            const active = statusFilter === s;
+            const label =
+              s === "ALL"
                 ? "전체"
                 : s === "PENDING"
                   ? `대기${stats ? ` (${stats.pendingCount})` : ""}`
                   : s === "APPROVED"
                     ? "승인"
-                    : "거절"}
-            </button>
-          ))}
+                    : "거절";
+            return (
+              <button
+                key={s}
+                onClick={() => setStatusFilter(s)}
+                className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
+                  active
+                    ? "bg-primary text-white"
+                    : "border border-line text-content-soft hover:border-primary/40 hover:text-primary"
+                }`}
+              >
+                {label}
+              </button>
+            );
+          })}
         </div>
         <form onSubmit={handleSearch} className="flex gap-2">
-          <input
+          <Input
             type="text"
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
             placeholder="이름 또는 이메일 검색"
-            className="rounded border border-line-strong px-3 py-1.5 text-sm text-foreground placeholder-faint focus:border-gray-500 focus:outline-none"
+            className="w-56"
           />
-          <button
-            type="submit"
-            className="rounded bg-gray-900 px-3 py-1.5 text-sm text-white hover:bg-gray-700"
-          >
+          <Button type="submit" size="sm">
             검색
-          </button>
+          </Button>
         </form>
       </div>
 
@@ -175,77 +193,79 @@ export default function AdminMembersPage() {
       {loading ? (
         <p className="text-muted">불러오는 중...</p>
       ) : members.length === 0 ? (
-        <p className="text-muted">검색 결과가 없습니다.</p>
+        <Card className="bg-surface-muted py-12 text-center text-muted">
+          검색 결과가 없습니다.
+        </Card>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <thead className="border-b border-line text-xs text-muted uppercase">
-              <tr>
-                <th className="px-4 py-3">이름</th>
-                <th className="px-4 py-3">이메일</th>
-                <th className="px-4 py-3">상태</th>
-                <th className="px-4 py-3">인스타그램</th>
-                <th className="px-4 py-3">가입일</th>
-                <th className="px-4 py-3">관리</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-line">
-              {members.map((m) => (
-                <tr key={m.id} className="hover:bg-surface-muted">
-                  <td className="px-4 py-3 font-medium text-foreground">
-                    <Link href={`/admin/members/${m.id}`} className="hover:underline">
-                      {m.name}
-                    </Link>
-                  </td>
-                  <td className="px-4 py-3 text-muted">{m.email}</td>
-                  <td className="px-4 py-3">
-                    <span className={`rounded px-2 py-0.5 text-xs ${statusClass(m.status)}`}>
-                      {statusLabel(m.status)}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-muted">
-                    {m.instagramId ? `@${m.instagramId}` : "-"}
-                  </td>
-                  <td className="px-4 py-3 text-muted">
-                    {new Date(m.createdAt).toLocaleDateString("ko-KR")}
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex flex-wrap gap-2">
-                      {m.status === "PENDING" && (
-                        <>
-                          <button
-                            onClick={() => handleStatus(m.id, "APPROVED", m.name)}
-                            className="text-xs text-green-600 hover:text-green-800"
-                          >
-                            승인
-                          </button>
-                          <button
-                            onClick={() => handleStatus(m.id, "REJECTED", m.name)}
-                            className="text-xs text-red-500 hover:text-red-700"
-                          >
-                            거절
-                          </button>
-                        </>
-                      )}
-                      <Link
-                        href={`/admin/members/${m.id}`}
-                        className="text-xs text-muted hover:text-foreground"
-                      >
-                        상세
-                      </Link>
-                      <button
-                        onClick={() => handleDelete(m.id, m.name)}
-                        className="text-xs text-red-500 hover:text-red-700"
-                      >
-                        삭제
-                      </button>
-                    </div>
-                  </td>
+        <Card className="overflow-hidden p-0">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead className="bg-surface-muted text-xs uppercase tracking-wider text-muted">
+                <tr>
+                  <th className="px-5 py-3 font-medium">이름</th>
+                  <th className="px-5 py-3 font-medium">이메일</th>
+                  <th className="px-5 py-3 font-medium">상태</th>
+                  <th className="px-5 py-3 font-medium">인스타그램</th>
+                  <th className="px-5 py-3 font-medium">가입일</th>
+                  <th className="px-5 py-3 font-medium">관리</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody className="divide-y divide-line">
+                {members.map((m) => (
+                  <tr key={m.id} className="transition-colors hover:bg-surface-muted">
+                    <td className="px-5 py-3 font-medium text-foreground">
+                      <Link href={`/admin/members/${m.id}`} className="hover:text-primary">
+                        {m.name}
+                      </Link>
+                    </td>
+                    <td className="px-5 py-3 text-content-soft">{m.email}</td>
+                    <td className="px-5 py-3">
+                      <Badge tone={STATUS_TONE[m.status]}>{STATUS_LABEL[m.status]}</Badge>
+                    </td>
+                    <td className="px-5 py-3 text-content-soft">
+                      {m.instagramId ? `@${m.instagramId}` : "-"}
+                    </td>
+                    <td className="px-5 py-3 text-muted">
+                      {new Date(m.createdAt).toLocaleDateString("ko-KR")}
+                    </td>
+                    <td className="px-5 py-3">
+                      <div className="flex flex-wrap gap-3">
+                        {m.status === "PENDING" && (
+                          <>
+                            <button
+                              onClick={() => handleStatus(m.id, "APPROVED", m.name)}
+                              className="text-xs font-medium text-success hover:underline"
+                            >
+                              승인
+                            </button>
+                            <button
+                              onClick={() => handleStatus(m.id, "REJECTED", m.name)}
+                              className="text-xs font-medium text-error hover:underline"
+                            >
+                              거절
+                            </button>
+                          </>
+                        )}
+                        <Link
+                          href={`/admin/members/${m.id}`}
+                          className="text-xs font-medium text-muted hover:text-foreground"
+                        >
+                          상세
+                        </Link>
+                        <button
+                          onClick={() => handleDelete(m.id, m.name)}
+                          className="text-xs font-medium text-error/80 hover:text-error hover:underline"
+                        >
+                          삭제
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Card>
       )}
     </div>
   );

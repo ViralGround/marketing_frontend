@@ -1,5 +1,6 @@
 "use client";
 
+import Badge from "@/components/ui/Badge";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 
 export default function BusinessPerformanceSection() {
@@ -9,9 +10,7 @@ export default function BusinessPerformanceSection() {
     <section className="bg-section-alt py-20 md:py-28">
       <div ref={ref} className="mx-auto max-w-5xl px-6">
         <div className="text-center">
-          <span className="inline-block rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-            직전 마케팅 성과
-          </span>
+          <Badge>직전 마케팅 성과</Badge>
           <h2 className="mt-4 text-3xl font-bold text-foreground md:text-4xl">
             예산 500만 원, 결과는 숫자로 말합니다
           </h2>
@@ -24,7 +23,7 @@ export default function BusinessPerformanceSection() {
         <div className="mt-12 grid gap-6 md:grid-cols-3">
           <div className="rounded-2xl border border-line bg-surface p-7 shadow-sm">
             <p className="text-sm text-muted">최대 ROAS</p>
-            <p className="font-brand mt-3 text-6xl font-black tracking-tight text-primary md:text-7xl">
+            <p className="mt-3 text-6xl font-black tracking-tight text-primary md:text-7xl">
               924<span className="text-3xl font-bold text-muted">%</span>
             </p>
             <p className="mt-3 text-sm text-muted leading-relaxed">
@@ -36,7 +35,7 @@ export default function BusinessPerformanceSection() {
 
           <div className="rounded-2xl border border-primary/30 bg-gradient-to-br from-primary to-primary-dark p-7 text-white shadow-lg lg:-translate-y-4">
             <p className="text-sm text-white/80">CPV · 조회당 비용</p>
-            <p className="font-brand mt-3 text-6xl font-black tracking-tight md:text-7xl">
+            <p className="mt-3 text-6xl font-black tracking-tight md:text-7xl">
               4.16<span className="text-3xl font-bold text-white/80">원</span>
             </p>
             <p className="mt-3 text-sm text-white/80 leading-relaxed">
@@ -48,7 +47,7 @@ export default function BusinessPerformanceSection() {
 
           <div className="rounded-2xl border border-line bg-surface p-7 shadow-sm">
             <p className="text-sm text-muted">캠페인 조회수</p>
-            <p className="font-brand mt-3 text-6xl font-black tracking-tight text-foreground md:text-7xl">
+            <p className="mt-3 text-6xl font-black tracking-tight text-foreground md:text-7xl">
               120<span className="text-3xl font-bold text-muted">만</span>
             </p>
             <p className="mt-3 text-sm text-muted leading-relaxed">

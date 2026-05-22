@@ -26,14 +26,14 @@ export default function BusinessBottomCTA() {
           <button
             type="button"
             onClick={() => setModalOpen(true)}
-            className="rounded-xl bg-surface px-10 py-4 text-lg font-semibold text-primary shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5"
+            className="inline-flex items-center justify-center rounded-full bg-surface px-10 py-4 text-lg font-semibold text-primary shadow-lg transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl"
           >
             가벼운 상담신청
           </button>
           <button
             type="button"
             onClick={() => setModalOpen(true)}
-            className="rounded-xl border border-white/40 px-10 py-4 text-lg font-medium text-white hover:bg-white/10 transition-colors"
+            className="inline-flex items-center justify-center rounded-full border border-white/40 px-10 py-4 text-lg font-medium text-white transition-colors hover:bg-white/10"
           >
             소개서 받기
           </button>

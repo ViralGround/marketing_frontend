@@ -1,25 +1,34 @@
 "use client";
 
+import { PenLine, Video, Wallet } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 
-const steps = [
+interface Step {
+  num: string;
+  title: string;
+  desc: string;
+  icon: LucideIcon;
+}
+
+const steps: Step[] = [
   {
     num: "01",
     title: "가입하기",
     desc: "이메일과 간단한 프로필만 입력하면 3분 안에 가입이 완료됩니다.",
-    icon: "✍️",
+    icon: PenLine,
   },
   {
     num: "02",
     title: "영상 촬영 & 업로드",
     desc: "브랜드가 요청한 주제로 스마트폰으로 영상을 촬영하고 올려주세요.",
-    icon: "🎬",
+    icon: Video,
   },
   {
     num: "03",
     title: "수익 수령",
     desc: "영상이 승인되면 빠르게 정산됩니다. 첫 영상은 3만원 즉시 지급!",
-    icon: "💰",
+    icon: Wallet,
   },
 ];
 
@@ -43,8 +52,8 @@ export default function HowItWorksSection() {
               {i < steps.length - 1 && (
                 <div className="absolute top-12 left-[60%] hidden w-[80%] border-t-2 border-dashed border-primary/20 md:block" />
               )}
-              <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-2xl bg-primary-bg text-4xl transition-transform duration-300 hover:scale-110">
-                {s.icon}
+              <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-2xl bg-primary-bg text-primary transition-transform duration-300 hover:scale-110">
+                <s.icon className="h-10 w-10" strokeWidth={1.75} />
               </div>
               <span className="mt-4 inline-block text-xs font-bold tracking-widest text-primary uppercase">
                 Step {s.num}

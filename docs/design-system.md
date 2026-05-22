@@ -55,11 +55,11 @@ Tailwind: `bg-primary`, `text-primary`, `border-primary`, `bg-primary-bg` 등.
 
 | 토큰 | 폰트 | 용도 |
 |---|---|---|
-| `--font-sans` (`font-sans`) | **Pretendard Variable** → system → Geist (fallback) | 본문·UI 전반 |
-| `--font-brand` (`font-brand`) | **Space Grotesk** | 로고, 큰 메트릭 숫자 |
+| `--font-sans` (`font-sans`) | **Pretendard Variable** → system → Geist (fallback) | 본문·로고·메트릭 등 사이트 전체 |
 | `--font-mono` (`font-mono`) | Geist Mono | 코드·숫자 정렬용 |
 
 Pretendard 는 `dynamic-subset` 으로 import — 사용된 글자만 다운로드.
+Pretendard Variable 이 100~900 weight 를 모두 지원하므로 로고·헤드라인·큰 메트릭 숫자까지 한 폰트로 처리.
 
 ### 2.2 Scale (Tailwind 기본 사용)
 
@@ -79,7 +79,7 @@ Pretendard 는 `dynamic-subset` 으로 import — 사용된 글자만 다운로�
 | 본문 | 400 / 500 | `font-normal` / `font-medium` |
 | 강조 본문 | 600 | `font-semibold` |
 | 헤드라인 | 700 / 800 | `font-bold` / `font-extrabold` |
-| 메트릭 숫자 | 900 (또는 Space Grotesk 700 fallback) | `font-black` + `font-brand` |
+| 메트릭 숫자 | 900 | `font-black` + `tracking-tight` |
 
 ### 2.4 Line height · Tracking
 
@@ -239,8 +239,45 @@ import Input from "@/components/ui/Input";
 
 ---
 
-## 9. 추후 추가 예정
+## 9. Iconography
+
+**`lucide-react` 단일 set 사용.** 장식용 유니코드 이모지(⏰📱⚡🎯✅🔒 등) 금지 — AI 티가 나고 톤과 안 맞음.
+
+```tsx
+import { Check, X, Clock, Smartphone, Zap, Target, TrendingUp, Lock } from "lucide-react";
+
+<Check className="h-5 w-5" />
+<X className="h-4 w-4" />
+```
+
+### 사이즈 가이드
+
+| 용도 | 클래스 |
+|---|---|
+| 작은 UI (배지, 닫기 버튼) | `h-4 w-4` |
+| 일반 본문 inline | `h-5 w-5` |
+| 카드 헤더 아이콘 | `h-6 w-6` |
+| 큰 feature 카드 (이전 이모지 자리) | `h-8 w-8` (카드 내 강조) |
+
+### 색
+
+- 일반: `text-content-soft` (본문 톤)
+- 강조: `text-primary`
+- 상태: `text-success` / `text-warning` / `text-error` / `text-info`
+
+자주 쓰는 매핑(참고):
+- 체크/완료 → `Check`, `CheckCircle2`
+- 닫기 → `X`
+- 시간·일정 → `Clock`, `Calendar`
+- 디바이스 → `Smartphone`, `Monitor`
+- 속도·성과 → `Zap`, `TrendingUp`, `Target`
+- 결제·자산 → `Wallet`, `Banknote`
+- 데이터 → `BarChart3`, `LineChart`
+- 보안 → `Lock`, `ShieldCheck`
+- 협업·매칭 → `Users`, `Handshake`
+- 콘텐츠 → `Video`, `PenLine`, `Sparkles`
+
+## 10. 추후 추가 예정
 
 - **Animations**: 스크롤 페이드인 외에 카운트업·shimmer 등 차차 도입
-- **Iconography**: lucide-react 또는 자체 SVG. 한 set 으로 통일
 - **Illustrations**: 토스처럼 친근한 일러스트. 외주 또는 무료 라이브러리

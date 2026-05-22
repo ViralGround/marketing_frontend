@@ -2,6 +2,9 @@
 
 import { useEffect, useState } from "react";
 import api from "@/lib/api";
+import Button from "@/components/ui/Button";
+import Input from "@/components/ui/Input";
+import { Check, X } from "lucide-react";
 
 interface Props {
   open: boolean;
@@ -97,26 +100,22 @@ export default function ConsultationModal({ open, onClose }: Props) {
             aria-label="닫기"
             className="text-muted hover:text-foreground transition-colors"
           >
-            ✕
+            <X className="h-5 w-5" />
           </button>
         </div>
 
         {submitted ? (
           <div className="py-6 text-center">
-            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-2xl">
-              ✓
+            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+              <Check className="h-6 w-6" strokeWidth={2.5} />
             </div>
             <p className="font-semibold text-foreground">신청이 접수되었습니다.</p>
             <p className="mt-2 text-sm text-muted">
               평일 기준 1영업일 이내에 입력하신 이메일로 회신드리겠습니다.
             </p>
-            <button
-              type="button"
-              onClick={onClose}
-              className="mt-6 rounded-lg bg-primary px-6 py-2.5 text-sm font-medium text-white hover:bg-primary-dark transition-colors"
-            >
+            <Button type="button" onClick={onClose} className="mt-6">
               확인
-            </button>
+            </Button>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -124,14 +123,14 @@ export default function ConsultationModal({ open, onClose }: Props) {
               <label htmlFor="c-email" className="block text-sm font-medium text-foreground">
                 이메일 주소 <span className="text-primary">*</span>
               </label>
-              <input
+              <Input
                 id="c-email"
                 type="email"
                 required
                 value={form.email}
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
                 placeholder="example@email.com"
-                className="mt-1 block w-full rounded-lg border border-line-strong bg-surface px-3 py-2.5 text-sm text-foreground placeholder-faint focus:border-primary focus:outline-none"
+                className="mt-1"
               />
             </div>
 
@@ -139,14 +138,14 @@ export default function ConsultationModal({ open, onClose }: Props) {
               <label htmlFor="c-brand" className="block text-sm font-medium text-foreground">
                 브랜드명 <span className="text-primary">*</span>
               </label>
-              <input
+              <Input
                 id="c-brand"
                 type="text"
                 required
                 value={form.brandName}
                 onChange={(e) => setForm({ ...form, brandName: e.target.value })}
                 placeholder="브랜드명을 입력해주세요"
-                className="mt-1 block w-full rounded-lg border border-line-strong bg-surface px-3 py-2.5 text-sm text-foreground placeholder-faint focus:border-primary focus:outline-none"
+                className="mt-1"
               />
             </div>
 
@@ -154,25 +153,21 @@ export default function ConsultationModal({ open, onClose }: Props) {
               <label htmlFor="c-name" className="block text-sm font-medium text-foreground">
                 담당자명 <span className="text-faint">(선택)</span>
               </label>
-              <input
+              <Input
                 id="c-name"
                 type="text"
                 value={form.contactName}
                 onChange={(e) => setForm({ ...form, contactName: e.target.value })}
                 placeholder="담당자명을 입력해주세요"
-                className="mt-1 block w-full rounded-lg border border-line-strong bg-surface px-3 py-2.5 text-sm text-foreground placeholder-faint focus:border-primary focus:outline-none"
+                className="mt-1"
               />
             </div>
 
-            {error && <p className="text-sm text-red-600">{error}</p>}
+            {error && <p className="text-sm text-error">{error}</p>}
 
-            <button
-              type="submit"
-              disabled={!valid || submitting}
-              className="w-full rounded-lg bg-primary py-3 text-sm font-semibold text-white hover:bg-primary-dark disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-            >
+            <Button type="submit" disabled={!valid || submitting} fullWidth>
               {submitting ? "전송 중..." : "상담 신청하기"}
-            </button>
+            </Button>
 
             <p className="text-center text-xs text-faint">
               제출된 정보는 상담 회신 목적으로만 사용됩니다.

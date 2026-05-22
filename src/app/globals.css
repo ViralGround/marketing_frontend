@@ -56,10 +56,9 @@
   --color-warning: var(--warning);
   --color-error: var(--error);
   --color-info: var(--info);
-  /* 본문은 Pretendard, 영문 헤드라인·로고는 Space Grotesk(brand) — 영문 fallback 으로 Geist 유지. */
+  /* 본문·로고·메트릭 모두 Pretendard. 영문 fallback 으로 Geist 유지. */
   --font-sans: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, var(--font-geist-sans), sans-serif;
   --font-mono: var(--font-geist-mono);
-  --font-brand: var(--font-brand);
 }
 
 /* 다크모드는 layout.tsx 의 pre-hydration 스크립트가 OS 설정과 localStorage 를

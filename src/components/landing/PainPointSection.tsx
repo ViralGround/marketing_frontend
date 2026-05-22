@@ -1,20 +1,28 @@
 "use client";
 
+import { HelpCircle, Sparkles, LineChart } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 
-const pains = [
+interface Pain {
+  icon: LucideIcon;
+  title: string;
+  desc: string;
+}
+
+const pains: Pain[] = [
   {
-    emoji: "😩",
+    icon: HelpCircle,
     title: "부업 하고 싶은데 뭘 해야 할지 모르겠어요",
     desc: "수많은 부업 정보 속에서 나에게 맞는 걸 찾기 어렵죠.",
   },
   {
-    emoji: "📱",
+    icon: Sparkles,
     title: "크리에이터가 되고 싶은데 시작이 막막해요",
     desc: "장비도 없고, 편집도 못 하고, 구독자도 0인 상태.",
   },
   {
-    emoji: "💸",
+    icon: LineChart,
     title: "시간 투자 대비 수익이 불확실해요",
     desc: "몇 달을 해봐야 수익이 나올지 감이 안 잡히죠.",
   },
@@ -34,17 +42,19 @@ export default function PainPointSection() {
         </p>
 
         <div className="mt-12 grid gap-6 md:grid-cols-3">
-          {pains.map((p) => (
+          {pains.map(({ icon: Icon, title, desc }) => (
             <div
-              key={p.title}
+              key={title}
               className="rounded-2xl border border-line bg-surface p-8 transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
             >
-              <span className="text-4xl">{p.emoji}</span>
-              <h3 className="mt-4 text-lg font-semibold text-foreground">
-                {p.title}
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                <Icon className="h-6 w-6" strokeWidth={2} />
+              </div>
+              <h3 className="mt-5 text-lg font-semibold text-foreground">
+                {title}
               </h3>
               <p className="mt-2 text-sm text-muted leading-relaxed">
-                {p.desc}
+                {desc}
               </p>
             </div>
           ))}

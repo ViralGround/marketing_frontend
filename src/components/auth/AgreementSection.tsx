@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { X } from "lucide-react";
 import { TERMS_BODY, TERMS_TITLE } from "@/lib/legal/terms";
 import { PRIVACY_BODY, PRIVACY_TITLE } from "@/lib/legal/privacy";
 import { THIRD_PARTY_BODY, THIRD_PARTY_TITLE } from "@/lib/legal/thirdParty";
@@ -138,10 +139,10 @@ function LegalModal({ title, body, onClose }: { title: string; body: string; onC
           <button
             type="button"
             onClick={onClose}
-            className="text-sm text-muted hover:text-foreground"
+            className="text-muted hover:text-foreground transition-colors"
             aria-label="닫기"
           >
-            ✕
+            <X className="h-5 w-5" />
           </button>
         </div>
         <div className="flex-1 overflow-y-auto px-6 py-4">

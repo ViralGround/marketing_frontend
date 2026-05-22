@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { ArrowRight } from "lucide-react";
+import Button from "@/components/ui/Button";
 import ConsultationModal from "./ConsultationModal";
 
 export default function BusinessHeroSection() {
@@ -29,20 +31,21 @@ export default function BusinessHeroSection() {
             </p>
 
             <div className="mt-10 flex flex-col items-center gap-3 sm:flex-row sm:justify-start lg:justify-start">
-              <button
-                type="button"
+              <Button
+                size="lg"
                 onClick={() => setModalOpen(true)}
-                className="w-full sm:w-auto rounded-full bg-foreground px-8 py-4 text-lg font-semibold text-background shadow-lg hover:opacity-90 transition-all duration-300 hover:-translate-y-0.5"
+                className="bg-foreground text-background hover:bg-foreground/90 hover:shadow-lg hover:-translate-y-0.5"
               >
-                가벼운 상담신청 →
-              </button>
-              <button
-                type="button"
+                가벼운 상담신청
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+              <Button
+                variant="secondary"
+                size="lg"
                 onClick={() => setModalOpen(true)}
-                className="w-full sm:w-auto rounded-full border border-line-strong bg-surface px-8 py-4 text-lg font-medium text-foreground hover:border-primary/30 hover:text-primary transition-colors"
               >
                 소개서 받기
-              </button>
+              </Button>
             </div>
 
             <p className="mt-6 text-sm text-faint">
@@ -56,7 +59,7 @@ export default function BusinessHeroSection() {
               <p className="text-base font-bold tracking-tight text-background md:text-lg">
                 직전 캠페인 · 최대 ROAS
               </p>
-              <p className="font-brand mt-3 text-7xl font-black tracking-tight md:text-8xl lg:text-9xl">
+              <p className="mt-3 text-7xl font-black tracking-tight md:text-8xl lg:text-9xl">
                 924<span className="text-3xl align-top">%</span>
               </p>
               <p className="mt-4 text-sm text-background/70">
@@ -67,7 +70,7 @@ export default function BusinessHeroSection() {
 
             <div className="rounded-2xl bg-surface p-5 shadow-md border border-line">
               <p className="text-sm font-semibold text-muted">CPV (조회수당 비용)</p>
-              <p className="font-brand mt-2 text-4xl font-black text-primary md:text-5xl">
+              <p className="mt-2 text-4xl font-black text-primary md:text-5xl">
                 4.16<span className="text-lg font-bold text-muted">원</span>
               </p>
               <p className="mt-2 text-[11px] text-faint">
@@ -77,7 +80,7 @@ export default function BusinessHeroSection() {
 
             <div className="rounded-2xl bg-primary p-5 text-white shadow-md">
               <p className="text-sm font-semibold text-white/90">예치금 보호</p>
-              <p className="font-brand mt-2 text-4xl font-black md:text-5xl">100%</p>
+              <p className="mt-2 text-4xl font-black md:text-5xl">100%</p>
               <p className="mt-2 text-[11px] text-white/70">에스크로 기반</p>
             </div>
           </div>

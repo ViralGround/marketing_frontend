@@ -1,5 +1,6 @@
 "use client";
 
+import Badge from "@/components/ui/Badge";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 
 export default function BusinessCasesSection() {
@@ -9,9 +10,7 @@ export default function BusinessCasesSection() {
     <section className="bg-surface py-20 md:py-28">
       <div ref={ref} className="mx-auto max-w-5xl px-6">
         <div className="text-center">
-          <span className="inline-block rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-            함께한 고객
-          </span>
+          <Badge>함께한 고객</Badge>
           <h2 className="mt-4 text-3xl font-bold text-foreground md:text-4xl">
             저희와 일하고 있는 브랜드
           </h2>
@@ -20,9 +19,7 @@ export default function BusinessCasesSection() {
         <div className="mt-12 grid gap-8 md:grid-cols-5">
           <div className="md:col-span-3 rounded-2xl border border-line bg-section-alt p-8 md:p-10">
             <div className="mb-4 flex items-center gap-2">
-              <span className="inline-block rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-                AI 서비스
-              </span>
+              <Badge>AI 서비스</Badge>
               <span className="text-xs text-muted">2개월 전 계약 · 현재 진행중</span>
             </div>
             <h3 className="text-2xl font-semibold text-foreground">
@@ -36,19 +33,19 @@ export default function BusinessCasesSection() {
             <div className="mt-6 grid grid-cols-3 gap-4 border-t border-line pt-6">
               <div>
                 <p className="text-xs text-muted">평균 CPV</p>
-                <p className="font-brand mt-1 text-3xl font-extrabold tracking-tight text-foreground md:text-4xl">
+                <p className="mt-1 text-3xl font-extrabold tracking-tight text-foreground md:text-4xl">
                   4.16<span className="text-base font-bold text-muted">원</span>
                 </p>
               </div>
               <div>
                 <p className="text-xs text-muted">최대 ROAS</p>
-                <p className="font-brand mt-1 text-3xl font-extrabold tracking-tight text-primary md:text-4xl">
+                <p className="mt-1 text-3xl font-extrabold tracking-tight text-primary md:text-4xl">
                   924<span className="text-base font-bold text-muted">%</span>
                 </p>
               </div>
               <div>
                 <p className="text-xs text-muted">단일 캠페인 뷰</p>
-                <p className="font-brand mt-1 text-3xl font-extrabold tracking-tight text-foreground md:text-4xl">
+                <p className="mt-1 text-3xl font-extrabold tracking-tight text-foreground md:text-4xl">
                   120<span className="text-base font-bold text-muted">만+</span>
                 </p>
               </div>

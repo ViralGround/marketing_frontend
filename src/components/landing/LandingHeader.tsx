@@ -2,10 +2,31 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/useAuthStore";
 import { removeTokens } from "@/lib/auth";
 import ThemeToggle from "@/components/ui/ThemeToggle";
+
+function RoleToggle() {
+  const pathname = usePathname();
+  const isBusiness = pathname?.startsWith("/business") ?? false;
+
+  const baseTab =
+    "rounded-full px-4 py-1.5 text-sm font-medium transition-colors";
+  const activeTab = "bg-surface text-foreground shadow-sm";
+  const inactiveTab = "text-muted hover:text-foreground";
+
+  return (
+    <div className="flex items-center rounded-full bg-surface-chip p-1">
+      <Link href="/business" className={`${baseTab} ${isBusiness ? activeTab : inactiveTab}`}>
+        기업
+      </Link>
+      <Link href="/" className={`${baseTab} ${!isBusiness ? activeTab : inactiveTab}`}>
+        크리에이터
+      </Link>
+    </div>
+  );
+}
 
 export default function LandingHeader() {
   const { user, isAuthenticated, logout } = useAuthStore();
@@ -33,9 +54,12 @@ export default function LandingHeader() {
       }`}
     >
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-        <Link href="/" className="text-xl font-bold text-primary">
-          Viral Ground
-        </Link>
+        <div className="flex items-center gap-4">
+          <Link href="/" className="text-xl font-bold text-primary">
+            Viral Ground
+          </Link>
+          <RoleToggle />
+        </div>
         <nav className="flex items-center gap-3">
           {isAuthenticated ? (
             <>
@@ -55,12 +79,6 @@ export default function LandingHeader() {
             </>
           ) : (
             <>
-              <Link
-                href="/signup/company"
-                className="hidden sm:inline-block rounded-lg px-3 py-2 text-sm text-muted hover:text-primary transition-colors"
-              >
-                기업으로 등록하기
-              </Link>
               <Link
                 href="/login"
                 className="rounded-lg px-4 py-2 text-sm font-medium text-foreground hover:text-primary transition-colors"

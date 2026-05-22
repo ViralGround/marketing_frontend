@@ -44,16 +44,6 @@ export default function HeroSection() {
         <p className="mt-6 text-sm text-faint animate-fade-in" style={{ animationDelay: "0.5s" }}>
           가입비 무료 · 3분이면 가입 완료 · 언제든 그만둘 수 있어요
         </p>
-
-        {/* 기업 보조 링크 */}
-        <p className="mt-4 text-sm animate-fade-in" style={{ animationDelay: "0.6s" }}>
-          <Link
-            href="/signup/company"
-            className="text-muted hover:text-primary underline-offset-4 hover:underline transition-colors"
-          >
-            기업 담당자이신가요? 캠페인 등록하러 가기 →
-          </Link>
-        </p>
       </div>
     </section>
   );

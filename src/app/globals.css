@@ -40,6 +40,7 @@
   --color-line-strong: var(--line-strong);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-brand: var(--font-brand);
 }
 
 /* 다크모드는 layout.tsx 의 pre-hydration 스크립트가 OS 설정과 localStorage 를

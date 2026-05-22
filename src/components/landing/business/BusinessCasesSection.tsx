@@ -36,15 +36,21 @@ export default function BusinessCasesSection() {
             <div className="mt-6 grid grid-cols-3 gap-4 border-t border-line pt-6">
               <div>
                 <p className="text-xs text-muted">평균 CPV</p>
-                <p className="mt-1 text-xl font-bold text-foreground">4.16원</p>
+                <p className="font-brand mt-1 text-3xl font-extrabold tracking-tight text-foreground md:text-4xl">
+                  4.16<span className="text-base font-bold text-muted">원</span>
+                </p>
               </div>
               <div>
                 <p className="text-xs text-muted">최대 ROAS</p>
-                <p className="mt-1 text-xl font-bold text-primary">924%</p>
+                <p className="font-brand mt-1 text-3xl font-extrabold tracking-tight text-primary md:text-4xl">
+                  924<span className="text-base font-bold text-muted">%</span>
+                </p>
               </div>
               <div>
                 <p className="text-xs text-muted">단일 캠페인 뷰</p>
-                <p className="mt-1 text-xl font-bold text-foreground">120만+</p>
+                <p className="font-brand mt-1 text-3xl font-extrabold tracking-tight text-foreground md:text-4xl">
+                  120<span className="text-base font-bold text-muted">만+</span>
+                </p>
               </div>
             </div>
           </div>

@@ -24,8 +24,8 @@ export default function BusinessPerformanceSection() {
         <div className="mt-12 grid gap-6 md:grid-cols-3">
           <div className="rounded-2xl border border-line bg-surface p-7 shadow-sm">
             <p className="text-sm text-muted">최대 ROAS</p>
-            <p className="mt-3 text-5xl font-extrabold text-primary md:text-6xl">
-              924<span className="text-2xl text-muted">%</span>
+            <p className="font-brand mt-3 text-6xl font-black tracking-tight text-primary md:text-7xl">
+              924<span className="text-3xl font-bold text-muted">%</span>
             </p>
             <p className="mt-3 text-sm text-muted leading-relaxed">
               광고비 대비 매출. 마케팅의 최종 목적지를
@@ -36,8 +36,8 @@ export default function BusinessPerformanceSection() {
 
           <div className="rounded-2xl border border-primary/30 bg-gradient-to-br from-primary to-primary-dark p-7 text-white shadow-lg lg:-translate-y-4">
             <p className="text-sm text-white/80">CPV · 조회당 비용</p>
-            <p className="mt-3 text-5xl font-extrabold md:text-6xl">
-              4.16<span className="text-2xl text-white/80">원</span>
+            <p className="font-brand mt-3 text-6xl font-black tracking-tight md:text-7xl">
+              4.16<span className="text-3xl font-bold text-white/80">원</span>
             </p>
             <p className="mt-3 text-sm text-white/80 leading-relaxed">
               일반 영상 캠페인 <s className="text-white/60">10~30원</s> 대비
@@ -48,8 +48,8 @@ export default function BusinessPerformanceSection() {
 
           <div className="rounded-2xl border border-line bg-surface p-7 shadow-sm">
             <p className="text-sm text-muted">캠페인 조회수</p>
-            <p className="mt-3 text-5xl font-extrabold text-foreground md:text-6xl">
-              120<span className="text-2xl text-muted">만</span>
+            <p className="font-brand mt-3 text-6xl font-black tracking-tight text-foreground md:text-7xl">
+              120<span className="text-3xl font-bold text-muted">만</span>
             </p>
             <p className="mt-3 text-sm text-muted leading-relaxed">
               500만 원 예산으로 달성. 평균 CPM 기준으로는

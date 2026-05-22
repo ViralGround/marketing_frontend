@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import ConditionalHeader from "@/components/layout/ConditionalHeader";
 import ConditionalFooter from "@/components/layout/ConditionalFooter";
 import AuthInit from "@/components/auth/AuthInit";
- 
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -13,6 +13,14 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+});
+
+// 로고·헤드라인 등 브랜드 표기 전용. 본문은 Geist 유지.
+const brandFont = Space_Grotesk({
+  variable: "--font-brand",
+  subsets: ["latin"],
+  weight: ["500", "700"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -43,7 +51,7 @@ export default function RootLayout({
   return (
     <html
       lang="ko"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${brandFont.variable} h-full antialiased`}
     >
       <head>
         {/* hydration 전에 동기 실행. localStorage 우선, 없으면 OS 설정. <html.dark> 를

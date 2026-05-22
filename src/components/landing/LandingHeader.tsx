@@ -31,6 +31,8 @@ function RoleToggle() {
 export default function LandingHeader() {
   const { user, isAuthenticated, logout } = useAuthStore();
   const router = useRouter();
+  const pathname = usePathname();
+  const isBusiness = pathname?.startsWith("/business") ?? false;
   const [scrolled, setScrolled] = useState(false);
 
   const handleLogout = () => {
@@ -86,10 +88,10 @@ export default function LandingHeader() {
                 로그인
               </Link>
               <Link
-                href="/signup/creator"
+                href={isBusiness ? "/signup/company" : "/signup/creator"}
                 className="rounded-lg bg-primary px-5 py-2 text-sm font-medium text-white hover:bg-primary-dark transition-colors"
               >
-                시작하기
+                {isBusiness ? "기업 가입" : "시작하기"}
               </Link>
               <ThemeToggle />
             </>

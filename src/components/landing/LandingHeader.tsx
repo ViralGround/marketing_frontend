@@ -55,7 +55,7 @@ export default function LandingHeader() {
           : "bg-transparent"
       }`}
     >
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
+      <div className="flex items-center justify-between px-6 py-4 md:px-10">
         <div className="flex items-center gap-4">
           <Link
             href="/"

@@ -7,6 +7,7 @@ import AlertModal from "@/components/ui/AlertModal";
 import Button from "@/components/ui/Button";
 import ImageUploader from "@/components/ui/ImageUploader";
 import Input from "@/components/ui/Input";
+import { canEditBudget, EscrowStatus } from "@/lib/campaignPolicy";
 
 export interface CampaignFormInitial {
   id?: number;
@@ -21,17 +22,22 @@ export interface CampaignFormInitial {
 }
 
 const TEXTAREA_CLASS =
-  "block w-full rounded-lg border border-line-strong bg-surface px-3 py-2.5 text-sm text-foreground placeholder-faint transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20";
+  "block w-full rounded-lg border border-line-strong bg-surface px-3 py-2.5 text-sm text-foreground placeholder-faint transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:bg-surface-muted disabled:text-muted";
 
 export default function CampaignForm({
   mode,
   initial,
+  escrowStatus,
   onSuccess,
 }: {
   mode: "create" | "edit";
   initial?: CampaignFormInitial;
+  escrowStatus?: EscrowStatus;
   onSuccess?: () => void;
 }) {
+  // create 모드는 무조건 예산 입력 가능. edit 은 escrow 상태에 따라.
+  const budgetEditable =
+    mode === "create" || (escrowStatus ? canEditBudget("ADMIN", escrowStatus) : true);
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -79,11 +85,16 @@ export default function CampaignForm({
       title: title.trim(),
       description: description.trim(),
       brandName: brandName.trim(),
-      rewardAmount: reward,
       requirements: requirements.trim() || null,
       deadline: deadline ? `${deadline}T00:00:00` : null,
-      maxParticipants: maxP,
     };
+    // 보상·인원은 변경 가능할 때만 payload 에 포함.
+    // edit 모드에서 escrow 가 NONE/PENDING_DEPOSIT 이 아니면 두 필드를 보내는 순간
+    // 백엔드가 INVALID_ESCROW_STATE 로 차단하므로, 변경 의도가 없으면 빼야 한다.
+    if (budgetEditable) {
+      payload.rewardAmount = reward;
+      payload.maxParticipants = maxP;
+    }
     if (mode === "create") {
       payload.thumbnailFileKey = thumbnailIntent.changed ? thumbnailIntent.fileKey : null;
     } else if (thumbnailIntent.changed) {
@@ -174,32 +185,41 @@ export default function CampaignForm({
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label htmlFor="rewardAmount" className="block text-sm font-medium text-content-soft">
-            보상 금액 (원)
-          </label>
-          <Input
-            id="rewardAmount"
-            type="number"
-            min={0}
-            value={rewardAmount}
-            onChange={(e) => setRewardAmount(e.target.value)}
-            className="mt-1.5"
-          />
-        </div>
-        <div>
-          <label htmlFor="maxParticipants" className="block text-sm font-medium text-content-soft">
-            최대 참여자 수
-          </label>
-          <Input
-            id="maxParticipants"
-            type="number"
-            min={1}
-            value={maxParticipants}
-            onChange={(e) => setMaxParticipants(e.target.value)}
-            className="mt-1.5"
-          />
+      <div>
+        {!budgetEditable && (
+          <p className="mb-2 text-xs text-warning">
+            예치 완료 후에는 보상 금액과 최대 참여자 수를 변경할 수 없습니다.
+          </p>
+        )}
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label htmlFor="rewardAmount" className="block text-sm font-medium text-content-soft">
+              보상 금액 (원)
+            </label>
+            <Input
+              id="rewardAmount"
+              type="number"
+              min={0}
+              disabled={!budgetEditable}
+              value={rewardAmount}
+              onChange={(e) => setRewardAmount(e.target.value)}
+              className="mt-1.5"
+            />
+          </div>
+          <div>
+            <label htmlFor="maxParticipants" className="block text-sm font-medium text-content-soft">
+              최대 참여자 수
+            </label>
+            <Input
+              id="maxParticipants"
+              type="number"
+              min={1}
+              disabled={!budgetEditable}
+              value={maxParticipants}
+              onChange={(e) => setMaxParticipants(e.target.value)}
+              className="mt-1.5"
+            />
+          </div>
         </div>
       </div>
 

@@ -7,15 +7,12 @@ import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import ImageUploader from "@/components/ui/ImageUploader";
 import Input from "@/components/ui/Input";
-
-type CampaignStatus = "DRAFT" | "OPEN" | "CLOSED";
-type EscrowStatus =
-  | "NONE"
-  | "PENDING_DEPOSIT"
-  | "DEPOSIT_CONFIRMING"
-  | "FUNDED"
-  | "PARTIALLY_RELEASED"
-  | "REFUNDED";
+import {
+  canEditBudget,
+  canEditCampaignFields,
+  CampaignStatus,
+  EscrowStatus,
+} from "@/lib/campaignPolicy";
 
 interface Detail {
   id: number;
@@ -77,21 +74,17 @@ export default function EditCampaignPage() {
       .finally(() => setLoading(false));
   }, [id]);
 
-  const canEditBudget = useMemo(() => {
-    if (!detail) return false;
-    return (
-      detail.escrowStatus === "PENDING_DEPOSIT" ||
-      (detail.escrowStatus === "FUNDED" && detail.applicationCount === 0)
-    );
-  }, [detail]);
+  // 백엔드 CompanyService 가드와 일치시킨다.
+  // - 보상/인원: PENDING_DEPOSIT 만 (이전엔 FUNDED+지원자0 도 허용했으나 백엔드와 어긋남)
+  // - 그 외 필드: CLOSED 또는 REFUNDED 만 잠금. DEPOSIT_CONFIRMING/FUNDED 에서도 썸네일·제목 등은 변경 가능.
+  const budgetEditable = useMemo(
+    () => (detail ? canEditBudget("COMPANY", detail.escrowStatus) : false),
+    [detail],
+  );
 
   const readOnly = useMemo(() => {
     if (!detail) return true;
-    return (
-      detail.escrowStatus === "DEPOSIT_CONFIRMING" ||
-      detail.escrowStatus === "REFUNDED" ||
-      detail.status === "CLOSED"
-    );
+    return !canEditCampaignFields("COMPANY", detail.escrowStatus, detail.status);
   }, [detail]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -110,7 +103,7 @@ export default function EditCampaignPage() {
       if (thumbnailIntent.changed) {
         payload.thumbnailFileKey = thumbnailIntent.fileKey ?? "";
       }
-      if (canEditBudget) {
+      if (budgetEditable) {
         payload.rewardAmount = Number(rewardAmount);
         payload.maxParticipants = Number(maxParticipants);
       }
@@ -208,9 +201,9 @@ export default function EditCampaignPage() {
           <h2 className="text-sm font-semibold uppercase tracking-wider text-muted">
             보상 · 모집
           </h2>
-          {!canEditBudget && (
+          {!budgetEditable && (
             <p className="text-xs text-warning">
-              지원자가 있거나 예치 완료 후에는 보상/모집 인원을 수정할 수 없습니다.
+              예치 완료 후에는 보상/모집 인원을 수정할 수 없습니다.
             </p>
           )}
           <div className="grid grid-cols-2 gap-4">
@@ -226,7 +219,7 @@ export default function EditCampaignPage() {
                 type="number"
                 min={0}
                 required
-                disabled={readOnly || !canEditBudget}
+                disabled={readOnly || !budgetEditable}
                 value={rewardAmount}
                 onChange={(e) => setRewardAmount(e.target.value)}
                 className="mt-1.5"
@@ -244,7 +237,7 @@ export default function EditCampaignPage() {
                 type="number"
                 min={1}
                 required
-                disabled={readOnly || !canEditBudget}
+                disabled={readOnly || !budgetEditable}
                 value={maxParticipants}
                 onChange={(e) => setMaxParticipants(e.target.value)}
                 className="mt-1.5"

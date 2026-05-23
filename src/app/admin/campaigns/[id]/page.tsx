@@ -268,6 +268,7 @@ export default function AdminCampaignDetailPage() {
             deadline: campaign.deadline,
             maxParticipants: campaign.maxParticipants,
           }}
+          escrowStatus={campaign.escrowStatus}
           onSuccess={() => { setEditMode(false); load(); }}
         />
       </div>

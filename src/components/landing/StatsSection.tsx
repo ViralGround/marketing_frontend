@@ -28,10 +28,10 @@ export default function StatsSection() {
   return (
     <section className="border-y border-line bg-surface py-16">
       <div className="mx-auto grid max-w-5xl grid-cols-2 gap-8 px-6 md:grid-cols-4">
-        <StatItem value={50} suffix="+" label="활동 크리에이터" />
-        <StatItem value={48} suffix="만원" label="평균 월 수입" />
-        <StatItem value={1200} suffix="만원+" label="누적 지급액" />
-        <StatItem value={10} suffix="+" label="협업 브랜드" />
+        <StatItem value={2} suffix="만원" label="편당 기본급" />
+        <StatItem value={250} suffix="만원" label="최대 성과급 / 편" />
+        <StatItem value={1} suffix="개월" label="계약 단위" />
+        <StatItem value={0} suffix="원" label="가입비" />
       </div>
     </section>
   );

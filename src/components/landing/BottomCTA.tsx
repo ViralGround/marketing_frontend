@@ -13,12 +13,12 @@ export default function BottomCTA() {
         className="mx-auto max-w-4xl rounded-3xl bg-gradient-to-br from-primary to-primary-dark px-8 py-16 text-center md:px-16 md:py-20"
       >
         <h2 className="text-3xl font-bold text-white md:text-4xl">
-          지금 시작하면,
+          영상 만들고, 돈 받자.
           <br />
-          첫 영상으로 3만원을 받을 수 있어요
+          지금 바로 시작하세요
         </h2>
         <p className="mt-4 text-lg text-white/80">
-          180명 이상의 크리에이터가 이미 함께하고 있습니다
+          가입비 무료, 첫 영상부터 기본급 2만원, 조회수에 따라 최대 250만원
         </p>
         <Link
           href="/signup/creator"

@@ -18,13 +18,13 @@ const pains: Pain[] = [
   },
   {
     icon: Sparkles,
-    title: "크리에이터가 되고 싶은데 시작이 막막해요",
-    desc: "장비도 없고, 편집도 못 하고, 구독자도 0인 상태.",
+    title: "장비도, 편집 실력도, 구독자도 없어요",
+    desc: "시작할 엄두가 안 나죠. 툴, 편집, 가이드라인 전부 저희가 제공합니다.",
   },
   {
     icon: LineChart,
     title: "시간 투자 대비 수익이 불확실해요",
-    desc: "몇 달을 해봐야 수익이 나올지 감이 안 잡히죠.",
+    desc: "Viral Ground는 업로드만 해도 기본급, 조회수가 나오면 성과급까지 보장합니다.",
   },
 ];
 
@@ -35,7 +35,7 @@ export default function PainPointSection() {
     <section className="bg-section-alt py-20 md:py-28">
       <div ref={ref} className="mx-auto max-w-5xl px-6">
         <h2 className="text-center text-3xl font-bold text-foreground md:text-4xl">
-          이런 고민, 해본 적 있나요?
+          이런 고민 해본 적 있나요?
         </h2>
         <p className="mt-4 text-center text-muted">
           Viral Ground가 그 고민을 해결해 드립니다

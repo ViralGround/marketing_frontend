@@ -7,6 +7,7 @@ import { useAuthStore } from "@/store/useAuthStore";
 import { removeTokens } from "@/lib/auth";
 import ThemeToggle from "@/components/ui/ThemeToggle";
 import { isLandingPath } from "@/lib/landingPaths";
+import { clearGaUser, trackEvent } from "@/lib/gtag";
 import type { UserRole } from "@/types";
 
 /**
@@ -55,6 +56,8 @@ export default function Header() {
   const [scrolled, setScrolled] = useState(false);
 
   const handleLogout = () => {
+    trackEvent("logout", { role: user?.role ?? null });
+    clearGaUser();
     removeTokens();
     logout();
     router.push("/login");
@@ -115,6 +118,9 @@ export default function Header() {
             <>
               <Link
                 href="/login"
+                onClick={() =>
+                  trackEvent("cta_click", { location: "header", target: "login" })
+                }
                 className="rounded-lg px-4 py-2 text-sm font-medium text-foreground hover:text-primary transition-colors"
               >
                 로그인
@@ -122,6 +128,12 @@ export default function Header() {
               {onLanding && (
                 <Link
                   href={signupHref}
+                  onClick={() =>
+                    trackEvent("cta_click", {
+                      location: "header",
+                      target: isBusiness ? "signup_company" : "signup_creator",
+                    })
+                  }
                   className="rounded-lg bg-primary px-5 py-2 text-sm font-medium text-white hover:bg-primary-dark transition-colors"
                 >
                   {signupLabel}

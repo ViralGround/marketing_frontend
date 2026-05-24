@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ArrowRight } from "lucide-react";
 import Button from "@/components/ui/Button";
 import ConsultationModal from "./ConsultationModal";
+import { trackEvent } from "@/lib/gtag";
 
 export default function BusinessHeroSection() {
   const [modalOpen, setModalOpen] = useState(false);
@@ -35,7 +36,13 @@ export default function BusinessHeroSection() {
             <div className="mt-10 flex flex-col items-center gap-3 sm:flex-row sm:justify-start lg:justify-start">
               <Button
                 size="lg"
-                onClick={() => setModalOpen(true)}
+                onClick={() => {
+                  trackEvent("cta_click", {
+                    location: "business_hero",
+                    target: "consultation",
+                  });
+                  setModalOpen(true);
+                }}
                 className="bg-foreground text-background hover:bg-foreground/90 hover:shadow-lg hover:-translate-y-0.5"
               >
                 가벼운 상담신청
@@ -44,7 +51,13 @@ export default function BusinessHeroSection() {
               <Button
                 variant="secondary"
                 size="lg"
-                onClick={() => setModalOpen(true)}
+                onClick={() => {
+                  trackEvent("cta_click", {
+                    location: "business_hero",
+                    target: "brochure",
+                  });
+                  setModalOpen(true);
+                }}
               >
                 소개서 받기
               </Button>

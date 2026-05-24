@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
+import { trackEvent } from "@/lib/gtag";
 import EmailVerificationField from "@/components/auth/EmailVerificationField";
 import AgreementSection, {
   EMPTY_AGREEMENT,
@@ -40,6 +41,7 @@ export default function CompanySignupForm() {
       return;
     }
     setLoading(true);
+    trackEvent("signup_submit", { role: "COMPANY" });
 
     try {
       await api.post("/auth/signup/company", {
@@ -60,6 +62,7 @@ export default function CompanySignupForm() {
         agreedAge14: agreement.age14,
         marketingOptIn: agreement.marketing,
       });
+      trackEvent("signup_success", { role: "COMPANY" });
       router.push(`/login/company`);
     } catch (err: unknown) {
       const response =
@@ -74,6 +77,7 @@ export default function CompanySignupForm() {
       } else {
         setError("회원가입에 실패했습니다. 다시 시도해주세요.");
       }
+      trackEvent("signup_fail", { role: "COMPANY", status: status ?? 0 });
     } finally {
       setLoading(false);
     }

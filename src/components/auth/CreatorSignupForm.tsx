@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
+import { trackEvent } from "@/lib/gtag";
 import AlertModal from "@/components/ui/AlertModal";
 import EmailVerificationField from "@/components/auth/EmailVerificationField";
 import AgreementSection, {
@@ -73,6 +74,7 @@ export default function CreatorSignupForm() {
     }
 
     setLoading(true);
+    trackEvent("signup_submit", { role: "CREATOR" });
     try {
       await api.post("/auth/signup", {
         email,
@@ -93,6 +95,7 @@ export default function CreatorSignupForm() {
         agreedThirdParty: agreement.thirdParty,
         marketingOptIn: agreement.marketing,
       });
+      trackEvent("signup_success", { role: "CREATOR" });
       setPendingModalOpen(true);
     } catch (err: unknown) {
       const status =
@@ -112,6 +115,7 @@ export default function CreatorSignupForm() {
       } else {
         setError("회원가입에 실패했습니다. 다시 시도해주세요.");
       }
+      trackEvent("signup_fail", { role: "CREATOR", status });
     } finally {
       setLoading(false);
     }

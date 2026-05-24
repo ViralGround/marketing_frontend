@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
+import { trackEvent } from "@/lib/gtag";
 
 export default function BottomCTA() {
   const ref = useScrollAnimation<HTMLDivElement>();
@@ -22,6 +23,9 @@ export default function BottomCTA() {
         </p>
         <Link
           href="/signup/creator"
+          onClick={() =>
+            trackEvent("cta_click", { location: "bottom", target: "signup_creator" })
+          }
           className="mt-8 inline-flex items-center justify-center rounded-full bg-surface px-10 py-4 text-lg font-semibold text-primary shadow-lg transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl"
         >
           무료로 시작하기

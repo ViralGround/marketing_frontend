@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { trackEvent } from "@/lib/gtag";
 
 export default function Footer() {
   return (
@@ -14,13 +17,27 @@ export default function Footer() {
             </p>
           </div>
           <nav className="flex gap-6 text-sm text-muted">
-            <Link href="/login" className="hover:text-primary transition-colors">
+            <Link
+              href="/login"
+              onClick={() => trackEvent("cta_click", { location: "footer", target: "login" })}
+              className="hover:text-primary transition-colors"
+            >
               로그인
             </Link>
-            <Link href="/signup/creator" className="hover:text-primary transition-colors">
+            <Link
+              href="/signup/creator"
+              onClick={() =>
+                trackEvent("cta_click", { location: "footer", target: "signup_creator" })
+              }
+              className="hover:text-primary transition-colors"
+            >
               크리에이터 가입
             </Link>
-            <Link href="/contents" className="hover:text-primary transition-colors">
+            <Link
+              href="/contents"
+              onClick={() => trackEvent("cta_click", { location: "footer", target: "contents" })}
+              className="hover:text-primary transition-colors"
+            >
               콘텐츠
             </Link>
           </nav>

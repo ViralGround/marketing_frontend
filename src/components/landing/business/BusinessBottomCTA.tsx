@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 import ConsultationModal from "./ConsultationModal";
+import { trackEvent } from "@/lib/gtag";
 
 export default function BusinessBottomCTA() {
   const ref = useScrollAnimation<HTMLDivElement>();
@@ -25,14 +26,26 @@ export default function BusinessBottomCTA() {
         <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
           <button
             type="button"
-            onClick={() => setModalOpen(true)}
+            onClick={() => {
+              trackEvent("cta_click", {
+                location: "business_bottom",
+                target: "consultation",
+              });
+              setModalOpen(true);
+            }}
             className="inline-flex items-center justify-center rounded-full bg-surface px-10 py-4 text-lg font-semibold text-primary shadow-lg transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl"
           >
             가벼운 상담신청
           </button>
           <button
             type="button"
-            onClick={() => setModalOpen(true)}
+            onClick={() => {
+              trackEvent("cta_click", {
+                location: "business_bottom",
+                target: "brochure",
+              });
+              setModalOpen(true);
+            }}
             className="inline-flex items-center justify-center rounded-full border border-white/40 px-10 py-4 text-lg font-medium text-white transition-colors hover:bg-white/10"
           >
             소개서 받기

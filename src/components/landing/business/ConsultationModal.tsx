@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import api from "@/lib/api";
+import { trackEvent } from "@/lib/gtag";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import { Check, X } from "lucide-react";
@@ -61,18 +62,23 @@ export default function ConsultationModal({ open, onClose }: Props) {
     if (!valid || submitting) return;
     setError("");
     setSubmitting(true);
+    trackEvent("contact_submit", {});
     try {
       await api.post("/contact", {
         email: form.email.trim(),
         brandName: form.brandName.trim(),
         contactName: form.contactName.trim() || null,
       });
+      trackEvent("contact_success", {});
       setSubmitted(true);
     } catch (err: unknown) {
+      const response = (err as { response?: { status?: number; data?: { message?: string } } })
+        .response;
       const msg =
-        (err as { response?: { data?: { message?: string } } }).response?.data?.message ||
+        response?.data?.message ||
         "신청 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.";
       setError(msg);
+      trackEvent("contact_fail", { status: response?.status ?? 0 });
     } finally {
       setSubmitting(false);
     }

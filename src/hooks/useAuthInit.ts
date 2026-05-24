@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useAuthStore } from "@/store/useAuthStore";
 import { decodeJwtPayload, getAccessToken, removeTokens } from "@/lib/auth";
+import { setGaUser } from "@/lib/gtag";
 import type { UserRole } from "@/types";
 
 interface JwtPayload {
@@ -30,11 +31,13 @@ export function useAuthInit() {
       return;
     }
 
+    const id = Number(payload.sub);
     setUser({
-      id: Number(payload.sub),
+      id,
       email: payload.email,
       name: payload.name ?? payload.email,
       role: payload.role,
     });
+    setGaUser(id, payload.role);
   }, [isAuthenticated, setUser]);
 }

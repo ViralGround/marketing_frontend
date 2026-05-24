@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import api from "@/lib/api";
 import { decodeJwtPayload, removeTokens, setTokens } from "@/lib/auth";
 import { useAuthStore } from "@/store/useAuthStore";
+import { setGaUser, trackEvent } from "@/lib/gtag";
 import AlertModal from "@/components/ui/AlertModal";
 import type { TokenResponse, UserRole } from "@/types";
 
@@ -63,6 +64,8 @@ export default function LoginForm() {
         name: payload.name ?? payload.email,
         role,
       });
+      setGaUser(numericSub, role);
+      trackEvent("login_success", { role });
 
       const homeByRole: Record<UserRole, string> = {
         ADMIN: "/admin/members",
@@ -103,6 +106,7 @@ export default function LoginForm() {
       } else {
         setError("비밀번호가 올바르지 않습니다");
       }
+      trackEvent("login_fail", { status: status ?? null, reason: code ?? "unknown" });
     } finally {
       setLoading(false);
     }

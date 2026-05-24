@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import api from "@/lib/api";
+import { trackEvent } from "@/lib/gtag";
 import ApplicationStatusBadge from "@/components/campaign/ApplicationStatusBadge";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
@@ -57,14 +58,21 @@ export default function CreatorCampaignDetailPage() {
   const handleApply = async () => {
     setError("");
     setApplying(true);
+    const campaignId = Number(id);
+    trackEvent("campaign_apply_submit", { campaign_id: campaignId });
     try {
       await api.post(`/campaigns/${id}/apply`, { message: message.trim() || null });
+      trackEvent("campaign_apply_success", { campaign_id: campaignId });
       router.push("/creator/applications");
     } catch (err: unknown) {
-      const msg =
-        (err as { response?: { data?: { message?: string } } }).response?.data?.message ||
-        "지원에 실패했습니다";
+      const response = (err as { response?: { status?: number; data?: { message?: string } } })
+        .response;
+      const msg = response?.data?.message || "지원에 실패했습니다";
       setError(msg);
+      trackEvent("campaign_apply_fail", {
+        campaign_id: campaignId,
+        status: response?.status ?? 0,
+      });
     } finally {
       setApplying(false);
     }

@@ -22,6 +22,11 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Viral Ground",
   description: "크리에이터와 기업을 연결하는 마케팅 플랫폼",
+  verification: {
+    other: {
+      "naver-site-verification": "a59b53171d2e2a259c4912e2d9490bbc0cd28384",
+    },
+  },
   openGraph: {
     title: "Viral Ground",
     description: "크리에이터와 기업을 연결하는 마케팅 플랫폼",

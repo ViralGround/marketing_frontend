@@ -2,6 +2,7 @@ import HeroSection from "@/components/landing/HeroSection";
 import StatsSection from "@/components/landing/StatsSection";
 import PainPointSection from "@/components/landing/PainPointSection";
 import AudienceSection from "@/components/landing/AudienceSection";
+import FeaturedCampaignsSection from "@/components/landing/FeaturedCampaignsSection";
 import SupportSection from "@/components/landing/SupportSection";
 import RewardTableSection from "@/components/landing/RewardTableSection";
 import EarningsSimulator from "@/components/landing/EarningsSimulator";
@@ -18,6 +19,7 @@ export default function Home() {
       <StatsSection />
       <PainPointSection />
       <AudienceSection />
+      <FeaturedCampaignsSection />
       <SupportSection />
       <RewardTableSection />
       <EarningsSimulator />

@@ -2,10 +2,12 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { Star } from "lucide-react";
 import api from "@/lib/api";
 import Badge from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
+import AlertModal from "@/components/ui/AlertModal";
 
 type CampaignStatus = "DRAFT" | "OPEN" | "CLOSED";
 type EscrowStatus =
@@ -30,6 +32,7 @@ interface CampaignItem {
   applicationCount: number;
   createdAt: string;
   hidden: boolean;
+  featured: boolean;
 }
 
 type Filter = "ALL" | CampaignStatus;
@@ -73,6 +76,23 @@ export default function AdminCampaignsPage() {
   const [filter, setFilter] = useState<Filter>("ALL");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [alertMsg, setAlertMsg] = useState<string | null>(null);
+  const [togglingId, setTogglingId] = useState<number | null>(null);
+
+  const toggleFeatured = (c: CampaignItem) => {
+    setTogglingId(c.id);
+    api
+      .patch(`/admin/campaigns/${c.id}/featured`, { featured: !c.featured })
+      .then(load)
+      .catch((err: unknown) => {
+        const message =
+          typeof err === "object" && err !== null && "response" in err
+            ? (err as { response?: { data?: { message?: string } } }).response?.data?.message
+            : undefined;
+        setAlertMsg(message ?? "대표 캠페인 지정에 실패했습니다. 잠시 후 다시 시도해주세요.");
+      })
+      .finally(() => setTogglingId(null));
+  };
 
   const load = () => {
     setLoading(true);
@@ -108,12 +128,17 @@ export default function AdminCampaignsPage() {
 
   return (
     <div>
-      <div className="mb-8 flex items-center justify-between">
+      <div className="mb-3 flex items-center justify-between">
         <h1 className="text-3xl font-bold tracking-tight text-foreground">캠페인 관리</h1>
         <Link href="/admin/campaigns/new">
           <Button size="sm">+ 새 캠페인</Button>
         </Link>
       </div>
+
+      <p className="mb-6 text-sm text-muted">
+        별표로 지정한 <strong className="font-semibold text-foreground">모집중</strong> 캠페인이
+        랜딩 페이지에 대표로 노출됩니다 (최대 3건).
+      </p>
 
       {pendingEscrow > 0 && (
         <Card className="mb-5 flex flex-wrap items-center justify-between gap-3 border-warning/30 bg-warning/5 p-4">
@@ -177,6 +202,7 @@ export default function AdminCampaignsPage() {
                   <th className="px-5 py-3 font-medium">예치금</th>
                   <th className="px-5 py-3 font-medium">마감일</th>
                   <th className="px-5 py-3 font-medium">생성일</th>
+                  <th className="px-5 py-3 text-center font-medium">대표</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-line">
@@ -219,6 +245,24 @@ export default function AdminCampaignsPage() {
                     <td className="px-5 py-3 text-muted">
                       {new Date(c.createdAt).toLocaleDateString("ko-KR")}
                     </td>
+                    <td className="px-5 py-3 text-center">
+                      <button
+                        type="button"
+                        onClick={() => toggleFeatured(c)}
+                        disabled={togglingId === c.id}
+                        aria-pressed={c.featured}
+                        aria-label={c.featured ? "대표 지정 해제" : "대표로 지정"}
+                        title={c.featured ? "대표 지정 해제" : "대표로 지정"}
+                        className="rounded-full p-1.5 transition-colors hover:bg-surface-muted disabled:opacity-40"
+                      >
+                        <Star
+                          className={`h-5 w-5 ${
+                            c.featured ? "fill-primary text-primary" : "text-muted"
+                          }`}
+                          strokeWidth={2}
+                        />
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -226,6 +270,13 @@ export default function AdminCampaignsPage() {
           </div>
         </Card>
       )}
+
+      <AlertModal
+        open={alertMsg !== null}
+        title="대표 캠페인"
+        message={alertMsg ?? ""}
+        onClose={() => setAlertMsg(null)}
+      />
     </div>
   );
 }

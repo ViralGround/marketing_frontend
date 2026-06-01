@@ -46,6 +46,12 @@ export default function CompanyLayout({
             >
               캠페인 등록
             </Link>
+            <Link
+              href="/company/profile"
+              className="block rounded-lg px-3 py-2 text-sm font-medium text-content-soft transition-colors hover:bg-surface hover:text-foreground"
+            >
+              회사 정보
+            </Link>
           </nav>
           <div className="mt-8 border-t border-line pt-4">
             <button

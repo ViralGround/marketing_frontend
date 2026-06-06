@@ -166,7 +166,7 @@ export default function AdminCampaignDetailPage() {
   const handleDelete = async () => {
     if (
       !confirm(
-        "캠페인을 삭제하시겠습니까? 지원자나 예치금 거래가 있으면 삭제할 수 없으며, 그 경우 '숨김' 처리를 사용해주세요.",
+        "이 캠페인을 영구 삭제할까요?\n\n지원·제출·성과·예치금 내역과 업로드 파일이 함께 삭제되며 되돌릴 수 없습니다. (정산 지급이 진행된 캠페인은 삭제할 수 없으니, 그 경우 '숨김' 처리를 사용해주세요.)",
       )
     )
       return;

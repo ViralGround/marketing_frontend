@@ -262,6 +262,7 @@ export default function EditCampaignPage() {
               썸네일 <span className="text-faint">(선택)</span>
             </label>
             <ImageUploader
+              aspect={16 / 9}
               previewUrl={previewUrl}
               disabled={readOnly}
               onChange={(fileKey) => {

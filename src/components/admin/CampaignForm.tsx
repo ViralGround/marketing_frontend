@@ -241,6 +241,7 @@ export default function CampaignForm({
           썸네일 <span className="text-faint">(선택)</span>
         </label>
         <ImageUploader
+          aspect={16 / 9}
           previewUrl={previewUrl}
           onChange={(fileKey) => {
             setThumbnailIntent({ changed: true, fileKey });

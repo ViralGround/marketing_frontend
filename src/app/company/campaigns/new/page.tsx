@@ -196,7 +196,7 @@ export default function NewCampaignPage() {
             <label className="mb-1.5 block text-sm font-medium text-content-soft">
               썸네일 <span className="text-faint">(선택)</span>
             </label>
-            <ImageUploader previewUrl={null} onChange={setThumbnailFileKey} />
+            <ImageUploader previewUrl={null} onChange={setThumbnailFileKey} aspect={16 / 9} />
           </div>
         </section>
 

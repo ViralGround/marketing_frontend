@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import api from "@/lib/api";
+import ImageCropModal from "@/components/ui/ImageCropModal";
 
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const MAX_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
@@ -17,10 +18,13 @@ interface Props {
   previewUrl: string | null;
   onChange: (fileKey: string | null) => void;
   disabled?: boolean;
+  /** 지정 시 업로드 전 해당 비율(예: 16/9)로 크롭한다. 미지정 시 원본 그대로 업로드. */
+  aspect?: number;
 }
 
-export default function ImageUploader({ previewUrl, onChange, disabled }: Props) {
+export default function ImageUploader({ previewUrl, onChange, disabled, aspect }: Props) {
   const [localPreview, setLocalPreview] = useState<string | null>(null);
+  const [cropSrc, setCropSrc] = useState<string | null>(null);
   const [progress, setProgress] = useState(0);
   const [loading, setLoading] = useState(false);
   const [dragging, setDragging] = useState(false);
@@ -32,6 +36,12 @@ export default function ImageUploader({ previewUrl, onChange, disabled }: Props)
       if (localPreview) URL.revokeObjectURL(localPreview);
     };
   }, [localPreview]);
+
+  useEffect(() => {
+    return () => {
+      if (cropSrc) URL.revokeObjectURL(cropSrc);
+    };
+  }, [cropSrc]);
 
   const display = localPreview ?? previewUrl;
 
@@ -45,7 +55,7 @@ export default function ImageUploader({ previewUrl, onChange, disabled }: Props)
     return null;
   };
 
-  const putWithProgress = (url: string, payload: File) =>
+  const putWithProgress = (url: string, payload: Blob) =>
     new Promise<void>((resolve, reject) => {
       const xhr = new XMLHttpRequest();
       xhr.upload.onprogress = (e) => {
@@ -63,7 +73,34 @@ export default function ImageUploader({ previewUrl, onChange, disabled }: Props)
       xhr.send(payload);
     });
 
-  const handleFile = async (candidate: File | null | undefined) => {
+  // 크롭 결과(Blob) 또는 원본(File)을 presign -> PUT 으로 업로드한다.
+  // previewObjectUrl 은 업로드 성공 시 미리보기로 채택하고, 실패 시 폐기한다.
+  const upload = async (payload: Blob, previewObjectUrl: string) => {
+    setError("");
+    setLoading(true);
+    setProgress(0);
+    try {
+      const { data } = await api.post<PresignedUpload>("/files/presign-upload/image", {
+        contentType: payload.type,
+        sizeBytes: payload.size,
+      });
+      await putWithProgress(data.uploadUrl, payload);
+
+      if (localPreview) URL.revokeObjectURL(localPreview);
+      setLocalPreview(previewObjectUrl);
+      onChange(data.fileKey);
+    } catch (err: unknown) {
+      URL.revokeObjectURL(previewObjectUrl);
+      const res = (err as { response?: { data?: { message?: string } } }).response;
+      const msg =
+        res?.data?.message || (err as { message?: string }).message || "업로드에 실패했습니다";
+      setError(msg);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleFile = (candidate: File | null | undefined) => {
     setError("");
     if (!candidate) return;
     const v = validate(candidate);
@@ -71,25 +108,27 @@ export default function ImageUploader({ previewUrl, onChange, disabled }: Props)
       setError(v);
       return;
     }
-    setLoading(true);
-    setProgress(0);
-    try {
-      const { data } = await api.post<PresignedUpload>("/files/presign-upload/image", {
-        contentType: candidate.type,
-        sizeBytes: candidate.size,
-      });
-      await putWithProgress(data.uploadUrl, candidate);
-
-      if (localPreview) URL.revokeObjectURL(localPreview);
-      setLocalPreview(URL.createObjectURL(candidate));
-      onChange(data.fileKey);
-    } catch (err: unknown) {
-      const res = (err as { response?: { data?: { message?: string } } }).response;
-      const msg = res?.data?.message || (err as { message?: string }).message || "업로드에 실패했습니다";
-      setError(msg);
-    } finally {
-      setLoading(false);
+    if (aspect) {
+      // 크롭 모달로 위임 — 적용 시 webp 로 변환해 업로드한다.
+      if (cropSrc) URL.revokeObjectURL(cropSrc);
+      setCropSrc(URL.createObjectURL(candidate));
+      return;
     }
+    void upload(candidate, URL.createObjectURL(candidate));
+  };
+
+  const handleCropApply = (blob: Blob) => {
+    const src = cropSrc;
+    setCropSrc(null);
+    if (src) URL.revokeObjectURL(src);
+    if (inputRef.current) inputRef.current.value = "";
+    void upload(blob, URL.createObjectURL(blob));
+  };
+
+  const handleCropCancel = () => {
+    if (cropSrc) URL.revokeObjectURL(cropSrc);
+    setCropSrc(null);
+    if (inputRef.current) inputRef.current.value = "";
   };
 
   const handleRemove = () => {
@@ -97,7 +136,12 @@ export default function ImageUploader({ previewUrl, onChange, disabled }: Props)
     setLocalPreview(null);
     onChange(null);
     setError("");
+    if (inputRef.current) inputRef.current.value = "";
   };
+
+  const hint = aspect
+    ? "jpg, png, webp · 최대 10MB · 16:9 로 잘라 업로드"
+    : "jpg, png, webp · 최대 10MB";
 
   return (
     <div>
@@ -132,7 +176,7 @@ export default function ImageUploader({ previewUrl, onChange, disabled }: Props)
         ) : (
           <div className="flex h-full w-full flex-col items-center justify-center bg-surface-chip text-center">
             <p className="text-sm text-muted">이미지를 끌어다 놓거나 클릭해서 선택해주세요</p>
-            <p className="mt-1 text-xs text-faint">jpg, png, webp · 최대 10MB · 16:9 권장</p>
+            <p className="mt-1 text-xs text-faint">{hint}</p>
           </div>
         )}
       </div>
@@ -171,6 +215,15 @@ export default function ImageUploader({ previewUrl, onChange, disabled }: Props)
       )}
 
       {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+
+      {aspect && cropSrc && (
+        <ImageCropModal
+          src={cropSrc}
+          aspect={aspect}
+          onApply={handleCropApply}
+          onCancel={handleCropCancel}
+        />
+      )}
     </div>
   );
 }

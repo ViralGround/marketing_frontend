@@ -19,13 +19,23 @@ export default function Home() {
       <StatsSection />
       <PainPointSection />
       <AudienceSection />
-      <FeaturedCampaignsSection />
+      <div id="campaigns" className="scroll-mt-20">
+        <FeaturedCampaignsSection />
+      </div>
       <SupportSection />
-      <RewardTableSection />
-      <EarningsSimulator />
-      <HowItWorksSection />
+      <div id="rewards" className="scroll-mt-20">
+        <RewardTableSection />
+      </div>
+      <div id="earnings" className="scroll-mt-20">
+        <EarningsSimulator />
+      </div>
+      <div id="how" className="scroll-mt-20">
+        <HowItWorksSection />
+      </div>
       <FeaturesSection />
-      <FAQSection />
+      <div id="faq" className="scroll-mt-20">
+        <FAQSection />
+      </div>
       <BottomCTA />
       <Footer />
     </>

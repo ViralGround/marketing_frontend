@@ -73,6 +73,21 @@ export default function Header() {
   const signupHref = isBusiness ? "/signup/company" : "/signup/creator";
   const signupLabel = isBusiness ? "기업 가입" : "시작하기";
 
+  // 랜딩 섹션 바로가기 — 클릭 시 해당 섹션으로 부드럽게 스크롤. (각 섹션 id 는 page.tsx 에서 부여)
+  const sectionLinks = isBusiness
+    ? [
+        { href: "#performance", label: "성과" },
+        { href: "#features", label: "기능" },
+        { href: "#cases", label: "사례" },
+      ]
+    : [
+        { href: "#campaigns", label: "캠페인" },
+        { href: "#rewards", label: "보상" },
+        { href: "#earnings", label: "수익 계산" },
+        { href: "#how", label: "이용 방법" },
+        { href: "#faq", label: "FAQ" },
+      ];
+
   return (
     <header
       className={`sticky top-0 z-50 transition-all duration-300 ${
@@ -95,6 +110,23 @@ export default function Header() {
 
         {/* 우측: 인증·역할별 nav */}
         <nav className="flex items-center gap-3">
+          {onLanding && !isAuthenticated && (
+            <div className="mr-1 hidden items-center gap-0.5 lg:flex">
+              {sectionLinks.map((s) => (
+                <a
+                  key={s.href}
+                  href={s.href}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    document.querySelector(s.href)?.scrollIntoView({ behavior: "smooth" });
+                  }}
+                  className="rounded-lg px-3 py-2 text-sm text-muted transition-colors hover:text-primary"
+                >
+                  {s.label}
+                </a>
+              ))}
+            </div>
+          )}
           {isAuthenticated && user ? (
             <>
               <Link

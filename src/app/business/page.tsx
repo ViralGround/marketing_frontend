@@ -15,9 +15,15 @@ export default function BusinessLandingPage() {
   return (
     <>
       <BusinessHeroSection />
-      <BusinessPerformanceSection />
-      <BusinessFeaturesSection />
-      <BusinessCasesSection />
+      <div id="performance" className="scroll-mt-20">
+        <BusinessPerformanceSection />
+      </div>
+      <div id="features" className="scroll-mt-20">
+        <BusinessFeaturesSection />
+      </div>
+      <div id="cases" className="scroll-mt-20">
+        <BusinessCasesSection />
+      </div>
       <BusinessBottomCTA />
       <Footer />
     </>

@@ -13,6 +13,7 @@ interface ModalState {
   brandName: string;
   brandIntroduction: string | null;
   logoUrl: string | null;
+  thumbnailUrl: string | null;
   // 열 때마다 증가시켜 모달을 강제 리마운트(로딩/에러 상태 초기화)하는 키.
   seq: number;
 }
@@ -27,6 +28,7 @@ export default function FeaturedCampaignsSection() {
     brandName: "",
     brandIntroduction: null,
     logoUrl: null,
+    thumbnailUrl: null,
     seq: 0,
   });
 
@@ -45,6 +47,7 @@ export default function FeaturedCampaignsSection() {
       brandName: c.brandName,
       brandIntroduction: c.brandIntroduction,
       logoUrl: c.logoUrl,
+      thumbnailUrl: c.thumbnailUrl,
       seq: m.seq + 1,
     }));
   const closeModal = () => setModal((m) => ({ ...m, open: false }));
@@ -76,6 +79,7 @@ export default function FeaturedCampaignsSection() {
         fallbackBrandName={modal.brandName}
         fallbackIntroduction={modal.brandIntroduction}
         fallbackLogoUrl={modal.logoUrl}
+        thumbnailUrl={modal.thumbnailUrl}
         onClose={closeModal}
       />
     </section>

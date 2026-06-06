@@ -11,6 +11,8 @@ interface ModalState {
   open: boolean;
   companyMemberId: number | null;
   brandName: string;
+  brandIntroduction: string | null;
+  logoUrl: string | null;
   // 열 때마다 증가시켜 모달을 강제 리마운트(로딩/에러 상태 초기화)하는 키.
   seq: number;
 }
@@ -23,6 +25,8 @@ export default function FeaturedCampaignsSection() {
     open: false,
     companyMemberId: null,
     brandName: "",
+    brandIntroduction: null,
+    logoUrl: null,
     seq: 0,
   });
 
@@ -34,8 +38,15 @@ export default function FeaturedCampaignsSection() {
       .finally(() => setLoaded(true));
   }, []);
 
-  const openModal = (companyMemberId: number | null, brandName: string) =>
-    setModal((m) => ({ open: true, companyMemberId, brandName, seq: m.seq + 1 }));
+  const openModal = (c: FeaturedCampaign) =>
+    setModal((m) => ({
+      open: true,
+      companyMemberId: c.companyMemberId,
+      brandName: c.brandName,
+      brandIntroduction: c.brandIntroduction,
+      logoUrl: c.logoUrl,
+      seq: m.seq + 1,
+    }));
   const closeModal = () => setModal((m) => ({ ...m, open: false }));
 
   // 노출할 대표 캠페인이 없으면 섹션 자체를 렌더하지 않는다.
@@ -63,6 +74,8 @@ export default function FeaturedCampaignsSection() {
         open={modal.open}
         companyMemberId={modal.companyMemberId}
         fallbackBrandName={modal.brandName}
+        fallbackIntroduction={modal.brandIntroduction}
+        fallbackLogoUrl={modal.logoUrl}
         onClose={closeModal}
       />
     </section>

@@ -7,9 +7,13 @@ import type { CompanyPublic } from "@/types/landing";
 
 interface Props {
   open: boolean;
-  /** null 이면 회사 프로필이 없는 캠페인 — 브랜드명만 표시하고 조회는 생략. */
+  /** null 이면 회사 프로필이 없는 캠페인 — 아래 fallback(브랜드 소개·로고)을 표시하고 조회는 생략. */
   companyMemberId: number | null;
   fallbackBrandName: string;
+  /** 관리자 직접 생성 캠페인의 브랜드 소개. companyMemberId 가 null 일 때 표시. */
+  fallbackIntroduction?: string | null;
+  /** 관리자 직접 생성 캠페인의 브랜드 로고 URL. companyMemberId 가 null 일 때 표시. */
+  fallbackLogoUrl?: string | null;
   onClose: () => void;
 }
 
@@ -32,6 +36,8 @@ export default function CompanyInfoModal({
   open,
   companyMemberId,
   fallbackBrandName,
+  fallbackIntroduction = null,
+  fallbackLogoUrl = null,
   onClose,
 }: Props) {
   const [company, setCompany] = useState<CompanyPublic | null>(null);
@@ -63,6 +69,9 @@ export default function CompanyInfoModal({
   if (!open) return null;
 
   const title = company?.companyName ?? fallbackBrandName;
+  // 회원 기업이면 조회 결과를, admin 직접 생성 캠페인이면 카드가 넘긴 fallback 을 쓴다.
+  const logoUrl = company?.logoUrl ?? fallbackLogoUrl;
+  const introduction = company?.introduction ?? fallbackIntroduction;
 
   return (
     <div
@@ -76,10 +85,10 @@ export default function CompanyInfoModal({
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary/10 text-primary">
-              {company?.logoUrl ? (
+              {logoUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
-                  src={company.logoUrl}
+                  src={logoUrl}
                   alt={`${title} 로고`}
                   className="h-full w-full object-cover"
                 />
@@ -106,9 +115,9 @@ export default function CompanyInfoModal({
         ) : (
           <div className="mt-5 space-y-4">
             {/* 회사 소개글 */}
-            {company?.introduction && (
+            {introduction && (
               <p className="text-sm leading-relaxed text-content-soft whitespace-pre-line">
-                {company.introduction}
+                {introduction}
               </p>
             )}
 
@@ -137,28 +146,30 @@ export default function CompanyInfoModal({
               </div>
             )}
 
-            {/* 진행 중 캠페인 */}
-            <div>
-              <p className="text-sm font-semibold text-foreground">진행 중인 캠페인</p>
-              {company && company.openCampaigns.length > 0 ? (
-                <ul className="mt-2 space-y-2">
-                  {company.openCampaigns.map((c) => (
-                    <li
-                      key={c.id}
-                      className="flex items-center justify-between gap-3 rounded-xl border border-line bg-surface-muted px-4 py-3"
-                    >
-                      <span className="truncate text-sm font-medium text-foreground">{c.title}</span>
-                      <span className="flex flex-shrink-0 items-center gap-2 text-xs">
-                        <span className="font-semibold text-primary">{rewardText(c.rewardAmount)}</span>
-                        <span className="text-muted">{deadlineText(c.deadline)}</span>
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="mt-2 text-sm text-muted">현재 진행 중인 캠페인이 없습니다.</p>
-              )}
-            </div>
+            {/* 진행 중 캠페인 (회원 기업 회사만 — admin 직접 생성 캠페인은 생략) */}
+            {company && (
+              <div>
+                <p className="text-sm font-semibold text-foreground">진행 중인 캠페인</p>
+                {company.openCampaigns.length > 0 ? (
+                  <ul className="mt-2 space-y-2">
+                    {company.openCampaigns.map((c) => (
+                      <li
+                        key={c.id}
+                        className="flex items-center justify-between gap-3 rounded-xl border border-line bg-surface-muted px-4 py-3"
+                      >
+                        <span className="truncate text-sm font-medium text-foreground">{c.title}</span>
+                        <span className="flex flex-shrink-0 items-center gap-2 text-xs">
+                          <span className="font-semibold text-primary">{rewardText(c.rewardAmount)}</span>
+                          <span className="text-muted">{deadlineText(c.deadline)}</span>
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="mt-2 text-sm text-muted">현재 진행 중인 캠페인이 없습니다.</p>
+                )}
+              </div>
+            )}
           </div>
         )}
       </div>

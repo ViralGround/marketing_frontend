@@ -125,9 +125,9 @@ export default function ImageCropModal({ src, aspect, onApply, onCancel }: Props
         className="w-full max-w-md rounded-xl bg-surface p-5 shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <h3 className="mb-1 text-base font-semibold text-foreground">썸네일 영역 선택</h3>
+        <h3 className="mb-1 text-base font-semibold text-foreground">표시 영역 선택</h3>
         <p className="mb-3 text-xs text-muted">
-          드래그로 위치를 옮기고, 슬라이더로 확대해 노출할 16:9 영역을 맞춰주세요.
+          드래그로 위치를 옮기고, 슬라이더로 확대해 노출할 영역을 맞춰주세요.
         </p>
 
         <div

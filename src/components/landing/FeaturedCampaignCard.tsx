@@ -6,7 +6,7 @@ import type { FeaturedCampaign } from "@/types/landing";
 
 interface Props {
   campaign: FeaturedCampaign;
-  onOpen: (companyMemberId: number | null, brandName: string) => void;
+  onOpen: (campaign: FeaturedCampaign) => void;
 }
 
 /** 마감까지 남은 '달력 일수'. deadline 이 없으면 상시모집으로 표기. */
@@ -48,7 +48,7 @@ export default function FeaturedCampaignCard({ campaign, onOpen }: Props) {
   return (
     <button
       type="button"
-      onClick={() => onOpen(campaign.companyMemberId, campaign.brandName)}
+      onClick={() => onOpen(campaign)}
       className="group flex flex-col overflow-hidden rounded-2xl border border-line bg-surface text-left transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
     >
       {/* 배너 + 오버랩 원형 이니셜 아바타 */}

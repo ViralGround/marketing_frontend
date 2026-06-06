@@ -14,6 +14,8 @@ export interface CampaignFormInitial {
   title?: string;
   description?: string;
   brandName?: string;
+  brandIntroduction?: string | null;
+  brandLogoUrl?: string | null;
   rewardAmount?: number;
   thumbnailUrl?: string | null;
   requirements?: string | null;
@@ -46,6 +48,13 @@ export default function CampaignForm({
   const [title, setTitle] = useState(initial?.title ?? "");
   const [description, setDescription] = useState(initial?.description ?? "");
   const [brandName, setBrandName] = useState(initial?.brandName ?? "");
+  const [brandIntroduction, setBrandIntroduction] = useState(initial?.brandIntroduction ?? "");
+  const [brandLogoPreview, setBrandLogoPreview] = useState<string | null>(
+    initial?.brandLogoUrl ?? null,
+  );
+  const [brandLogoIntent, setBrandLogoIntent] = useState<
+    { changed: false } | { changed: true; fileKey: string | null }
+  >({ changed: false });
   const [rewardAmount, setRewardAmount] = useState(
     initial?.rewardAmount?.toString() ?? "30000",
   );
@@ -85,6 +94,7 @@ export default function CampaignForm({
       title: title.trim(),
       description: description.trim(),
       brandName: brandName.trim(),
+      brandIntroduction: brandIntroduction.trim(),
       requirements: requirements.trim() || null,
       deadline: deadline ? `${deadline}T00:00:00` : null,
     };
@@ -97,8 +107,10 @@ export default function CampaignForm({
     }
     if (mode === "create") {
       payload.thumbnailFileKey = thumbnailIntent.changed ? thumbnailIntent.fileKey : null;
-    } else if (thumbnailIntent.changed) {
-      payload.thumbnailFileKey = thumbnailIntent.fileKey ?? "";
+      payload.brandLogoFileKey = brandLogoIntent.changed ? brandLogoIntent.fileKey : null;
+    } else {
+      if (thumbnailIntent.changed) payload.thumbnailFileKey = thumbnailIntent.fileKey ?? "";
+      if (brandLogoIntent.changed) payload.brandLogoFileKey = brandLogoIntent.fileKey ?? "";
     }
 
     try {
@@ -154,6 +166,34 @@ export default function CampaignForm({
           onChange={(e) => setBrandName(e.target.value)}
           placeholder="예: ABC 코스메틱"
           className="mt-1.5"
+        />
+      </div>
+
+      <div>
+        <label htmlFor="brandIntroduction" className="block text-sm font-medium text-content-soft">
+          브랜드 소개 <span className="text-faint">(선택 · 랜딩 회사 소개 모달에 노출)</span>
+        </label>
+        <textarea
+          id="brandIntroduction"
+          rows={4}
+          value={brandIntroduction}
+          onChange={(e) => setBrandIntroduction(e.target.value)}
+          placeholder="브랜드와 회사를 소개해주세요. 랜딩 대표 캠페인 모달에 표시됩니다."
+          className={`${TEXTAREA_CLASS} mt-1.5`}
+        />
+      </div>
+
+      <div>
+        <label className="mb-1.5 block text-sm font-medium text-content-soft">
+          브랜드 로고 <span className="text-faint">(선택 · 정사각형, 모달 원형 아바타)</span>
+        </label>
+        <ImageUploader
+          aspect={1}
+          previewUrl={brandLogoPreview}
+          onChange={(fileKey) => {
+            setBrandLogoIntent({ changed: true, fileKey });
+            setBrandLogoPreview(null);
+          }}
         />
       </div>
 

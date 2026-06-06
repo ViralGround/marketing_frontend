@@ -34,6 +34,8 @@ interface CampaignDetail {
   title: string;
   description: string;
   brandName: string;
+  brandIntroduction: string | null;
+  brandLogoUrl: string | null;
   rewardAmount: number;
   thumbnailUrl: string | null;
   requirements: string | null;
@@ -262,6 +264,8 @@ export default function AdminCampaignDetailPage() {
             title: campaign.title,
             description: campaign.description,
             brandName: campaign.brandName,
+            brandIntroduction: campaign.brandIntroduction,
+            brandLogoUrl: campaign.brandLogoUrl,
             rewardAmount: campaign.rewardAmount,
             thumbnailUrl: campaign.thumbnailUrl,
             requirements: campaign.requirements,

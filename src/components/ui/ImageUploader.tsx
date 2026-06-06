@@ -139,8 +139,16 @@ export default function ImageUploader({ previewUrl, onChange, disabled, aspect }
     if (inputRef.current) inputRef.current.value = "";
   };
 
-  const hint = aspect
-    ? "jpg, png, webp · 최대 10MB · 16:9 로 잘라 업로드"
+  const ratioLabel =
+    !aspect
+      ? null
+      : Math.abs(aspect - 1) < 0.01
+        ? "정사각형(1:1)"
+        : Math.abs(aspect - 16 / 9) < 0.01
+          ? "16:9"
+          : `${aspect.toFixed(2)} : 1`;
+  const hint = ratioLabel
+    ? `jpg, png, webp · 최대 10MB · ${ratioLabel} 로 잘라 업로드`
     : "jpg, png, webp · 최대 10MB";
 
   return (

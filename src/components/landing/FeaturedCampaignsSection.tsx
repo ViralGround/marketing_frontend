@@ -9,11 +9,7 @@ import CompanyInfoModal from "./CompanyInfoModal";
 
 interface ModalState {
   open: boolean;
-  companyMemberId: number | null;
-  brandName: string;
-  brandIntroduction: string | null;
-  logoUrl: string | null;
-  thumbnailUrl: string | null;
+  campaign: FeaturedCampaign | null;
   // 열 때마다 증가시켜 모달을 강제 리마운트(로딩/에러 상태 초기화)하는 키.
   seq: number;
 }
@@ -22,15 +18,7 @@ export default function FeaturedCampaignsSection() {
   const ref = useScrollAnimation<HTMLDivElement>();
   const [campaigns, setCampaigns] = useState<FeaturedCampaign[]>([]);
   const [loaded, setLoaded] = useState(false);
-  const [modal, setModal] = useState<ModalState>({
-    open: false,
-    companyMemberId: null,
-    brandName: "",
-    brandIntroduction: null,
-    logoUrl: null,
-    thumbnailUrl: null,
-    seq: 0,
-  });
+  const [modal, setModal] = useState<ModalState>({ open: false, campaign: null, seq: 0 });
 
   useEffect(() => {
     api
@@ -41,15 +29,7 @@ export default function FeaturedCampaignsSection() {
   }, []);
 
   const openModal = (c: FeaturedCampaign) =>
-    setModal((m) => ({
-      open: true,
-      companyMemberId: c.companyMemberId,
-      brandName: c.brandName,
-      brandIntroduction: c.brandIntroduction,
-      logoUrl: c.logoUrl,
-      thumbnailUrl: c.thumbnailUrl,
-      seq: m.seq + 1,
-    }));
+    setModal((m) => ({ open: true, campaign: c, seq: m.seq + 1 }));
   const closeModal = () => setModal((m) => ({ ...m, open: false }));
 
   // 노출할 대표 캠페인이 없으면 섹션 자체를 렌더하지 않는다.
@@ -75,11 +55,7 @@ export default function FeaturedCampaignsSection() {
       <CompanyInfoModal
         key={modal.seq}
         open={modal.open}
-        companyMemberId={modal.companyMemberId}
-        fallbackBrandName={modal.brandName}
-        fallbackIntroduction={modal.brandIntroduction}
-        fallbackLogoUrl={modal.logoUrl}
-        thumbnailUrl={modal.thumbnailUrl}
+        campaign={modal.campaign}
         onClose={closeModal}
       />
     </section>

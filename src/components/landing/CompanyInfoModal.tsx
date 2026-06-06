@@ -1,21 +1,24 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { X, Building2, Globe, Tag } from "lucide-react";
+import {
+  X,
+  Building2,
+  Globe,
+  Tag,
+  Coins,
+  Users,
+  UserCheck,
+  CalendarClock,
+} from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import api from "@/lib/api";
-import type { CompanyPublic } from "@/types/landing";
+import type { CompanyPublic, FeaturedCampaign } from "@/types/landing";
 
 interface Props {
   open: boolean;
-  /** null 이면 회사 프로필이 없는 캠페인 — 아래 fallback(브랜드 소개·로고)을 표시하고 조회는 생략. */
-  companyMemberId: number | null;
-  fallbackBrandName: string;
-  /** 관리자 직접 생성 캠페인의 브랜드 소개. companyMemberId 가 null 일 때 표시. */
-  fallbackIntroduction?: string | null;
-  /** 관리자 직접 생성 캠페인의 브랜드 로고 URL. companyMemberId 가 null 일 때 표시. */
-  fallbackLogoUrl?: string | null;
-  /** 클릭한 캠페인의 썸네일 URL. 모달 상단 배너로 표시. */
-  thumbnailUrl?: string | null;
+  /** 클릭한 대표 캠페인. null 이면 모달 미표시. */
+  campaign: FeaturedCampaign | null;
   onClose: () => void;
 }
 
@@ -34,15 +37,20 @@ function deadlineText(deadline: string | null): string {
   return `D-${days}`;
 }
 
-export default function CompanyInfoModal({
-  open,
-  companyMemberId,
-  fallbackBrandName,
-  fallbackIntroduction = null,
-  fallbackLogoUrl = null,
-  thumbnailUrl = null,
-  onClose,
-}: Props) {
+function InfoRow({ icon: Icon, label, value }: { icon: LucideIcon; label: string; value: string }) {
+  return (
+    <div className="flex items-center justify-between gap-2">
+      <span className="flex items-center gap-2 text-sm text-muted">
+        <Icon className="h-4 w-4 flex-shrink-0" strokeWidth={2} />
+        {label}
+      </span>
+      <span className="text-sm font-semibold text-foreground">{value}</span>
+    </div>
+  );
+}
+
+export default function CompanyInfoModal({ open, campaign, onClose }: Props) {
+  const companyMemberId = campaign?.companyMemberId ?? null;
   const [company, setCompany] = useState<CompanyPublic | null>(null);
   // 모달은 key 로 리마운트되므로 mount 시점의 companyMemberId 로 초기 로딩 여부를 정한다.
   const [loading, setLoading] = useState(companyMemberId != null);
@@ -58,7 +66,7 @@ export default function CompanyInfoModal({
   }, [open, onClose]);
 
   useEffect(() => {
-    // 회사 프로필이 없는 캠페인(companyMemberId=null)은 조회하지 않고 fallback 만 표시.
+    // 회원 기업이면 공개 프로필(소개·로고·진행 캠페인)을 조회. admin 직접 생성 캠페인은 생략.
     if (!open || companyMemberId == null) return;
     api
       .get(`/landing/companies/${companyMemberId}`)
@@ -67,12 +75,12 @@ export default function CompanyInfoModal({
       .finally(() => setLoading(false));
   }, [open, companyMemberId]);
 
-  if (!open) return null;
+  if (!open || !campaign) return null;
 
-  const title = company?.companyName ?? fallbackBrandName;
-  // 회원 기업이면 조회 결과를, admin 직접 생성 캠페인이면 카드가 넘긴 fallback 을 쓴다.
-  const logoUrl = company?.logoUrl ?? fallbackLogoUrl;
-  const introduction = company?.introduction ?? fallbackIntroduction;
+  const title = company?.companyName ?? campaign.brandName;
+  // 회원 기업이면 조회 결과를, admin 직접 생성 캠페인이면 캠페인의 브랜드 정보를 쓴다.
+  const logoUrl = company?.logoUrl ?? campaign.logoUrl;
+  const introduction = company?.introduction ?? campaign.brandIntroduction;
 
   return (
     <div
@@ -86,10 +94,10 @@ export default function CompanyInfoModal({
         {/* 썸네일 배너 + 로고 오버랩 + 닫기 */}
         <div className="relative">
           <div className="aspect-video w-full overflow-hidden rounded-t-2xl bg-surface-chip">
-            {thumbnailUrl ? (
+            {campaign.thumbnailUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
-                src={thumbnailUrl}
+                src={campaign.thumbnailUrl}
                 alt={`${title} 썸네일`}
                 className="h-full w-full object-cover"
               />
@@ -107,7 +115,6 @@ export default function CompanyInfoModal({
           >
             <X className="h-5 w-5" strokeWidth={2} />
           </button>
-          {/* 로고 (배너 좌하단 오버랩, 원형) */}
           <div className="absolute -bottom-9 left-6 flex h-20 w-20 items-center justify-center overflow-hidden rounded-full border-4 border-surface bg-primary/10 text-primary">
             {logoUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
@@ -127,47 +134,69 @@ export default function CompanyInfoModal({
           ) : error ? (
             <p className="mt-6 text-sm text-muted">회사 정보를 불러오지 못했습니다.</p>
           ) : (
-            <div className="mt-6 space-y-6">
-              {/* 회사 소개 */}
-              {introduction ? (
-                <div>
-                  <h3 className="mb-2 text-base font-semibold text-foreground">회사 소개</h3>
-                  <p className="text-sm leading-relaxed text-content-soft whitespace-pre-line">
-                    {introduction}
-                  </p>
-                </div>
-              ) : (
-                <p className="text-sm text-muted">등록된 회사 소개가 없습니다.</p>
-              )}
+            <>
+              <div className="mt-6 grid gap-6 md:grid-cols-3">
+                {/* 왼쪽: 회사 소개 */}
+                <div className="space-y-5 md:col-span-2">
+                  {introduction ? (
+                    <div>
+                      <h3 className="mb-2 text-base font-semibold text-foreground">회사 소개</h3>
+                      <p className="text-sm leading-relaxed text-content-soft whitespace-pre-line">
+                        {introduction}
+                      </p>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted">등록된 회사 소개가 없습니다.</p>
+                  )}
 
-              {/* 산업·홈페이지 */}
-              {(company?.industry || company?.homepage) && (
-                <div className="space-y-2">
-                  {company?.industry && (
-                    <div className="flex items-center gap-2 text-sm text-content-soft">
-                      <Tag className="h-4 w-4 flex-shrink-0 text-muted" strokeWidth={2} />
-                      <span>{company.industry}</span>
-                    </div>
-                  )}
-                  {company?.homepage && (
-                    <div className="flex items-center gap-2 text-sm">
-                      <Globe className="h-4 w-4 flex-shrink-0 text-muted" strokeWidth={2} />
-                      <a
-                        href={company.homepage}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="truncate font-medium text-primary hover:underline"
-                      >
-                        {company.homepage}
-                      </a>
+                  {(company?.industry || company?.homepage) && (
+                    <div className="space-y-2">
+                      {company?.industry && (
+                        <div className="flex items-center gap-2 text-sm text-content-soft">
+                          <Tag className="h-4 w-4 flex-shrink-0 text-muted" strokeWidth={2} />
+                          <span>{company.industry}</span>
+                        </div>
+                      )}
+                      {company?.homepage && (
+                        <div className="flex items-center gap-2 text-sm">
+                          <Globe className="h-4 w-4 flex-shrink-0 text-muted" strokeWidth={2} />
+                          <a
+                            href={company.homepage}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="truncate font-medium text-primary hover:underline"
+                          >
+                            {company.homepage}
+                          </a>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
-              )}
+
+                {/* 오른쪽: 캠페인 정보 */}
+                <div>
+                  <h3 className="mb-2 text-base font-semibold text-foreground">캠페인 정보</h3>
+                  <div className="space-y-3 rounded-xl border border-line bg-surface-muted p-4">
+                    <InfoRow icon={Coins} label="기본급" value={rewardText(campaign.rewardAmount)} />
+                    <InfoRow icon={Users} label="모집 인원" value={`${campaign.maxParticipants}명`} />
+                    <InfoRow
+                      icon={UserCheck}
+                      label="현재 지원"
+                      value={`${campaign.applicationCount}명`}
+                    />
+                    <InfoRow
+                      icon={CalendarClock}
+                      label="남은 기간"
+                      value={deadlineText(campaign.deadline)}
+                    />
+                  </div>
+                </div>
+              </div>
 
               {/* 진행 중 캠페인 (회원 기업 회사만 — admin 직접 생성 캠페인은 생략) */}
               {company && (
-                <div>
+                <div className="mt-6">
                   <h3 className="mb-2 text-base font-semibold text-foreground">진행 중인 캠페인</h3>
                   {company.openCampaigns.length > 0 ? (
                     <ul className="space-y-2">
@@ -193,7 +222,7 @@ export default function CompanyInfoModal({
                   )}
                 </div>
               )}
-            </div>
+            </>
           )}
         </div>
       </div>

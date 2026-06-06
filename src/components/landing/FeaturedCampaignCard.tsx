@@ -9,11 +9,14 @@ interface Props {
   onOpen: (companyMemberId: number | null, brandName: string) => void;
 }
 
-/** 마감까지 남은 일수. deadline 이 없으면 상시모집으로 표기. */
+/** 마감까지 남은 '달력 일수'. deadline 이 없으면 상시모집으로 표기. */
 function deadlineLabel(deadline: string | null): string {
   if (!deadline) return "상시모집";
-  const diffMs = new Date(deadline).getTime() - Date.now();
-  const days = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+  const end = new Date(deadline);
+  end.setHours(0, 0, 0, 0);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const days = Math.round((end.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
   if (days <= 0) return "D-day";
   return `D-${days}`;
 }

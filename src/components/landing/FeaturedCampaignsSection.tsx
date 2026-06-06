@@ -11,6 +11,8 @@ interface ModalState {
   open: boolean;
   companyMemberId: number | null;
   brandName: string;
+  // 열 때마다 증가시켜 모달을 강제 리마운트(로딩/에러 상태 초기화)하는 키.
+  seq: number;
 }
 
 export default function FeaturedCampaignsSection() {
@@ -21,6 +23,7 @@ export default function FeaturedCampaignsSection() {
     open: false,
     companyMemberId: null,
     brandName: "",
+    seq: 0,
   });
 
   useEffect(() => {
@@ -32,7 +35,7 @@ export default function FeaturedCampaignsSection() {
   }, []);
 
   const openModal = (companyMemberId: number | null, brandName: string) =>
-    setModal({ open: true, companyMemberId, brandName });
+    setModal((m) => ({ open: true, companyMemberId, brandName, seq: m.seq + 1 }));
   const closeModal = () => setModal((m) => ({ ...m, open: false }));
 
   // 노출할 대표 캠페인이 없으면 섹션 자체를 렌더하지 않는다.
@@ -56,7 +59,7 @@ export default function FeaturedCampaignsSection() {
       </div>
 
       <CompanyInfoModal
-        key={modal.companyMemberId ?? `brand:${modal.brandName}`}
+        key={modal.seq}
         open={modal.open}
         companyMemberId={modal.companyMemberId}
         fallbackBrandName={modal.brandName}

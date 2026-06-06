@@ -19,8 +19,13 @@ function rewardText(amount: number): string {
 
 function deadlineText(deadline: string | null): string {
   if (!deadline) return "상시모집";
-  const days = Math.ceil((new Date(deadline).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
-  return days <= 0 ? "마감 임박" : `D-${days}`;
+  const end = new Date(deadline);
+  end.setHours(0, 0, 0, 0);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const days = Math.round((end.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+  if (days <= 0) return "D-day";
+  return `D-${days}`;
 }
 
 export default function CompanyInfoModal({

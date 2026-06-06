@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 import AlertModal from "@/components/ui/AlertModal";
 import Button from "@/components/ui/Button";
+import Card from "@/components/ui/Card";
 import ImageUploader from "@/components/ui/ImageUploader";
 import Input from "@/components/ui/Input";
 import { canEditBudget, EscrowStatus } from "@/lib/campaignPolicy";
@@ -78,8 +79,8 @@ export default function CampaignForm({
     const reward = Number(rewardAmount);
     const maxP = Number(maxParticipants);
 
-    if (!title.trim()) return setWarning("캠페인 제목을 입력해주세요");
     if (!brandName.trim()) return setWarning("브랜드명을 입력해주세요");
+    if (!title.trim()) return setWarning("캠페인 제목을 입력해주세요");
     if (!description.trim()) return setWarning("설명을 입력해주세요");
     if (!Number.isInteger(reward) || reward < 0) {
       return setWarning("보상 금액은 0 이상의 정수여야 합니다");
@@ -143,175 +144,201 @@ export default function CampaignForm({
         </div>
       )}
 
-      <div>
-        <label htmlFor="title" className="block text-sm font-medium text-content-soft">
-          캠페인 제목
-        </label>
-        <Input
-          id="title"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          placeholder="예: 신제품 바디워시 리뷰 영상"
-          className="mt-1.5"
-        />
-      </div>
-
-      <div>
-        <label htmlFor="brandName" className="block text-sm font-medium text-content-soft">
-          브랜드명
-        </label>
-        <Input
-          id="brandName"
-          value={brandName}
-          onChange={(e) => setBrandName(e.target.value)}
-          placeholder="예: ABC 코스메틱"
-          className="mt-1.5"
-        />
-      </div>
-
-      <div>
-        <label htmlFor="brandIntroduction" className="block text-sm font-medium text-content-soft">
-          브랜드 소개 <span className="text-faint">(선택 · 랜딩 회사 소개 모달에 노출)</span>
-        </label>
-        <textarea
-          id="brandIntroduction"
-          rows={4}
-          value={brandIntroduction}
-          onChange={(e) => setBrandIntroduction(e.target.value)}
-          placeholder="브랜드와 회사를 소개해주세요. 랜딩 대표 캠페인 모달에 표시됩니다."
-          className={`${TEXTAREA_CLASS} mt-1.5`}
-        />
-      </div>
-
-      <div>
-        <label className="mb-1.5 block text-sm font-medium text-content-soft">
-          브랜드 로고 <span className="text-faint">(선택 · 정사각형, 모달 원형 아바타)</span>
-        </label>
-        <ImageUploader
-          aspect={1}
-          previewUrl={brandLogoPreview}
-          onChange={(fileKey) => {
-            setBrandLogoIntent({ changed: true, fileKey });
-            setBrandLogoPreview(null);
-          }}
-        />
-      </div>
-
-      <div>
-        <label htmlFor="description" className="block text-sm font-medium text-content-soft">
-          설명
-        </label>
-        <textarea
-          id="description"
-          rows={4}
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          placeholder="캠페인 상세 설명"
-          className={`${TEXTAREA_CLASS} mt-1.5`}
-        />
-      </div>
-
-      <div>
-        <label htmlFor="requirements" className="block text-sm font-medium text-content-soft">
-          요구사항/가이드라인 <span className="text-faint">(선택)</span>
-        </label>
-        <textarea
-          id="requirements"
-          rows={3}
-          value={requirements}
-          onChange={(e) => setRequirements(e.target.value)}
-          placeholder="예: 30초 이상 세로형 영상, 얼굴 공개 필요, 지정 해시태그 포함"
-          className={`${TEXTAREA_CLASS} mt-1.5`}
-        />
-      </div>
-
-      <div>
-        {!budgetEditable && (
-          <p className="mb-2 text-xs text-warning">
-            예치 완료 후에는 보상 금액과 최대 참여자 수를 변경할 수 없습니다.
+      {/* ── 브랜드 정보 ─────────────────────────── */}
+      <Card className="space-y-5">
+        <div>
+          <h2 className="text-lg font-semibold text-foreground">브랜드 정보</h2>
+          <p className="mt-1 text-sm text-muted">
+            랜딩 대표 캠페인 카드와 회사 소개 모달에 노출되는 브랜드 정보입니다.
           </p>
-        )}
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label htmlFor="rewardAmount" className="block text-sm font-medium text-content-soft">
-              보상 금액 (원)
-            </label>
-            <Input
-              id="rewardAmount"
-              type="number"
-              min={0}
-              disabled={!budgetEditable}
-              value={rewardAmount}
-              onChange={(e) => setRewardAmount(e.target.value)}
-              className="mt-1.5"
-            />
-          </div>
-          <div>
-            <label htmlFor="maxParticipants" className="block text-sm font-medium text-content-soft">
-              최대 참여자 수
-            </label>
-            <Input
-              id="maxParticipants"
-              type="number"
-              min={1}
-              disabled={!budgetEditable}
-              value={maxParticipants}
-              onChange={(e) => setMaxParticipants(e.target.value)}
-              className="mt-1.5"
-            />
-          </div>
         </div>
-      </div>
 
-      <div>
-        <label htmlFor="deadline" className="block text-sm font-medium text-content-soft">
-          마감일 <span className="text-faint">(선택)</span>
-        </label>
-        <Input
-          id="deadline"
-          type="date"
-          value={deadline}
-          onChange={(e) => setDeadline(e.target.value)}
-          className="mt-1.5"
-        />
-      </div>
-
-      <div>
-        <label className="mb-1.5 block text-sm font-medium text-content-soft">
-          썸네일 <span className="text-faint">(선택)</span>
-        </label>
-        <ImageUploader
-          aspect={16 / 9}
-          previewUrl={previewUrl}
-          onChange={(fileKey) => {
-            setThumbnailIntent({ changed: true, fileKey });
-            setPreviewUrl(null);
-          }}
-        />
-      </div>
-
-      {mode === "create" && (
-        <div className="rounded-2xl border border-line bg-surface-muted p-4">
-          <label className="flex items-start gap-2.5 text-sm text-content-soft">
-            <input
-              type="checkbox"
-              checked={immediatelyOpen}
-              onChange={(e) => setImmediatelyOpen(e.target.checked)}
-              className="mt-0.5 accent-primary"
-            />
-            <span>
-              <span className="font-medium text-foreground">바로 모집 시작</span>
-              <span className="text-muted"> (예치금 완료 상태로 생성)</span>
-            </span>
+        <div>
+          <label htmlFor="brandName" className="block text-sm font-medium text-content-soft">
+            브랜드명
           </label>
-          {!immediatelyOpen && (
-            <p className="mt-2 pl-6 text-xs text-warning">
-              예치금 대기 상태로 생성됩니다. 이후 상세 페이지에서 &quot;예치금 입금완료 처리&quot;를
-              눌러야 크리에이터에게 노출됩니다.
+          <Input
+            id="brandName"
+            value={brandName}
+            onChange={(e) => setBrandName(e.target.value)}
+            placeholder="예: ABC 코스메틱"
+            className="mt-1.5"
+          />
+        </div>
+
+        <div>
+          <label
+            htmlFor="brandIntroduction"
+            className="block text-sm font-medium text-content-soft"
+          >
+            브랜드 소개 <span className="text-faint">(선택)</span>
+          </label>
+          <textarea
+            id="brandIntroduction"
+            rows={4}
+            value={brandIntroduction}
+            onChange={(e) => setBrandIntroduction(e.target.value)}
+            placeholder="브랜드와 회사를 소개해주세요. 랜딩 회사 소개 모달에 표시됩니다."
+            className={`${TEXTAREA_CLASS} mt-1.5`}
+          />
+        </div>
+
+        <div>
+          <label className="mb-1.5 block text-sm font-medium text-content-soft">
+            브랜드 로고 <span className="text-faint">(선택 · 정사각형)</span>
+          </label>
+          <ImageUploader
+            aspect={1}
+            previewUrl={brandLogoPreview}
+            onChange={(fileKey) => {
+              setBrandLogoIntent({ changed: true, fileKey });
+              setBrandLogoPreview(null);
+            }}
+          />
+        </div>
+      </Card>
+
+      {/* ── 캠페인 정보 ─────────────────────────── */}
+      <Card className="space-y-5">
+        <div>
+          <h2 className="text-lg font-semibold text-foreground">캠페인 정보</h2>
+          <p className="mt-1 text-sm text-muted">
+            크리에이터에게 노출되는 캠페인 모집 내용입니다.
+          </p>
+        </div>
+
+        <div>
+          <label htmlFor="title" className="block text-sm font-medium text-content-soft">
+            캠페인 제목
+          </label>
+          <Input
+            id="title"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="예: 신제품 바디워시 리뷰 영상"
+            className="mt-1.5"
+          />
+        </div>
+
+        <div>
+          <label htmlFor="description" className="block text-sm font-medium text-content-soft">
+            설명
+          </label>
+          <textarea
+            id="description"
+            rows={4}
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="캠페인 상세 설명"
+            className={`${TEXTAREA_CLASS} mt-1.5`}
+          />
+        </div>
+
+        <div>
+          <label htmlFor="requirements" className="block text-sm font-medium text-content-soft">
+            요구사항/가이드라인 <span className="text-faint">(선택)</span>
+          </label>
+          <textarea
+            id="requirements"
+            rows={3}
+            value={requirements}
+            onChange={(e) => setRequirements(e.target.value)}
+            placeholder="예: 30초 이상 세로형 영상, 얼굴 공개 필요, 지정 해시태그 포함"
+            className={`${TEXTAREA_CLASS} mt-1.5`}
+          />
+        </div>
+
+        <div>
+          {!budgetEditable && (
+            <p className="mb-2 text-xs text-warning">
+              예치 완료 후에는 보상 금액과 최대 참여자 수를 변경할 수 없습니다.
             </p>
           )}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="rewardAmount" className="block text-sm font-medium text-content-soft">
+                보상 금액 (원)
+              </label>
+              <Input
+                id="rewardAmount"
+                type="number"
+                min={0}
+                disabled={!budgetEditable}
+                value={rewardAmount}
+                onChange={(e) => setRewardAmount(e.target.value)}
+                className="mt-1.5"
+              />
+            </div>
+            <div>
+              <label
+                htmlFor="maxParticipants"
+                className="block text-sm font-medium text-content-soft"
+              >
+                최대 참여자 수
+              </label>
+              <Input
+                id="maxParticipants"
+                type="number"
+                min={1}
+                disabled={!budgetEditable}
+                value={maxParticipants}
+                onChange={(e) => setMaxParticipants(e.target.value)}
+                className="mt-1.5"
+              />
+            </div>
+          </div>
         </div>
-      )}
+
+        <div>
+          <label htmlFor="deadline" className="block text-sm font-medium text-content-soft">
+            마감일 <span className="text-faint">(선택)</span>
+          </label>
+          <Input
+            id="deadline"
+            type="date"
+            value={deadline}
+            onChange={(e) => setDeadline(e.target.value)}
+            className="mt-1.5"
+          />
+        </div>
+
+        <div>
+          <label className="mb-1.5 block text-sm font-medium text-content-soft">
+            썸네일 <span className="text-faint">(선택 · 16:9)</span>
+          </label>
+          <ImageUploader
+            aspect={16 / 9}
+            previewUrl={previewUrl}
+            onChange={(fileKey) => {
+              setThumbnailIntent({ changed: true, fileKey });
+              setPreviewUrl(null);
+            }}
+          />
+        </div>
+
+        {mode === "create" && (
+          <div className="rounded-2xl border border-line bg-surface-muted p-4">
+            <label className="flex items-start gap-2.5 text-sm text-content-soft">
+              <input
+                type="checkbox"
+                checked={immediatelyOpen}
+                onChange={(e) => setImmediatelyOpen(e.target.checked)}
+                className="mt-0.5 accent-primary"
+              />
+              <span>
+                <span className="font-medium text-foreground">바로 모집 시작</span>
+                <span className="text-muted"> (예치금 완료 상태로 생성)</span>
+              </span>
+            </label>
+            {!immediatelyOpen && (
+              <p className="mt-2 pl-6 text-xs text-warning">
+                예치금 대기 상태로 생성됩니다. 이후 상세 페이지에서 &quot;예치금 입금완료 처리&quot;를
+                눌러야 크리에이터에게 노출됩니다.
+              </p>
+            )}
+          </div>
+        )}
+      </Card>
 
       <div className="flex gap-2 pt-2">
         <Button type="submit" disabled={loading}>

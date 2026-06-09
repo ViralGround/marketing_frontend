@@ -31,7 +31,7 @@ export default function LoginPage() {
             className="flex flex-col gap-1 rounded-lg border border-line-strong px-5 py-4 hover:border-gray-900"
           >
             <span className="text-base font-semibold text-foreground">
-              {t("기업 로그인", "Company log in")}
+              {t("브랜드 로그인", "Brand log in")}
             </span>
             <span className="text-sm text-muted">
               {t("캠페인을 등록하고 크리에이터를 모집합니다", "Post campaigns and recruit creators")}

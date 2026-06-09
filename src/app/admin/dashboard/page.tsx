@@ -73,7 +73,7 @@ export default function AdminDashboardPage() {
         <KPICards
           items={[
             { label: t("활성 크리에이터", "Active creators"), value: `${kpi.activeCreators}${t("명", "")}` },
-            { label: t("활성 기업", "Active companies"), value: `${kpi.activeCompanies}${t("개", "")}` },
+            { label: t("활성 브랜드", "Active brands"), value: `${kpi.activeCompanies}${t("개", "")}` },
             { label: t("오픈 캠페인", "Open campaigns"), value: `${kpi.openCampaigns}${t("건", "")}` },
             {
               label: t("매칭률", "Matching rate"),

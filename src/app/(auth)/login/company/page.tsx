@@ -12,7 +12,7 @@ export default function CompanyLoginPage() {
     <div className="flex min-h-[calc(100vh-65px)] items-center justify-center px-4">
       <div className="w-full max-w-md space-y-6 rounded-2xl border border-line bg-surface p-8">
         <h1 className="text-center text-2xl font-bold text-foreground">
-          {t("기업 로그인", "Company log in")}
+          {t("브랜드 로그인", "Brand log in")}
         </h1>
 
         <Suspense fallback={<div className="h-40" />}>
@@ -23,7 +23,7 @@ export default function CompanyLoginPage() {
           <p>
             {t("계정이 없으신가요?", "Don't have an account?")}{" "}
             <Link href="/signup/company" className="text-primary underline">
-              {t("기업으로 가입하기", "Sign up as a Company")}
+              {t("브랜드로 가입하기", "Sign up as a Brand")}
             </Link>
           </p>
           <p>

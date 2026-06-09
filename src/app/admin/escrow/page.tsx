@@ -65,8 +65,8 @@ export default function AdminEscrowPage() {
       <h1 className="text-3xl font-bold tracking-tight text-foreground">{t("예치금 입금 확인", "Confirm deposit")}</h1>
       <p className="mt-2 text-sm text-muted">
         {t(
-          "기업이 입금을 신청한 캠페인을 검토하고, 아직 입금 신청 전인 캠페인의 현황도 함께 확인할 수 있습니다.",
-          "Review campaigns where companies have requested a deposit, and check the status of campaigns that haven't requested one yet.",
+          "브랜드가 입금을 신청한 캠페인을 검토하고, 아직 입금 신청 전인 캠페인의 현황도 함께 확인할 수 있습니다.",
+          "Review campaigns where brands have requested a deposit, and check the status of campaigns that haven't requested one yet.",
         )}
       </p>
 
@@ -89,7 +89,7 @@ export default function AdminEscrowPage() {
               <thead className="bg-surface-muted text-left text-xs uppercase tracking-wider text-muted">
                 <tr>
                   <th className="px-5 py-3 font-medium">{t("캠페인", "Campaign")}</th>
-                  <th className="px-5 py-3 font-medium">{t("기업", "Company")}</th>
+                  <th className="px-5 py-3 font-medium">{t("브랜드", "Brand")}</th>
                   <th className="px-5 py-3 font-medium">{t("예치 금액", "Deposit amount")}</th>
                   <th className="px-5 py-3 font-medium">{t("상태", "Status")}</th>
                   <th className="px-5 py-3 font-medium">{t("요청 시각", "Requested")}</th>
@@ -114,7 +114,7 @@ export default function AdminEscrowPage() {
                       {c.escrowStatus === "DEPOSIT_CONFIRMING" ? (
                         <Badge tone="warning">{t("확인 대기", "Awaiting confirmation")}</Badge>
                       ) : (
-                        <Badge tone="neutral">{t("기업 입금 신청 전", "Deposit not requested")}</Badge>
+                        <Badge tone="neutral">{t("브랜드 입금 신청 전", "Deposit not requested")}</Badge>
                       )}
                     </td>
                     <td className="px-5 py-3 text-muted">
@@ -142,7 +142,7 @@ export default function AdminEscrowPage() {
                           </Button>
                         </div>
                       ) : (
-                        <span className="text-xs text-faint">{t("기업의 계좌이체 완료 대기 중", "Awaiting company's bank transfer")}</span>
+                        <span className="text-xs text-faint">{t("브랜드의 계좌이체 완료 대기 중", "Awaiting brand's bank transfer")}</span>
                       )}
                     </td>
                   </tr>

@@ -21,7 +21,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Viral Ground",
-  description: "크리에이터와 기업을 연결하는 마케팅 플랫폼",
+  description: "크리에이터와 브랜드를 연결하는 마케팅 플랫폼",
   verification: {
     other: {
       "naver-site-verification": "a59b53171d2e2a259c4912e2d9490bbc0cd28384",
@@ -29,7 +29,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: "Viral Ground",
-    description: "크리에이터와 기업을 연결하는 마케팅 플랫폼",
+    description: "크리에이터와 브랜드를 연결하는 마케팅 플랫폼",
     url: "https://viralground.kr",
     siteName: "Viral Ground",
     images: [{ url: "/opengraph-image", width: 1200, height: 630 }],
@@ -39,7 +39,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Viral Ground",
-    description: "크리에이터와 기업을 연결하는 마케팅 플랫폼",
+    description: "크리에이터와 브랜드를 연결하는 마케팅 플랫폼",
     images: ["/opengraph-image"],
   },
 };

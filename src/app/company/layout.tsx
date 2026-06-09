@@ -27,7 +27,7 @@ export default function CompanyLayout({
       <div className="flex min-h-[calc(100vh-65px)]">
         <aside className="w-56 border-r border-line bg-surface-muted p-5">
           <h2 className="mb-6 px-3 text-xs font-semibold uppercase tracking-wider text-muted">
-            {t("기업 센터", "Company Center")}
+            {t("브랜드 센터", "Brand Center")}
           </h2>
           <nav className="space-y-1">
             <Link

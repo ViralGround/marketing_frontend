@@ -54,7 +54,7 @@ function RoleToggle({
         onClick={onNavigate}
         className={`${baseTab} ${isBusiness ? activeTab : inactiveTab}`}
       >
-        {t("기업", "For Brands")}
+        {t("브랜드", "For Brands")}
       </Link>
       <Link
         href="/"
@@ -207,7 +207,7 @@ export default function Header() {
                   }
                   className="rounded-lg bg-primary px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-dark"
                 >
-                  {t("기업 가입", "Sign up")}
+                  {t("브랜드 가입", "Sign up")}
                 </Link>
               )}
               <LanguageToggle />
@@ -313,7 +313,7 @@ export default function Header() {
                     }}
                     className="rounded-lg bg-primary px-4 py-2.5 text-center text-sm font-medium text-white hover:bg-primary-dark"
                   >
-                    {t("기업 가입", "Sign up")}
+                    {t("브랜드 가입", "Sign up")}
                   </Link>
                 )}
               </>

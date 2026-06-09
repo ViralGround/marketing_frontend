@@ -395,7 +395,7 @@ export default function CreatorMyPage() {
       {reviewModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
           <div className="w-full max-w-md rounded-2xl bg-surface p-6 shadow-2xl">
-            <h3 className="mb-1 text-lg font-semibold text-foreground">{t("기업 리뷰 작성", "Write a company review")}</h3>
+            <h3 className="mb-1 text-lg font-semibold text-foreground">{t("브랜드 리뷰 작성", "Write a brand review")}</h3>
             <p className="mb-4 text-sm text-muted">{reviewModal.campaignTitle}</p>
             <ReviewForm
               applicationId={reviewModal.id}

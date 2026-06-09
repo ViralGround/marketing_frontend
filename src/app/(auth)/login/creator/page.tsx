@@ -31,7 +31,7 @@ export default function CreatorLoginPage() {
               href="/login/company"
               className="text-faint hover:text-primary underline-offset-4 hover:underline"
             >
-              {t("기업 담당자이신가요? 기업 로그인 →", "Are you a company? Company log in →")}
+              {t("브랜드 담당자이신가요? 브랜드 로그인 →", "Are you a brand? Brand log in →")}
             </Link>
           </p>
         </div>

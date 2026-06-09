@@ -19,7 +19,7 @@ export interface ReviewItem {
 
 const ROLE_LABEL: Record<ReviewAuthorRole, { ko: string; en: string }> = {
   CREATOR: { ko: "크리에이터", en: "Creator" },
-  COMPANY: { ko: "기업", en: "Company" },
+  COMPANY: { ko: "브랜드", en: "Brand" },
   ADMIN: { ko: "관리자", en: "Admin" },
 };
 

@@ -141,7 +141,7 @@ export default function CompanySignupForm() {
       </section>
 
       <section className="space-y-4 border-t border-line pt-6">
-        <h2 className="text-sm font-semibold text-muted">{t("기업 정보", "Company information")}</h2>
+        <h2 className="text-sm font-semibold text-muted">{t("브랜드 정보", "Brand information")}</h2>
         <div>
           <label htmlFor="companyName" className="block text-sm font-medium text-content-soft">
             {t("회사명", "Company name")}

@@ -7,7 +7,7 @@ import BusinessBottomCTA from "@/components/landing/business/BusinessBottomCTA";
 import Footer from "@/components/landing/Footer";
 
 export const metadata = {
-  title: "기업 | Viral Ground",
+  title: "브랜드 | Viral Ground",
   description:
     "직전 캠페인 CPV 4.16원 · 최대 ROAS 924%. 첫 달 안에 성과가 나오는 UGC 마케팅.",
 };

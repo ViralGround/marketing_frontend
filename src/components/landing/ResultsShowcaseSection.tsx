@@ -88,7 +88,7 @@ export default function ResultsShowcaseSection() {
   const { t } = useLang();
 
   return (
-    <section id="results" className="scroll-mt-20 bg-section-alt py-20 md:py-28">
+    <section id="results" className="scroll-mt-20 bg-background py-20 md:py-28">
       <div ref={ref} className="mx-auto max-w-6xl px-6">
         <h2 className="text-center text-3xl font-bold text-foreground md:text-4xl">
           {t("실제 크리에이터들의 성과", "Real results from our creators")}

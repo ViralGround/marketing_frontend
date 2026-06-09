@@ -1,8 +1,8 @@
 import HeroSection from "@/components/landing/HeroSection";
 import StatsSection from "@/components/landing/StatsSection";
 import ResultsShowcaseSection from "@/components/landing/ResultsShowcaseSection";
-import FeaturedCampaignsSection from "@/components/landing/FeaturedCampaignsSection";
 import MarketContextSection from "@/components/landing/MarketContextSection";
+import HowItWorksSection from "@/components/landing/HowItWorksSection";
 import TestimonialsSection from "@/components/landing/TestimonialsSection";
 import CommunityBenefitsSection from "@/components/landing/CommunityBenefitsSection";
 import ProgramTimelineSection from "@/components/landing/ProgramTimelineSection";
@@ -16,11 +16,9 @@ export default function Home() {
     <>
       <HeroSection />
       <StatsSection />
-      <ResultsShowcaseSection />
-      <div id="campaigns" className="scroll-mt-20">
-        <FeaturedCampaignsSection />
-      </div>
       <MarketContextSection />
+      <HowItWorksSection />
+      <ResultsShowcaseSection />
       <TestimonialsSection />
       <CommunityBenefitsSection />
       <ProgramTimelineSection />

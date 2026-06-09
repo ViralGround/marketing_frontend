@@ -6,6 +6,7 @@ import Link from "next/link";
 import api from "@/lib/api";
 import KPICards from "@/components/metric/KPICards";
 import Card from "@/components/ui/Card";
+import { useLang } from "@/lib/i18n";
 
 interface Item {
   applicationId: number;
@@ -27,6 +28,7 @@ interface Performance {
 
 export default function CampaignPerformancePage() {
   const params = useParams<{ id: string }>();
+  const { t } = useLang();
   const id = params?.id;
   const [data, setData] = useState<Performance | null>(null);
   const [loading, setLoading] = useState(true);
@@ -38,15 +40,20 @@ export default function CampaignPerformancePage() {
     api
       .get<Performance>(`/company/campaigns/${id}/performance`)
       .then((res) => setData(res.data))
-      .catch(() => setError("성과 정보를 불러오지 못했습니다"))
+      .catch(() => setError(t("성과 정보를 불러오지 못했습니다", "Failed to load performance data")))
       .finally(() => setLoading(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   if (loading)
-    return <p className="mx-auto max-w-4xl px-6 py-10 text-muted">불러오는 중...</p>;
+    return (
+      <p className="mx-auto max-w-4xl px-6 py-10 text-muted">{t("불러오는 중...", "Loading...")}</p>
+    );
   if (error || !data)
     return (
-      <p className="mx-auto max-w-4xl px-6 py-10 text-error">{error || "데이터 없음"}</p>
+      <p className="mx-auto max-w-4xl px-6 py-10 text-error">
+        {error || t("데이터 없음", "No data")}
+      </p>
     );
 
   return (
@@ -55,29 +62,37 @@ export default function CampaignPerformancePage() {
         href={`/company/campaigns/${data.campaignId}`}
         className="text-sm font-medium text-muted transition-colors hover:text-foreground"
       >
-        &larr; 캠페인 상세로
+        &larr; {t("캠페인 상세로", "Back to campaign")}
       </Link>
       <h1 className="mt-3 text-3xl font-bold tracking-tight text-foreground md:text-4xl">
         {data.campaignTitle}
       </h1>
-      <p className="mt-2 text-sm text-muted">지원 영상 성과 리포트</p>
+      <p className="mt-2 text-sm text-muted">{t("지원 영상 성과 리포트", "Submission performance report")}</p>
 
       <div className="my-10">
         <KPICards
           items={[
-            { label: "완료 지원자", value: `${data.totals.completedCount}명` },
-            { label: "총 조회수", value: data.totals.views.toLocaleString("ko-KR") },
-            { label: "총 좋아요", value: data.totals.likes.toLocaleString("ko-KR") },
-            { label: "총 댓글", value: data.totals.comments.toLocaleString("ko-KR") },
+            {
+              label: t("완료 지원자", "Completed applicants"),
+              value: `${data.totals.completedCount}${t("명", "")}`,
+            },
+            { label: t("총 조회수", "Total views"), value: data.totals.views.toLocaleString("ko-KR") },
+            { label: t("총 좋아요", "Total likes"), value: data.totals.likes.toLocaleString("ko-KR") },
+            {
+              label: t("총 댓글", "Total comments"),
+              value: data.totals.comments.toLocaleString("ko-KR"),
+            },
           ]}
         />
       </div>
 
       <section>
-        <h2 className="mb-4 text-lg font-semibold text-foreground">크리에이터별 성과</h2>
+        <h2 className="mb-4 text-lg font-semibold text-foreground">
+          {t("크리에이터별 성과", "Performance by creator")}
+        </h2>
         {data.items.length === 0 ? (
           <Card className="bg-surface-muted text-sm text-faint">
-            정산 완료된 지원자가 없습니다.
+            {t("정산 완료된 지원자가 없습니다.", "No settled applicants yet.")}
           </Card>
         ) : (
           <ul className="space-y-3">
@@ -100,18 +115,22 @@ export default function CampaignPerformancePage() {
                       rel="noopener noreferrer"
                       className="text-xs font-medium text-primary underline-offset-2 hover:underline"
                     >
-                      게시물 보기 →
+                      {t("게시물 보기 →", "View post →")}
                     </a>
                   )}
                 </div>
                 <p className="mt-1.5 text-xs text-muted">
-                  조회 {it.views.toLocaleString("ko-KR")} · 좋아요{" "}
-                  {it.likes.toLocaleString("ko-KR")} · 댓글{" "}
+                  {t("조회 ", "Views ")}
+                  {it.views.toLocaleString("ko-KR")}
+                  {t(" · 좋아요 ", " · Likes ")}
+                  {it.likes.toLocaleString("ko-KR")}
+                  {t(" · 댓글 ", " · Comments ")}
                   {it.comments.toLocaleString("ko-KR")}
                 </p>
                 {it.recordedAt && (
                   <p className="mt-0.5 text-xs text-faint">
-                    기록: {new Date(it.recordedAt).toLocaleDateString("ko-KR")}
+                    {t("기록: ", "Recorded: ")}
+                    {new Date(it.recordedAt).toLocaleDateString("ko-KR")}
                   </p>
                 )}
               </li>

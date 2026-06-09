@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import api from "@/lib/api";
 import Card from "@/components/ui/Card";
+import { useLang } from "@/lib/i18n";
 
 interface ContactItem {
   id: number;
@@ -13,6 +14,7 @@ interface ContactItem {
 }
 
 export default function AdminContactsPage() {
+  const { t } = useLang();
   const [contacts, setContacts] = useState<ContactItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -22,31 +24,35 @@ export default function AdminContactsPage() {
     api
       .get<{ contacts: ContactItem[] }>("/admin/contacts")
       .then((res) => setContacts(res.data.contacts))
-      .catch(() => setError("상담 신청 목록을 불러오지 못했습니다."))
+      .catch(() => setError(t("상담 신청 목록을 불러오지 못했습니다.", "Failed to load consultation requests.")))
       .finally(() => setLoading(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
     <div className="mx-auto max-w-5xl">
       <header className="mb-8 flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">상담 신청</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">{t("상담 신청", "Consultation requests")}</h1>
           <p className="mt-2 text-sm text-muted">
-            랜딩 페이지에서 접수된 가벼운 상담신청 목록입니다.
+            {t(
+              "랜딩 페이지에서 접수된 가벼운 상담신청 목록입니다.",
+              "Consultation requests submitted from the landing page.",
+            )}
           </p>
         </div>
         <span className="text-sm text-muted">
-          총 <b className="font-semibold text-foreground">{contacts.length}</b>건
+          {t("총 ", "Total ")}<b className="font-semibold text-foreground">{contacts.length}</b>{t("건", "")}
         </span>
       </header>
 
       {loading ? (
-        <p className="text-muted">불러오는 중...</p>
+        <p className="text-muted">{t("불러오는 중...", "Loading...")}</p>
       ) : error ? (
         <p className="text-error">{error}</p>
       ) : contacts.length === 0 ? (
         <Card className="border-dashed bg-surface-muted py-12 text-center text-muted">
-          아직 접수된 상담 신청이 없습니다.
+          {t("아직 접수된 상담 신청이 없습니다.", "No consultation requests yet.")}
         </Card>
       ) : (
         <Card className="overflow-hidden p-0">
@@ -54,10 +60,10 @@ export default function AdminContactsPage() {
             <table className="w-full text-sm">
               <thead className="bg-surface-muted text-left text-xs uppercase tracking-wider text-muted">
                 <tr>
-                  <th className="px-5 py-3 font-medium">접수일</th>
-                  <th className="px-5 py-3 font-medium">브랜드명</th>
-                  <th className="px-5 py-3 font-medium">담당자</th>
-                  <th className="px-5 py-3 font-medium">이메일</th>
+                  <th className="px-5 py-3 font-medium">{t("접수일", "Received")}</th>
+                  <th className="px-5 py-3 font-medium">{t("브랜드명", "Brand name")}</th>
+                  <th className="px-5 py-3 font-medium">{t("담당자", "Contact")}</th>
+                  <th className="px-5 py-3 font-medium">{t("이메일", "Email")}</th>
                   <th className="w-24 px-5 py-3" />
                 </tr>
               </thead>
@@ -75,7 +81,7 @@ export default function AdminContactsPage() {
                     </td>
                     <td className="px-5 py-3 font-medium text-foreground">{c.brandName}</td>
                     <td className="px-5 py-3 text-content-soft">
-                      {c.contactName || <span className="text-faint">(미입력)</span>}
+                      {c.contactName || <span className="text-faint">{t("(미입력)", "(not provided)")}</span>}
                     </td>
                     <td className="px-5 py-3">
                       <a
@@ -88,11 +94,11 @@ export default function AdminContactsPage() {
                     <td className="px-5 py-3 text-right">
                       <a
                         href={`mailto:${c.email}?subject=${encodeURIComponent(
-                          `[Viral Ground] ${c.brandName} 상담 회신`,
+                          t(`[Viral Ground] ${c.brandName} 상담 회신`, `[Viral Ground] Re: ${c.brandName} consultation`),
                         )}`}
                         className="inline-flex items-center rounded-full border border-line-strong px-3 py-1.5 text-xs font-medium text-content-soft transition-colors hover:border-primary/40 hover:text-primary"
                       >
-                        회신
+                        {t("회신", "Reply")}
                       </a>
                     </td>
                   </tr>

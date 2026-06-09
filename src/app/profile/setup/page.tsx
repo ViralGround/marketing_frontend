@@ -3,9 +3,11 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
+import { useLang } from "@/lib/i18n";
 
 export default function ProfileSetupPage() {
   const router = useRouter();
+  const { t } = useLang();
   const [canEdit, setCanEdit] = useState<boolean | null>(null);
   const [editingSkill, setEditingSkill] = useState<string>("");
   const [faceExposure, setFaceExposure] = useState<boolean | null>(null);
@@ -18,15 +20,15 @@ export default function ProfileSetupPage() {
     setError("");
 
     if (canEdit === null) {
-      setError("편집 가능 여부를 선택해주세요");
+      setError(t("편집 가능 여부를 선택해주세요", "Please select whether you can edit"));
       return;
     }
     if (!editingSkill) {
-      setError("편집 실력을 선택해주세요");
+      setError(t("편집 실력을 선택해주세요", "Please select your editing skill level"));
       return;
     }
     if (faceExposure === null) {
-      setError("얼굴 공개 여부를 선택해주세요");
+      setError(t("얼굴 공개 여부를 선택해주세요", "Please select whether you can show your face"));
       return;
     }
 
@@ -41,7 +43,7 @@ export default function ProfileSetupPage() {
       });
       router.push("/creator/home");
     } catch {
-      setError("프로필 저장에 실패했습니다. 다시 시도해주세요.");
+      setError(t("프로필 저장에 실패했습니다. 다시 시도해주세요.", "Failed to save your profile. Please try again."));
     } finally {
       setLoading(false);
     }
@@ -55,13 +57,13 @@ export default function ProfileSetupPage() {
           onClick={() => router.push("/creator/mypage")}
           className="mb-4 text-sm text-muted hover:text-foreground"
         >
-          &larr; 마이페이지로
+          &larr; {t("마이페이지로", "Back to my page")}
         </button>
         <div className="space-y-6 rounded border border-line bg-surface p-8">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">프로필 작성</h1>
+          <h1 className="text-2xl font-bold text-foreground">{t("프로필 작성", "Set up your profile")}</h1>
           <p className="mt-1 text-sm text-muted">
-            크리에이터 활동을 위한 정보를 입력해주세요
+            {t("크리에이터 활동을 위한 정보를 입력해주세요", "Enter the information needed to start creating.")}
           </p>
         </div>
 
@@ -75,7 +77,7 @@ export default function ProfileSetupPage() {
           {/* 편집 가능 여부 */}
           <div>
             <label className="block text-sm font-medium text-content-soft mb-2">
-              편집을 할 수 있나요?
+              {t("편집을 할 수 있나요?", "Can you edit videos?")}
             </label>
             <div className="flex gap-3">
               <button
@@ -87,7 +89,7 @@ export default function ProfileSetupPage() {
                     : "border-line-strong text-content-soft hover:bg-surface-muted"
                 }`}
               >
-                예
+                {t("예", "Yes")}
               </button>
               <button
                 type="button"
@@ -98,7 +100,7 @@ export default function ProfileSetupPage() {
                     : "border-line-strong text-content-soft hover:bg-surface-muted"
                 }`}
               >
-                아니요
+                {t("아니요", "No")}
               </button>
             </div>
           </div>
@@ -106,13 +108,13 @@ export default function ProfileSetupPage() {
           {/* 편집 실력 */}
           <div>
             <label className="block text-sm font-medium text-content-soft mb-2">
-              편집 실력은 어느 정도인가요?
+              {t("편집 실력은 어느 정도인가요?", "How would you rate your editing skill?")}
             </label>
             <div className="flex gap-3">
               {[
-                { value: "HIGH", label: "상" },
-                { value: "MEDIUM", label: "중" },
-                { value: "LOW", label: "하" },
+                { value: "HIGH", label: "상", labelEn: "High" },
+                { value: "MEDIUM", label: "중", labelEn: "Medium" },
+                { value: "LOW", label: "하", labelEn: "Low" },
               ].map((option) => (
                 <button
                   key={option.value}
@@ -124,7 +126,7 @@ export default function ProfileSetupPage() {
                       : "border-line-strong text-content-soft hover:bg-surface-muted"
                   }`}
                 >
-                  {option.label}
+                  {t(option.label, option.labelEn)}
                 </button>
               ))}
             </div>
@@ -133,10 +135,10 @@ export default function ProfileSetupPage() {
           {/* 얼굴 공개 여부 */}
           <div>
             <label className="block text-sm font-medium text-content-soft mb-1">
-              얼굴이 공개되어도 상관없나요?
+              {t("얼굴이 공개되어도 상관없나요?", "Are you okay with showing your face?")}
             </label>
             <p className="text-xs text-faint mb-2">
-              얼굴 공개가 더 쉽게 수익을 올릴 수 있습니다
+              {t("얼굴 공개가 더 쉽게 수익을 올릴 수 있습니다", "Showing your face makes it easier to earn.")}
             </p>
             <div className="flex gap-3">
               <button
@@ -148,7 +150,7 @@ export default function ProfileSetupPage() {
                     : "border-line-strong text-content-soft hover:bg-surface-muted"
                 }`}
               >
-                예
+                {t("예", "Yes")}
               </button>
               <button
                 type="button"
@@ -159,7 +161,7 @@ export default function ProfileSetupPage() {
                     : "border-line-strong text-content-soft hover:bg-surface-muted"
                 }`}
               >
-                아니요
+                {t("아니요", "No")}
               </button>
             </div>
           </div>
@@ -167,10 +169,10 @@ export default function ProfileSetupPage() {
           {/* 인스타그램 */}
           <div>
             <label htmlFor="instagram" className="block text-sm font-medium text-content-soft">
-              인스타그램 아이디 (선택)
+              {t("인스타그램 아이디 (선택)", "Instagram handle (optional)")}
             </label>
             <p className="text-xs text-faint mb-1">
-              이미 운영하고 있는 계정이 있다면 입력해주세요
+              {t("이미 운영하고 있는 계정이 있다면 입력해주세요", "Enter an account you already run, if any.")}
             </p>
             <div className="flex items-center mt-1">
               <span className="text-sm text-faint mr-1">@</span>
@@ -190,7 +192,7 @@ export default function ProfileSetupPage() {
             disabled={loading}
             className="w-full rounded-lg bg-primary py-2.5 text-white font-medium hover:bg-primary-dark disabled:opacity-50 transition-colors"
           >
-            {loading ? "저장 중..." : "프로필 완성하기"}
+            {loading ? t("저장 중...", "Saving...") : t("프로필 완성하기", "Complete profile")}
           </button>
         </form>
         </div>

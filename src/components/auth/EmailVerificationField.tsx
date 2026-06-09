@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import api from "@/lib/api";
+import { useLang } from "@/lib/i18n";
 
 interface Props {
   email: string;
@@ -23,9 +24,10 @@ export default function EmailVerificationField({
   email,
   onEmailChange,
   onVerified,
-  label = "이메일",
+  label,
   placeholder = "example@email.com",
 }: Props) {
+  const { t } = useLang();
   const [code, setCode] = useState("");
   const [codeSent, setCodeSent] = useState(false);
   const [verified, setVerified] = useState(false);
@@ -72,7 +74,7 @@ export default function EmailVerificationField({
   const handleSendCode = async () => {
     const requestedEmail = email.trim();
     if (!requestedEmail) {
-      setMessage({ type: "error", text: "이메일을 입력해주세요" });
+      setMessage({ type: "error", text: t("이메일을 입력해주세요", "Please enter your email") });
       return;
     }
     setSendLoading(true);
@@ -87,7 +89,10 @@ export default function EmailVerificationField({
       setVerified(false);
       setCode("");
       setExpiresAt(new Date(data.expiresAt).getTime());
-      setMessage({ type: "info", text: data.message ?? "인증 코드를 발송했습니다" });
+      setMessage({
+        type: "info",
+        text: data.message ?? t("인증 코드를 발송했습니다", "We've sent a verification code"),
+      });
       onVerified(null);
     } catch (err: unknown) {
       if (requestedEmail !== email.trim()) return;
@@ -97,11 +102,16 @@ export default function EmailVerificationField({
           : undefined;
       const status = response?.status;
       if (status === 409) {
-        setMessage({ type: "error", text: "이미 가입된 이메일입니다" });
+        setMessage({
+          type: "error",
+          text: t("이미 가입된 이메일입니다", "This email is already registered"),
+        });
       } else {
         setMessage({
           type: "error",
-          text: response?.data?.message ?? "코드 발송에 실패했습니다",
+          text:
+            response?.data?.message ??
+            t("코드 발송에 실패했습니다", "Failed to send the code"),
         });
       }
     } finally {
@@ -112,7 +122,10 @@ export default function EmailVerificationField({
   const handleVerifyCode = async () => {
     const requestedEmail = email.trim();
     if (!code.trim()) {
-      setMessage({ type: "error", text: "인증 코드를 입력해주세요" });
+      setMessage({
+        type: "error",
+        text: t("인증 코드를 입력해주세요", "Please enter the verification code"),
+      });
       return;
     }
     setVerifyLoading(true);
@@ -125,7 +138,10 @@ export default function EmailVerificationField({
       if (requestedEmail !== email.trim()) return;
       setVerified(true);
       setExpiresAt(null);
-      setMessage({ type: "success", text: data.message ?? "이메일 인증이 완료되었습니다" });
+      setMessage({
+        type: "success",
+        text: data.message ?? t("이메일 인증이 완료되었습니다", "Email verification complete"),
+      });
       onVerified(data.verifiedToken);
     } catch (err: unknown) {
       if (requestedEmail !== email.trim()) return;
@@ -135,7 +151,7 @@ export default function EmailVerificationField({
           : undefined;
       setMessage({
         type: "error",
-        text: response?.data?.message ?? "인증에 실패했습니다",
+        text: response?.data?.message ?? t("인증에 실패했습니다", "Verification failed"),
       });
     } finally {
       setVerifyLoading(false);
@@ -147,7 +163,7 @@ export default function EmailVerificationField({
   return (
     <div className="space-y-2">
       <label htmlFor="email" className="block text-sm font-medium text-content-soft">
-        {label}
+        {label ?? t("이메일", "Email")}
       </label>
       <div className="flex gap-2">
         <input
@@ -167,12 +183,12 @@ export default function EmailVerificationField({
           className="shrink-0 whitespace-nowrap rounded border border-gray-900 bg-surface px-4 py-2 text-sm font-medium text-foreground hover:bg-surface-muted disabled:cursor-not-allowed disabled:border-line-strong disabled:text-faint"
         >
           {verified
-            ? "인증 완료"
+            ? t("인증 완료", "Verified")
             : sendLoading
-              ? "발송 중..."
+              ? t("발송 중...", "Sending...")
               : canResend
-                ? "재발송"
-                : "인증하기"}
+                ? t("재발송", "Resend")
+                : t("인증하기", "Verify")}
         </button>
       </div>
 
@@ -180,12 +196,16 @@ export default function EmailVerificationField({
         <div className="space-y-2 rounded border border-line bg-surface-muted p-3">
           <div className="flex items-center justify-between">
             <label htmlFor="verification-code" className="text-sm font-medium text-content-soft">
-              인증 코드
+              {t("인증 코드", "Verification code")}
             </label>
             {remaining > 0 ? (
-              <span className="text-xs text-primary">유효 시간 {formatMmSs(remaining)}</span>
+              <span className="text-xs text-primary">
+                {t("유효 시간", "Time left")} {formatMmSs(remaining)}
+              </span>
             ) : (
-              <span className="text-xs text-red-600">코드가 만료되었습니다</span>
+              <span className="text-xs text-red-600">
+                {t("코드가 만료되었습니다", "The code has expired")}
+              </span>
             )}
           </div>
           <div className="flex gap-2">
@@ -194,7 +214,7 @@ export default function EmailVerificationField({
               type="text"
               inputMode="numeric"
               maxLength={6}
-              placeholder="6자리 숫자"
+              placeholder={t("6자리 숫자", "6-digit code")}
               value={code}
               onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
               className="block min-w-0 flex-1 rounded border border-line-strong px-3 py-2 text-foreground placeholder-faint focus:border-gray-500 focus:outline-none"
@@ -205,7 +225,7 @@ export default function EmailVerificationField({
               disabled={verifyLoading || code.length < 6 || remaining <= 0}
               className="shrink-0 whitespace-nowrap rounded bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {verifyLoading ? "확인 중..." : "인증 확인"}
+              {verifyLoading ? t("확인 중...", "Checking...") : t("인증 확인", "Confirm code")}
             </button>
           </div>
         </div>

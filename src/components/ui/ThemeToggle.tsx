@@ -2,10 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { useThemeStore } from "@/store/useThemeStore";
+import { useLang } from "@/lib/i18n";
 
 export default function ThemeToggle() {
   const { theme, toggle, syncFromDocument } = useThemeStore();
   const [mounted, setMounted] = useState(false);
+  const { t } = useLang();
 
   useEffect(() => {
     // pre-hydration 스크립트가 이미 <html.dark> 를 세팅했으니 store 도 거기에 맞춘다.
@@ -18,7 +20,7 @@ export default function ThemeToggle() {
     return (
       <button
         type="button"
-        aria-label="테마 전환"
+        aria-label={t("테마 전환", "Toggle theme")}
         className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-line-strong bg-transparent"
       />
     );
@@ -30,8 +32,8 @@ export default function ThemeToggle() {
     <button
       type="button"
       onClick={toggle}
-      aria-label={isDark ? "라이트모드로 전환" : "다크모드로 전환"}
-      title={isDark ? "라이트모드로 전환" : "다크모드로 전환"}
+      aria-label={isDark ? t("라이트모드로 전환", "Switch to light mode") : t("다크모드로 전환", "Switch to dark mode")}
+      title={isDark ? t("라이트모드로 전환", "Switch to light mode") : t("다크모드로 전환", "Switch to dark mode")}
       className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-line-strong bg-transparent text-muted hover:bg-surface-muted transition-colors"
     >
       {isDark ? (

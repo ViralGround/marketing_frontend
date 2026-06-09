@@ -11,6 +11,7 @@ import Badge from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import SubmissionTimeline from "@/components/submission/SubmissionTimeline";
+import { useLang } from "@/lib/i18n";
 
 type CampaignStatus = "OPEN" | "CLOSED";
 type AppStatus =
@@ -52,14 +53,14 @@ interface CampaignDetail {
 
 type Tone = "primary" | "success" | "warning" | "error" | "info" | "neutral";
 
-const ESCROW_LABEL: Record<EscrowStatus, string> = {
-  NONE: "미신청",
-  PENDING_DEPOSIT: "입금 대기",
-  DEPOSIT_CONFIRMING: "확인 대기",
-  FUNDED: "예치 완료",
-  PARTIALLY_RELEASED: "일부 지급",
-  RELEASED: "전액 지급",
-  REFUNDED: "환불",
+const ESCROW_LABEL: Record<EscrowStatus, { ko: string; en: string }> = {
+  NONE: { ko: "미신청", en: "Not requested" },
+  PENDING_DEPOSIT: { ko: "입금 대기", en: "Awaiting deposit" },
+  DEPOSIT_CONFIRMING: { ko: "확인 대기", en: "Confirming" },
+  FUNDED: { ko: "예치 완료", en: "Deposited" },
+  PARTIALLY_RELEASED: { ko: "일부 지급", en: "Partially released" },
+  RELEASED: { ko: "전액 지급", en: "Fully released" },
+  REFUNDED: { ko: "환불", en: "Refunded" },
 };
 
 const ESCROW_TONE: Record<EscrowStatus, Tone> = {
@@ -108,12 +109,13 @@ interface Application {
   };
 }
 
-const CAMPAIGN_STATUS_LABEL: Record<CampaignStatus, string> = {
-  OPEN: "모집중",
-  CLOSED: "마감",
+const CAMPAIGN_STATUS_LABEL: Record<CampaignStatus, { ko: string; en: string }> = {
+  OPEN: { ko: "모집중", en: "Recruiting" },
+  CLOSED: { ko: "마감", en: "Closed" },
 };
 
 export default function AdminCampaignDetailPage() {
+  const { t } = useLang();
   const { id } = useParams();
   const router = useRouter();
   const [campaign, setCampaign] = useState<CampaignDetail | null>(null);
@@ -135,19 +137,28 @@ export default function AdminCampaignDetailPage() {
   }, [id]);
 
   const handleStatus = async (newStatus: CampaignStatus) => {
-    if (!confirm(`상태를 "${CAMPAIGN_STATUS_LABEL[newStatus]}"(으)로 변경할까요?`)) return;
+    const label = t(CAMPAIGN_STATUS_LABEL[newStatus].ko, CAMPAIGN_STATUS_LABEL[newStatus].en);
+    if (
+      !confirm(
+        t(`상태를 "${label}"(으)로 변경할까요?`, `Change status to "${label}"?`),
+      )
+    )
+      return;
     try {
       await api.put(`/admin/campaigns/${id}`, { status: newStatus });
       load();
     } catch {
-      setErrorMessage("변경에 실패했습니다");
+      setErrorMessage(t("변경에 실패했습니다", "Failed to change status"));
     }
   };
 
   const handleForceCompleteEscrow = async () => {
     if (
       !confirm(
-        "이 캠페인을 예치금 완료 상태로 전환할까요? 크리에이터에게 즉시 노출됩니다.",
+        t(
+          "이 캠페인을 예치금 완료 상태로 전환할까요? 크리에이터에게 즉시 노출됩니다.",
+          "Mark this campaign's deposit as complete? It becomes visible to creators immediately.",
+        ),
       )
     )
       return;
@@ -161,14 +172,17 @@ export default function AdminCampaignDetailPage() {
         "response" in err &&
         (err as { response?: { data?: { message?: string } } }).response?.data
           ?.message;
-      setErrorMessage(msg || "예치금 완료 처리에 실패했습니다");
+      setErrorMessage(msg || t("예치금 완료 처리에 실패했습니다", "Failed to mark deposit as complete"));
     }
   };
 
   const handleDelete = async () => {
     if (
       !confirm(
-        "이 캠페인을 영구 삭제할까요?\n\n지원·제출·성과·예치금 내역과 업로드 파일이 함께 삭제되며 되돌릴 수 없습니다. (정산 지급이 진행된 캠페인은 삭제할 수 없으니, 그 경우 '숨김' 처리를 사용해주세요.)",
+        t(
+          "이 캠페인을 영구 삭제할까요?\n\n지원·제출·성과·예치금 내역과 업로드 파일이 함께 삭제되며 되돌릴 수 없습니다. (정산 지급이 진행된 캠페인은 삭제할 수 없으니, 그 경우 '숨김' 처리를 사용해주세요.)",
+          "Permanently delete this campaign?\n\nApplications, submissions, performance, deposit records, and uploaded files will be deleted and cannot be recovered. (Campaigns with completed payouts can't be deleted — use 'Hide' instead in that case.)",
+        ),
       )
     )
       return;
@@ -182,19 +196,25 @@ export default function AdminCampaignDetailPage() {
         "response" in err &&
         (err as { response?: { data?: { message?: string } } }).response?.data
           ?.message;
-      setErrorMessage(msg || "삭제에 실패했습니다");
+      setErrorMessage(msg || t("삭제에 실패했습니다", "Failed to delete"));
     }
   };
 
   const handleToggleVisibility = async () => {
     if (!campaign) return;
     const next = !campaign.hidden;
-    const label = next ? "숨김" : "다시 노출";
+    const label = next ? t("숨김", "Hide") : t("다시 노출", "Show again");
     if (
       !confirm(
         next
-          ? "이 캠페인을 숨김 처리할까요? 크리에이터에게 더 이상 보이지 않게 됩니다."
-          : "이 캠페인을 다시 노출할까요? 크리에이터에게 보이게 됩니다.",
+          ? t(
+              "이 캠페인을 숨김 처리할까요? 크리에이터에게 더 이상 보이지 않게 됩니다.",
+              "Hide this campaign? It will no longer be visible to creators.",
+            )
+          : t(
+              "이 캠페인을 다시 노출할까요? 크리에이터에게 보이게 됩니다.",
+              "Show this campaign again? It will be visible to creators.",
+            ),
       )
     )
       return;
@@ -208,7 +228,7 @@ export default function AdminCampaignDetailPage() {
         "response" in err &&
         (err as { response?: { data?: { message?: string } } }).response?.data
           ?.message;
-      setErrorMessage(msg || `${label} 처리에 실패했습니다`);
+      setErrorMessage(msg || t(`${label} 처리에 실패했습니다`, `Failed to ${label.toLowerCase()}`));
     }
   };
 
@@ -219,32 +239,52 @@ export default function AdminCampaignDetailPage() {
   ) => {
     const payload: { status: string; rewardPaidAmount?: number; reviewComment?: string } = { status };
     if (status === "SETTLED") {
-      const input = prompt(`"${appCreatorName}" 에게 지급할 금액을 입력하세요 (원)`, String(campaign?.rewardAmount ?? 0));
+      const input = prompt(
+        t(
+          `"${appCreatorName}" 에게 지급할 금액을 입력하세요 (원)`,
+          `Enter the amount to pay "${appCreatorName}" (₩)`,
+        ),
+        String(campaign?.rewardAmount ?? 0),
+      );
       if (input === null) return;
       const amount = Number(input);
       if (!Number.isInteger(amount) || amount < 0) {
-        setErrorMessage("금액이 올바르지 않습니다");
+        setErrorMessage(t("금액이 올바르지 않습니다", "Invalid amount"));
         return;
       }
       payload.rewardPaidAmount = amount;
     } else if (status === "CHANGES_REQUESTED") {
-      const comment = prompt(`"${appCreatorName}" 에게 수정 요청 사유를 입력하세요`, "");
+      const comment = prompt(
+        t(
+          `"${appCreatorName}" 에게 수정 요청 사유를 입력하세요`,
+          `Enter the reason for requesting changes from "${appCreatorName}"`,
+        ),
+        "",
+      );
       if (comment === null || !comment.trim()) return;
       payload.reviewComment = comment.trim();
     } else {
-      const label = status === "APPROVED" ? "승인" : "거절";
-      if (!confirm(`"${appCreatorName}" 의 지원을 ${label}하시겠습니까?`)) return;
+      const label = status === "APPROVED" ? t("승인", "approve") : t("거절", "reject");
+      if (
+        !confirm(
+          t(
+            `"${appCreatorName}" 의 지원을 ${label}하시겠습니까?`,
+            `${label.charAt(0).toUpperCase() + label.slice(1)} the application from "${appCreatorName}"?`,
+          ),
+        )
+      )
+        return;
     }
     try {
       await api.patch(`/admin/applications/${appId}`, payload);
       load();
     } catch {
-      setErrorMessage("처리에 실패했습니다");
+      setErrorMessage(t("처리에 실패했습니다", "Failed to process"));
     }
   };
 
   if (loading || !campaign) {
-    return <p className="text-muted">불러오는 중...</p>;
+    return <p className="text-muted">{t("불러오는 중...", "Loading...")}</p>;
   }
 
   if (editMode) {
@@ -254,9 +294,9 @@ export default function AdminCampaignDetailPage() {
           onClick={() => setEditMode(false)}
           className="mb-6 text-sm font-medium text-muted transition-colors hover:text-foreground"
         >
-          &larr; 취소
+          &larr; {t("취소", "Cancel")}
         </button>
-        <h1 className="mb-8 text-3xl font-bold tracking-tight text-foreground">캠페인 수정</h1>
+        <h1 className="mb-8 text-3xl font-bold tracking-tight text-foreground">{t("캠페인 수정", "Edit campaign")}</h1>
         <CampaignForm
           mode="edit"
           initial={{
@@ -285,7 +325,7 @@ export default function AdminCampaignDetailPage() {
         onClick={() => router.push("/admin/campaigns")}
         className="mb-6 text-sm font-medium text-muted transition-colors hover:text-foreground"
       >
-        &larr; 캠페인 목록으로
+        &larr; {t("캠페인 목록으로", "Back to campaigns")}
       </button>
 
       <div className="mb-8 flex flex-wrap items-start justify-between gap-3">
@@ -293,18 +333,20 @@ export default function AdminCampaignDetailPage() {
           <p className="text-sm font-medium text-muted">{campaign.brandName}</p>
           <div className="mt-1 flex flex-wrap items-center gap-2">
             <h1 className="text-3xl font-bold tracking-tight text-foreground">{campaign.title}</h1>
-            {campaign.hidden && <Badge tone="neutral">숨김 (사용자 미노출)</Badge>}
+            {campaign.hidden && (
+              <Badge tone="neutral">{t("숨김 (사용자 미노출)", "Hidden (not shown to users)")}</Badge>
+            )}
           </div>
         </div>
         <div className="flex flex-wrap gap-2">
           <Button variant="secondary" size="sm" onClick={() => setEditMode(true)}>
-            수정
+            {t("수정", "Edit")}
           </Button>
           <Button variant="secondary" size="sm" onClick={handleToggleVisibility}>
-            {campaign.hidden ? "다시 노출" : "숨김 처리"}
+            {campaign.hidden ? t("다시 노출", "Show again") : t("숨김 처리", "Hide")}
           </Button>
           <Button variant="ghost" size="sm" onClick={handleDelete}>
-            삭제
+            {t("삭제", "Delete")}
           </Button>
         </div>
       </div>
@@ -312,19 +354,19 @@ export default function AdminCampaignDetailPage() {
       {/* 요약 */}
       <div className="mb-6 grid grid-cols-2 gap-4 md:grid-cols-4">
         <Card className="p-5">
-          <p className="text-xs font-medium text-muted">보상</p>
+          <p className="text-xs font-medium text-muted">{t("보상", "Reward")}</p>
           <p className="mt-1 text-xl font-bold tracking-tight text-foreground">
             ₩{campaign.rewardAmount.toLocaleString("ko-KR")}
           </p>
         </Card>
         <Card className="p-5">
-          <p className="text-xs font-medium text-muted">지원자</p>
+          <p className="text-xs font-medium text-muted">{t("지원자", "Applicants")}</p>
           <p className="mt-1 text-xl font-bold tracking-tight text-foreground">
             {campaign.applications.length} / {campaign.maxParticipants}
           </p>
         </Card>
         <Card className="p-5">
-          <p className="text-xs font-medium text-muted">마감일</p>
+          <p className="text-xs font-medium text-muted">{t("마감일", "Deadline")}</p>
           <p className="mt-1 text-xl font-bold tracking-tight text-foreground">
             {campaign.deadline
               ? new Date(campaign.deadline).toLocaleDateString("ko-KR")
@@ -332,9 +374,9 @@ export default function AdminCampaignDetailPage() {
           </p>
         </Card>
         <Card className="p-5">
-          <p className="text-xs font-medium text-muted">상태</p>
+          <p className="text-xs font-medium text-muted">{t("상태", "Status")}</p>
           <p className="mt-1 text-xl font-bold tracking-tight text-foreground">
-            {CAMPAIGN_STATUS_LABEL[campaign.status]}
+            {t(CAMPAIGN_STATUS_LABEL[campaign.status].ko, CAMPAIGN_STATUS_LABEL[campaign.status].en)}
           </p>
         </Card>
       </div>
@@ -342,36 +384,42 @@ export default function AdminCampaignDetailPage() {
       {/* 예치금 */}
       <Card className="mb-6 p-5">
         <div className="mb-3 flex items-center justify-between">
-          <p className="text-sm font-semibold text-content-soft">예치금</p>
+          <p className="text-sm font-semibold text-content-soft">{t("예치금", "Deposit")}</p>
           <Badge tone={ESCROW_TONE[campaign.escrowStatus]}>
-            {ESCROW_LABEL[campaign.escrowStatus]}
+            {t(ESCROW_LABEL[campaign.escrowStatus].ko, ESCROW_LABEL[campaign.escrowStatus].en)}
           </Badge>
         </div>
         {campaign.fundedAt && (
           <p className="mb-3 text-xs text-muted">
-            완료 시각: {new Date(campaign.fundedAt).toLocaleString("ko-KR")}
+            {t("완료 시각: ", "Completed at: ")}
+            {new Date(campaign.fundedAt).toLocaleString("ko-KR")}
           </p>
         )}
         {FORCE_COMPLETE_STATES.includes(campaign.escrowStatus) ? (
           <div>
             <Button size="sm" onClick={handleForceCompleteEscrow}>
-              예치금 입금완료 처리
+              {t("예치금 입금완료 처리", "Mark deposit as paid")}
             </Button>
             <p className="mt-2 text-xs text-muted">
-              관리자가 임의로 예치금 완료 처리합니다. 캠페인이 DRAFT 상태라면 모집중으로 전환되어
-              크리에이터에게 노출됩니다.
+              {t(
+                "관리자가 임의로 예치금 완료 처리합니다. 캠페인이 DRAFT 상태라면 모집중으로 전환되어 크리에이터에게 노출됩니다.",
+                "The admin manually marks the deposit as complete. If the campaign is in DRAFT, it switches to recruiting and becomes visible to creators.",
+              )}
             </p>
           </div>
         ) : (
           <p className="text-xs text-muted">
-            이미 예치금이 완료되었거나 정산/환불된 캠페인입니다.
+            {t(
+              "이미 예치금이 완료되었거나 정산/환불된 캠페인입니다.",
+              "This campaign's deposit is already complete, or it has been settled/refunded.",
+            )}
           </p>
         )}
       </Card>
 
       {/* 상태 변경 */}
       <Card className="mb-6 p-5">
-        <p className="mb-3 text-sm font-semibold text-content-soft">상태 변경</p>
+        <p className="mb-3 text-sm font-semibold text-content-soft">{t("상태 변경", "Change status")}</p>
         <div className="flex flex-wrap gap-2">
           {(["OPEN", "CLOSED"] as CampaignStatus[]).map((s) => (
             <Button
@@ -381,7 +429,7 @@ export default function AdminCampaignDetailPage() {
               onClick={() => handleStatus(s)}
               disabled={campaign.status === s}
             >
-              {CAMPAIGN_STATUS_LABEL[s]}
+              {t(CAMPAIGN_STATUS_LABEL[s].ko, CAMPAIGN_STATUS_LABEL[s].en)}
             </Button>
           ))}
         </div>
@@ -389,13 +437,13 @@ export default function AdminCampaignDetailPage() {
 
       {/* 설명 */}
       <Card className="mb-6">
-        <h2 className="mb-4 text-lg font-semibold text-foreground">설명</h2>
+        <h2 className="mb-4 text-lg font-semibold text-foreground">{t("설명", "Description")}</h2>
         <p className="whitespace-pre-wrap text-sm leading-relaxed text-content-soft">
           {campaign.description}
         </p>
         {campaign.requirements && (
           <>
-            <h3 className="mt-6 mb-2 text-sm font-semibold text-foreground">요구사항</h3>
+            <h3 className="mt-6 mb-2 text-sm font-semibold text-foreground">{t("요구사항", "Requirements")}</h3>
             <p className="whitespace-pre-wrap text-sm leading-relaxed text-content-soft">
               {campaign.requirements}
             </p>
@@ -403,11 +451,11 @@ export default function AdminCampaignDetailPage() {
         )}
         {campaign.thumbnailUrl && (
           <div className="mt-6">
-            <p className="mb-2 text-xs font-medium text-muted">썸네일</p>
+            <p className="mb-2 text-xs font-medium text-muted">{t("썸네일", "Thumbnail")}</p>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={campaign.thumbnailUrl}
-              alt="썸네일"
+              alt={t("썸네일", "Thumbnail")}
               className="max-h-60 rounded-2xl border border-line"
             />
           </div>
@@ -417,10 +465,10 @@ export default function AdminCampaignDetailPage() {
       {/* 지원자 */}
       <Card>
         <h2 className="mb-5 text-lg font-semibold text-foreground">
-          지원자 ({campaign.applications.length})
+          {t("지원자", "Applicants")} ({campaign.applications.length})
         </h2>
         {campaign.applications.length === 0 ? (
-          <p className="text-sm text-muted">아직 지원자가 없습니다.</p>
+          <p className="text-sm text-muted">{t("아직 지원자가 없습니다.", "No applicants yet.")}</p>
         ) : (
           <div className="space-y-3">
             {campaign.applications.map((app) => (
@@ -442,23 +490,25 @@ export default function AdminCampaignDetailPage() {
                     <p className="text-xs text-muted">{app.creator.email}</p>
                   </div>
                   <p className="text-xs text-muted">
-                    지원일: {new Date(app.appliedAt).toLocaleDateString("ko-KR")}
+                    {t("지원일: ", "Applied: ")}
+                    {new Date(app.appliedAt).toLocaleDateString("ko-KR")}
                   </p>
                 </div>
 
                 {app.creator.creatorProfile && (
                   <div className="mb-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted">
                     {app.creator.creatorProfile.gender && (
-                      <span>성별: {app.creator.creatorProfile.gender}</span>
+                      <span>{t("성별: ", "Gender: ")}{app.creator.creatorProfile.gender}</span>
                     )}
                     {app.creator.creatorProfile.age && (
-                      <span>나이: {app.creator.creatorProfile.age}</span>
+                      <span>{t("나이: ", "Age: ")}{app.creator.creatorProfile.age}</span>
                     )}
                     {app.creator.creatorProfile.editingTool && (
-                      <span>편집툴: {app.creator.creatorProfile.editingTool}</span>
+                      <span>{t("편집툴: ", "Editing tool: ")}{app.creator.creatorProfile.editingTool}</span>
                     )}
                     <span>
-                      얼굴 공개: {app.creator.creatorProfile.faceExposure ? "예" : "아니요"}
+                      {t("얼굴 공개: ", "Face shown: ")}
+                      {app.creator.creatorProfile.faceExposure ? t("예", "Yes") : t("아니요", "No")}
                     </span>
                     {app.creator.creatorProfile.instagramId && (
                       <span>IG: @{app.creator.creatorProfile.instagramId}</span>
@@ -474,7 +524,7 @@ export default function AdminCampaignDetailPage() {
 
                 {!app.videoFileKey && app.submissionUrl && (
                   <div className="mb-3 text-sm">
-                    <span className="text-muted">제출 URL (레거시): </span>
+                    <span className="text-muted">{t("제출 URL (레거시): ", "Submission URL (legacy): ")}</span>
                     {isSafeExternalLink(app.submissionUrl) ? (
                       <a
                         href={app.submissionUrl}
@@ -485,20 +535,24 @@ export default function AdminCampaignDetailPage() {
                         {app.submissionUrl}
                       </a>
                     ) : (
-                      <span className="text-error">유효하지 않은 링크</span>
+                      <span className="text-error">{t("유효하지 않은 링크", "Invalid link")}</span>
                     )}
                   </div>
                 )}
                 {app.status === "CHANGES_REQUESTED" && app.reviewComment && (
                   <div className="mb-3 rounded-xl border border-warning/30 bg-warning/5 p-3 text-xs text-warning">
-                    <span className="font-semibold">수정 요청 사유:</span> {app.reviewComment}
+                    <span className="font-semibold">{t("수정 요청 사유:", "Reason for changes:")}</span> {app.reviewComment}
                   </div>
                 )}
                 {app.submissions && app.submissions.length > 0 && (
                   <div className="mb-3">
                     <p className="mb-2 text-xs font-semibold text-muted">
-                      제출 이력
-                      {(app.resubmissionCount ?? 0) > 0 && ` (재제출 ${app.resubmissionCount}회)`}
+                      {t("제출 이력", "Submission history")}
+                      {(app.resubmissionCount ?? 0) > 0 &&
+                        t(
+                          ` (재제출 ${app.resubmissionCount}회)`,
+                          ` (resubmitted ${app.resubmissionCount} time${app.resubmissionCount === 1 ? "" : "s"})`,
+                        )}
                     </p>
                     <SubmissionTimeline submissions={app.submissions} />
                   </div>
@@ -506,7 +560,7 @@ export default function AdminCampaignDetailPage() {
 
                 {app.rewardPaidAmount !== null && (
                   <p className="mb-3 text-sm text-content-soft">
-                    정산액:{" "}
+                    {t("정산액:", "Payout:")}{" "}
                     <span className="font-semibold text-foreground">
                       ₩{app.rewardPaidAmount.toLocaleString("ko-KR")}
                     </span>
@@ -522,7 +576,7 @@ export default function AdminCampaignDetailPage() {
                           handleApplicationAction(app.id, "APPROVED", app.creator.name)
                         }
                       >
-                        승인
+                        {t("승인", "Approve")}
                       </Button>
                       <Button
                         variant="secondary"
@@ -531,7 +585,7 @@ export default function AdminCampaignDetailPage() {
                           handleApplicationAction(app.id, "REJECTED", app.creator.name)
                         }
                       >
-                        거절
+                        {t("거절", "Reject")}
                       </Button>
                     </>
                   )}
@@ -543,7 +597,7 @@ export default function AdminCampaignDetailPage() {
                           handleApplicationAction(app.id, "SETTLED", app.creator.name)
                         }
                       >
-                        승인·정산
+                        {t("승인·정산", "Approve & pay")}
                       </Button>
                       <Button
                         variant="secondary"
@@ -556,7 +610,7 @@ export default function AdminCampaignDetailPage() {
                           )
                         }
                       >
-                        수정 요청
+                        {t("수정 요청", "Request changes")}
                       </Button>
                       <Button
                         variant="ghost"
@@ -565,12 +619,12 @@ export default function AdminCampaignDetailPage() {
                           handleApplicationAction(app.id, "REJECTED", app.creator.name)
                         }
                       >
-                        거절
+                        {t("거절", "Reject")}
                       </Button>
                     </>
                   )}
                   {app.status === "CHANGES_REQUESTED" && (
-                    <Badge tone="warning">재제출 대기 중</Badge>
+                    <Badge tone="warning">{t("재제출 대기 중", "Awaiting resubmission")}</Badge>
                   )}
                 </div>
               </div>

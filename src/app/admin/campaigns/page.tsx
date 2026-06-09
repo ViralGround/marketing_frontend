@@ -8,6 +8,7 @@ import Badge from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import AlertModal from "@/components/ui/AlertModal";
+import { useLang } from "@/lib/i18n";
 
 type CampaignStatus = "DRAFT" | "OPEN" | "CLOSED";
 type EscrowStatus =
@@ -39,10 +40,10 @@ type Filter = "ALL" | CampaignStatus;
 
 type Tone = "primary" | "success" | "warning" | "error" | "info" | "neutral";
 
-const STATUS_LABEL: Record<CampaignStatus, string> = {
-  DRAFT: "예치금 대기",
-  OPEN: "모집중",
-  CLOSED: "마감",
+const STATUS_LABEL: Record<CampaignStatus, { ko: string; en: string }> = {
+  DRAFT: { ko: "예치금 대기", en: "Awaiting deposit" },
+  OPEN: { ko: "모집중", en: "Recruiting" },
+  CLOSED: { ko: "마감", en: "Closed" },
 };
 
 const STATUS_TONE: Record<CampaignStatus, Tone> = {
@@ -51,14 +52,14 @@ const STATUS_TONE: Record<CampaignStatus, Tone> = {
   CLOSED: "neutral",
 };
 
-const ESCROW_LABEL: Record<EscrowStatus, string> = {
-  NONE: "미신청",
-  PENDING_DEPOSIT: "입금 대기",
-  DEPOSIT_CONFIRMING: "확인 대기",
-  FUNDED: "예치 완료",
-  PARTIALLY_RELEASED: "일부 지급",
-  RELEASED: "전액 지급",
-  REFUNDED: "환불",
+const ESCROW_LABEL: Record<EscrowStatus, { ko: string; en: string }> = {
+  NONE: { ko: "미신청", en: "Not requested" },
+  PENDING_DEPOSIT: { ko: "입금 대기", en: "Awaiting deposit" },
+  DEPOSIT_CONFIRMING: { ko: "확인 대기", en: "Confirming" },
+  FUNDED: { ko: "예치 완료", en: "Deposited" },
+  PARTIALLY_RELEASED: { ko: "일부 지급", en: "Partially released" },
+  RELEASED: { ko: "전액 지급", en: "Fully released" },
+  REFUNDED: { ko: "환불", en: "Refunded" },
 };
 
 const ESCROW_TONE: Record<EscrowStatus, Tone> = {
@@ -72,6 +73,7 @@ const ESCROW_TONE: Record<EscrowStatus, Tone> = {
 };
 
 export default function AdminCampaignsPage() {
+  const { t } = useLang();
   const [campaigns, setCampaigns] = useState<CampaignItem[]>([]);
   const [filter, setFilter] = useState<Filter>("ALL");
   const [loading, setLoading] = useState(true);
@@ -89,7 +91,13 @@ export default function AdminCampaignsPage() {
           typeof err === "object" && err !== null && "response" in err
             ? (err as { response?: { data?: { message?: string } } }).response?.data?.message
             : undefined;
-        setAlertMsg(message ?? "대표 캠페인 지정에 실패했습니다. 잠시 후 다시 시도해주세요.");
+        setAlertMsg(
+          message ??
+            t(
+              "대표 캠페인 지정에 실패했습니다. 잠시 후 다시 시도해주세요.",
+              "Failed to set featured campaign. Please try again shortly.",
+            ),
+        );
       })
       .finally(() => setTogglingId(null));
   };
@@ -108,9 +116,19 @@ export default function AdminCampaignsPage() {
             ? (err as { response?: { status?: number } }).response?.status
             : undefined;
         if (status === 401 || status === 403) {
-          setError("접근 권한이 없습니다. 다시 로그인해주세요.");
+          setError(
+            t(
+              "접근 권한이 없습니다. 다시 로그인해주세요.",
+              "You don't have access. Please log in again.",
+            ),
+          );
         } else {
-          setError("캠페인 목록을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.");
+          setError(
+            t(
+              "캠페인 목록을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.",
+              "Failed to load campaigns. Please try again shortly.",
+            ),
+          );
         }
         setCampaigns([]);
       })
@@ -129,26 +147,36 @@ export default function AdminCampaignsPage() {
   return (
     <div>
       <div className="mb-3 flex items-center justify-between">
-        <h1 className="text-3xl font-bold tracking-tight text-foreground">캠페인 관리</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">{t("캠페인 관리", "Campaign management")}</h1>
         <Link href="/admin/campaigns/new">
-          <Button size="sm">+ 새 캠페인</Button>
+          <Button size="sm">{t("+ 새 캠페인", "+ New campaign")}</Button>
         </Link>
       </div>
 
       <p className="mb-6 text-sm text-muted">
-        별표로 지정한 <strong className="font-semibold text-foreground">모집중</strong> 캠페인이
-        랜딩 페이지에 대표로 노출됩니다 (최대 3건).
+        {t("별표로 지정한 ", "Starred ")}
+        <strong className="font-semibold text-foreground">{t("모집중", "recruiting")}</strong>
+        {t(
+          " 캠페인이 랜딩 페이지에 대표로 노출됩니다 (최대 3건).",
+          " campaigns appear as featured on the landing page (up to 3).",
+        )}
       </p>
 
       {pendingEscrow > 0 && (
         <Card className="mb-5 flex flex-wrap items-center justify-between gap-3 border-warning/30 bg-warning/5 p-4">
           <span className="text-sm text-warning">
-            예치금 확인 대기 캠페인이 <strong className="font-semibold">{pendingEscrow}건</strong>{" "}
-            있습니다.
+            {t("예치금 확인 대기 캠페인이 ", "")}
+            <strong className="font-semibold">
+              {t(`${pendingEscrow}건`, `${pendingEscrow}`)}
+            </strong>
+            {t(
+              " 있습니다.",
+              ` campaign${pendingEscrow === 1 ? "" : "s"} awaiting deposit confirmation.`,
+            )}
           </span>
           <Link href="/admin/escrow">
             <Button size="sm" variant="secondary">
-              예치금 확인 페이지로
+              {t("예치금 확인 페이지로", "Go to deposit confirmation")}
             </Button>
           </Link>
         </Card>
@@ -169,7 +197,7 @@ export default function AdminCampaignsPage() {
                   : "border border-line text-content-soft hover:border-primary/40 hover:text-primary"
               }`}
             >
-              {f === "ALL" ? "전체" : STATUS_LABEL[f]}
+              {f === "ALL" ? t("전체", "All") : t(STATUS_LABEL[f].ko, STATUS_LABEL[f].en)}
             </button>
           );
         })}
@@ -179,14 +207,14 @@ export default function AdminCampaignsPage() {
         <Card className="border-error/30 bg-error/5">
           <p className="text-sm text-error">{error}</p>
           <Button size="sm" className="mt-3" onClick={load}>
-            다시 시도
+            {t("다시 시도", "Retry")}
           </Button>
         </Card>
       ) : loading ? (
-        <p className="text-muted">불러오는 중...</p>
+        <p className="text-muted">{t("불러오는 중...", "Loading...")}</p>
       ) : campaigns.length === 0 ? (
         <Card className="bg-surface-muted py-12 text-center text-muted">
-          등록된 캠페인이 없습니다.
+          {t("등록된 캠페인이 없습니다.", "No campaigns yet.")}
         </Card>
       ) : (
         <Card className="overflow-hidden p-0">
@@ -194,15 +222,15 @@ export default function AdminCampaignsPage() {
             <table className="w-full text-left text-sm">
               <thead className="bg-surface-muted text-xs uppercase tracking-wider text-muted">
                 <tr>
-                  <th className="px-5 py-3 font-medium">제목</th>
-                  <th className="px-5 py-3 font-medium">브랜드</th>
-                  <th className="px-5 py-3 font-medium">보상</th>
-                  <th className="px-5 py-3 font-medium">지원자</th>
-                  <th className="px-5 py-3 font-medium">상태</th>
-                  <th className="px-5 py-3 font-medium">예치금</th>
-                  <th className="px-5 py-3 font-medium">마감일</th>
-                  <th className="px-5 py-3 font-medium">생성일</th>
-                  <th className="px-5 py-3 text-center font-medium">대표</th>
+                  <th className="px-5 py-3 font-medium">{t("제목", "Title")}</th>
+                  <th className="px-5 py-3 font-medium">{t("브랜드", "Brand")}</th>
+                  <th className="px-5 py-3 font-medium">{t("보상", "Reward")}</th>
+                  <th className="px-5 py-3 font-medium">{t("지원자", "Applicants")}</th>
+                  <th className="px-5 py-3 font-medium">{t("상태", "Status")}</th>
+                  <th className="px-5 py-3 font-medium">{t("예치금", "Deposit")}</th>
+                  <th className="px-5 py-3 font-medium">{t("마감일", "Deadline")}</th>
+                  <th className="px-5 py-3 font-medium">{t("생성일", "Created")}</th>
+                  <th className="px-5 py-3 text-center font-medium">{t("대표", "Featured")}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-line">
@@ -220,7 +248,7 @@ export default function AdminCampaignsPage() {
                       </Link>
                       {c.hidden && (
                         <span className="ml-2">
-                          <Badge tone="neutral">숨김</Badge>
+                          <Badge tone="neutral">{t("숨김", "Hidden")}</Badge>
                         </span>
                       )}
                     </td>
@@ -232,11 +260,13 @@ export default function AdminCampaignsPage() {
                       {c.applicationCount} / {c.maxParticipants}
                     </td>
                     <td className="px-5 py-3">
-                      <Badge tone={STATUS_TONE[c.status]}>{STATUS_LABEL[c.status]}</Badge>
+                      <Badge tone={STATUS_TONE[c.status]}>
+                        {t(STATUS_LABEL[c.status].ko, STATUS_LABEL[c.status].en)}
+                      </Badge>
                     </td>
                     <td className="px-5 py-3">
                       <Badge tone={ESCROW_TONE[c.escrowStatus]}>
-                        {ESCROW_LABEL[c.escrowStatus]}
+                        {t(ESCROW_LABEL[c.escrowStatus].ko, ESCROW_LABEL[c.escrowStatus].en)}
                       </Badge>
                     </td>
                     <td className="px-5 py-3 text-muted">
@@ -251,8 +281,16 @@ export default function AdminCampaignsPage() {
                         onClick={() => toggleFeatured(c)}
                         disabled={togglingId === c.id}
                         aria-pressed={c.featured}
-                        aria-label={c.featured ? "대표 지정 해제" : "대표로 지정"}
-                        title={c.featured ? "대표 지정 해제" : "대표로 지정"}
+                        aria-label={
+                          c.featured
+                            ? t("대표 지정 해제", "Remove from featured")
+                            : t("대표로 지정", "Set as featured")
+                        }
+                        title={
+                          c.featured
+                            ? t("대표 지정 해제", "Remove from featured")
+                            : t("대표로 지정", "Set as featured")
+                        }
                         className="rounded-full p-1.5 transition-colors hover:bg-surface-muted disabled:opacity-40"
                       >
                         <Star
@@ -273,7 +311,7 @@ export default function AdminCampaignsPage() {
 
       <AlertModal
         open={alertMsg !== null}
-        title="대표 캠페인"
+        title={t("대표 캠페인", "Featured campaign")}
         message={alertMsg ?? ""}
         onClose={() => setAlertMsg(null)}
       />

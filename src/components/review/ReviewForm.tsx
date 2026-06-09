@@ -3,6 +3,7 @@
 import { useState } from "react";
 import api from "@/lib/api";
 import Button from "@/components/ui/Button";
+import { useLang } from "@/lib/i18n";
 
 const TEXTAREA_CLASS =
   "block w-full rounded-lg border border-line-strong bg-surface px-3 py-2.5 text-sm text-foreground placeholder-faint transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20";
@@ -14,6 +15,7 @@ interface Props {
 }
 
 export default function ReviewForm({ applicationId, onSubmitted, onCancel }: Props) {
+  const { t } = useLang();
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState("");
   const [error, setError] = useState("");
@@ -28,7 +30,7 @@ export default function ReviewForm({ applicationId, onSubmitted, onCancel }: Pro
     } catch (err: unknown) {
       const msg =
         (err as { response?: { data?: { message?: string } } }).response?.data?.message ||
-        "리뷰 등록에 실패했습니다";
+        t("리뷰 등록에 실패했습니다", "Failed to submit the review");
       setError(msg);
     } finally {
       setLoading(false);
@@ -37,7 +39,7 @@ export default function ReviewForm({ applicationId, onSubmitted, onCancel }: Pro
 
   return (
     <div>
-      <label className="block text-sm font-medium text-content-soft">평점</label>
+      <label className="block text-sm font-medium text-content-soft">{t("평점", "Rating")}</label>
       <div className="mt-1.5 flex items-center gap-1.5">
         {[1, 2, 3, 4, 5].map((n) => (
           <button
@@ -49,26 +51,26 @@ export default function ReviewForm({ applicationId, onSubmitted, onCancel }: Pro
                 ? "bg-warning text-white"
                 : "border border-line-strong text-faint hover:border-primary/40"
             }`}
-            aria-label={`${n}점`}
+            aria-label={t(`${n}점`, `${n} stars`)}
           >
             ★
           </button>
         ))}
-        <span className="ml-2 text-sm font-medium text-muted">{rating}점</span>
+        <span className="ml-2 text-sm font-medium text-muted">{t(`${rating}점`, `${rating} stars`)}</span>
       </div>
 
       <label
         htmlFor="review-comment"
         className="mt-5 block text-sm font-medium text-content-soft"
       >
-        코멘트 <span className="text-faint">(선택)</span>
+        {t("코멘트", "Comment")} <span className="text-faint">{t("(선택)", "(optional)")}</span>
       </label>
       <textarea
         id="review-comment"
         value={comment}
         onChange={(e) => setComment(e.target.value)}
         rows={4}
-        placeholder="협업 경험을 간단히 남겨주세요."
+        placeholder={t("협업 경험을 간단히 남겨주세요.", "Briefly share your collaboration experience.")}
         className={`${TEXTAREA_CLASS} mt-1.5`}
       />
 
@@ -76,10 +78,10 @@ export default function ReviewForm({ applicationId, onSubmitted, onCancel }: Pro
 
       <div className="mt-5 flex justify-end gap-2">
         <Button variant="secondary" size="sm" onClick={onCancel} disabled={loading}>
-          취소
+          {t("취소", "Cancel")}
         </Button>
         <Button size="sm" onClick={submit} disabled={loading}>
-          {loading ? "등록 중..." : "리뷰 등록"}
+          {loading ? t("등록 중...", "Submitting...") : t("리뷰 등록", "Submit review")}
         </Button>
       </div>
     </div>

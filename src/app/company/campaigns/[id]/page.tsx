@@ -11,6 +11,7 @@ import ReviewForm from "@/components/review/ReviewForm";
 import Badge from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
+import { useLang } from "@/lib/i18n";
 
 type CampaignStatus = "DRAFT" | "OPEN" | "CLOSED";
 type EscrowStatus =
@@ -74,13 +75,13 @@ interface Detail {
 
 type Tone = "primary" | "success" | "warning" | "error" | "info" | "neutral";
 
-const ESCROW_LABEL: Record<EscrowStatus, string> = {
-  NONE: "-",
-  PENDING_DEPOSIT: "입금 대기",
-  DEPOSIT_CONFIRMING: "입금 확인중",
-  FUNDED: "예치 완료",
-  PARTIALLY_RELEASED: "지급 진행중",
-  REFUNDED: "환불됨",
+const ESCROW_LABEL: Record<EscrowStatus, { ko: string; en: string }> = {
+  NONE: { ko: "-", en: "-" },
+  PENDING_DEPOSIT: { ko: "입금 대기", en: "Awaiting deposit" },
+  DEPOSIT_CONFIRMING: { ko: "입금 확인중", en: "Confirming deposit" },
+  FUNDED: { ko: "예치 완료", en: "Deposit funded" },
+  PARTIALLY_RELEASED: { ko: "지급 진행중", en: "Payout in progress" },
+  REFUNDED: { ko: "환불됨", en: "Refunded" },
 };
 
 const ESCROW_TONE: Record<EscrowStatus, Tone> = {
@@ -92,19 +93,19 @@ const ESCROW_TONE: Record<EscrowStatus, Tone> = {
   REFUNDED: "error",
 };
 
-const CAMPAIGN_STATUS_LABEL: Record<CampaignStatus, string> = {
-  DRAFT: "작성중",
-  OPEN: "모집중",
-  CLOSED: "종료",
+const CAMPAIGN_STATUS_LABEL: Record<CampaignStatus, { ko: string; en: string }> = {
+  DRAFT: { ko: "작성중", en: "Draft" },
+  OPEN: { ko: "모집중", en: "Recruiting" },
+  CLOSED: { ko: "종료", en: "Closed" },
 };
 
-const APP_LABEL: Record<AppStatus, string> = {
-  PENDING: "지원 접수",
-  APPROVED: "선정 / 제작 대기",
-  REJECTED: "탈락",
-  SUBMITTED: "제출 완료",
-  CHANGES_REQUESTED: "수정 요청 중",
-  SETTLED: "정산 완료",
+const APP_LABEL: Record<AppStatus, { ko: string; en: string }> = {
+  PENDING: { ko: "지원 접수", en: "Application received" },
+  APPROVED: { ko: "선정 / 제작 대기", en: "Selected / awaiting content" },
+  REJECTED: { ko: "탈락", en: "Rejected" },
+  SUBMITTED: { ko: "제출 완료", en: "Submitted" },
+  CHANGES_REQUESTED: { ko: "수정 요청 중", en: "Changes requested" },
+  SETTLED: { ko: "정산 완료", en: "Settled" },
 };
 
 const APP_TONE: Record<AppStatus, Tone> = {
@@ -122,6 +123,7 @@ const TEXTAREA_CLASS =
 export default function CompanyCampaignDetailPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
+  const { t } = useLang();
   const id = params?.id;
   const [data, setData] = useState<Detail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -135,7 +137,7 @@ export default function CompanyCampaignDetailPage() {
     api
       .get<Detail>(`/company/campaigns/${id}`)
       .then((res) => setData(res.data))
-      .catch(() => setError("캠페인 정보를 불러오지 못했습니다"))
+      .catch(() => setError(t("캠페인 정보를 불러오지 못했습니다", "Failed to load campaign details")))
       .finally(() => setLoading(false));
   };
 
@@ -157,7 +159,7 @@ export default function CompanyCampaignDetailPage() {
         typeof err === "object" && err !== null && "response" in err
           ? (err as { response?: { data?: { message?: string } } }).response
           : undefined;
-      setError(response?.data?.message ?? "요청에 실패했습니다");
+      setError(response?.data?.message ?? t("요청에 실패했습니다", "Request failed"));
     } finally {
       setActing(false);
     }
@@ -174,7 +176,15 @@ export default function CompanyCampaignDetailPage() {
 
   const cancelCampaign = () => {
     if (!data) return;
-    if (!confirm("캠페인을 취소하시겠어요? 예치금은 환불 처리됩니다.")) return;
+    if (
+      !confirm(
+        t(
+          "캠페인을 취소하시겠어요? 예치금은 환불 처리됩니다.",
+          "Cancel this campaign? The deposit will be refunded.",
+        ),
+      )
+    )
+      return;
     callAction(async () => {
       const { data: res } = await api.post<{ message: string }>(
         `/company/campaigns/${data.id}/cancel`,
@@ -185,7 +195,15 @@ export default function CompanyCampaignDetailPage() {
 
   const deleteCampaign = () => {
     if (!data) return;
-    if (!confirm("캠페인을 삭제하시겠어요? 이 작업은 되돌릴 수 없습니다.")) return;
+    if (
+      !confirm(
+        t(
+          "캠페인을 삭제하시겠어요? 이 작업은 되돌릴 수 없습니다.",
+          "Delete this campaign? This action cannot be undone.",
+        ),
+      )
+    )
+      return;
     setActing(true);
     setMessage("");
     setError("");
@@ -197,7 +215,7 @@ export default function CompanyCampaignDetailPage() {
           typeof err === "object" && err !== null && "response" in err
             ? (err as { response?: { data?: { message?: string } } }).response
             : undefined;
-        setError(response?.data?.message ?? "삭제에 실패했습니다");
+        setError(response?.data?.message ?? t("삭제에 실패했습니다", "Failed to delete"));
       })
       .finally(() => setActing(false));
   };
@@ -222,7 +240,7 @@ export default function CompanyCampaignDetailPage() {
         typeof err === "object" && err !== null && "response" in err
           ? (err as { response?: { data?: { message?: string } } }).response
           : undefined;
-      setError(response?.data?.message ?? "요청에 실패했습니다");
+      setError(response?.data?.message ?? t("요청에 실패했습니다", "Request failed"));
     } finally {
       setRowActingId(null);
     }
@@ -248,8 +266,8 @@ export default function CompanyCampaignDetailPage() {
     data.applicationCount === 0 &&
     (data.escrowStatus === "FUNDED" || data.escrowStatus === "PENDING_DEPOSIT");
 
-  if (loading) return <p className="text-muted">불러오는 중...</p>;
-  if (!data) return <p className="text-error">{error || "데이터 없음"}</p>;
+  if (loading) return <p className="text-muted">{t("불러오는 중...", "Loading...")}</p>;
+  if (!data) return <p className="text-error">{error || t("데이터 없음", "No data")}</p>;
 
   return (
     <div className="mx-auto max-w-4xl space-y-8">
@@ -268,10 +286,13 @@ export default function CompanyCampaignDetailPage() {
         <div>
           <div className="flex flex-wrap items-center gap-2">
             <Badge tone={ESCROW_TONE[data.escrowStatus]}>
-              {ESCROW_LABEL[data.escrowStatus]}
+              {t(ESCROW_LABEL[data.escrowStatus].ko, ESCROW_LABEL[data.escrowStatus].en)}
             </Badge>
             <span className="text-xs font-medium text-muted">
-              {CAMPAIGN_STATUS_LABEL[data.status]}
+              {t(
+                CAMPAIGN_STATUS_LABEL[data.status].ko,
+                CAMPAIGN_STATUS_LABEL[data.status].en,
+              )}
             </span>
           </div>
           <h1 className="mt-3 text-3xl font-bold tracking-tight text-foreground md:text-4xl">
@@ -283,18 +304,18 @@ export default function CompanyCampaignDetailPage() {
           {canEdit && (
             <Link href={`/company/campaigns/${data.id}/edit`}>
               <Button variant="secondary" size="sm">
-                수정
+                {t("수정", "Edit")}
               </Button>
             </Link>
           )}
           {canCancel && (
             <Button variant="secondary" size="sm" onClick={cancelCampaign} disabled={acting}>
-              캠페인 취소
+              {t("캠페인 취소", "Cancel campaign")}
             </Button>
           )}
           {canDelete && (
             <Button variant="ghost" size="sm" onClick={deleteCampaign} disabled={acting}>
-              삭제
+              {t("삭제", "Delete")}
             </Button>
           )}
         </div>
@@ -312,65 +333,94 @@ export default function CompanyCampaignDetailPage() {
       )}
 
       <Card>
-        <h2 className="text-sm font-semibold uppercase tracking-wider text-muted">예치금</h2>
+        <h2 className="text-sm font-semibold uppercase tracking-wider text-muted">
+          {t("예치금", "Deposit")}
+        </h2>
         <div className="mt-4 grid grid-cols-3 gap-4">
           <div>
-            <p className="text-xs font-medium text-muted">1인당 보상</p>
+            <p className="text-xs font-medium text-muted">{t("1인당 보상", "Reward per person")}</p>
             <p className="mt-1 text-lg font-bold tracking-tight text-foreground">
-              {data.rewardAmount.toLocaleString()}원
+              {data.rewardAmount.toLocaleString()}
+              {t("원", " KRW")}
             </p>
           </div>
           <div>
-            <p className="text-xs font-medium text-muted">모집 인원</p>
+            <p className="text-xs font-medium text-muted">{t("모집 인원", "Recruiting count")}</p>
             <p className="mt-1 text-lg font-bold tracking-tight text-foreground">
-              {data.maxParticipants}명
+              {data.maxParticipants}
+              {t("명", "")}
             </p>
           </div>
           <div>
-            <p className="text-xs font-medium text-muted">총 예산</p>
+            <p className="text-xs font-medium text-muted">{t("총 예산", "Total budget")}</p>
             <p className="mt-1 text-lg font-bold tracking-tight text-foreground">
-              {data.totalBudget.toLocaleString()}원
+              {data.totalBudget.toLocaleString()}
+              {t("원", " KRW")}
             </p>
           </div>
         </div>
 
         {data.escrowStatus === "PENDING_DEPOSIT" && (
           <div className="mt-6 rounded-xl border border-warning/30 bg-warning/5 p-5 text-sm text-warning">
-            <p className="font-semibold">예치금 입금을 기다리고 있습니다.</p>
-            <p className="mt-2">
-              아래 계좌로{" "}
-              <span className="font-bold">{data.totalBudget.toLocaleString()}원</span>을 입금한
-              뒤 &quot;계좌이체 완료&quot; 버튼을 눌러주세요. 관리자 확인 후 캠페인이 공개됩니다.
+            <p className="font-semibold">
+              {t("예치금 입금을 기다리고 있습니다.", "Waiting for the deposit.")}
             </p>
-            <p className="mt-2 text-xs">예치 계좌: 국민은행 000-00-0000-000 (주)바이럴그라운드</p>
+            <p className="mt-2">
+              {t("아래 계좌로 ", "Transfer ")}
+              <span className="font-bold">
+                {data.totalBudget.toLocaleString()}
+                {t("원", " KRW")}
+              </span>
+              {t(
+                "을 입금한 뒤 \"계좌이체 완료\" 버튼을 눌러주세요. 관리자 확인 후 캠페인이 공개됩니다.",
+                " to the account below, then press the \"Transfer complete\" button. The campaign goes live after admin confirmation.",
+              )}
+            </p>
+            <p className="mt-2 text-xs">
+              {t(
+                "예치 계좌: 국민은행 000-00-0000-000 (주)바이럴그라운드",
+                "Deposit account: KB Bank 000-00-0000-000 Viral Ground Inc.",
+              )}
+            </p>
             <Button size="sm" onClick={requestDeposit} disabled={acting} className="mt-4">
-              {acting ? "요청 중..." : "계좌이체 완료 (관리자에게 확인 요청)"}
+              {acting
+                ? t("요청 중...", "Submitting...")
+                : t(
+                    "계좌이체 완료 (관리자에게 확인 요청)",
+                    "Transfer complete (request admin confirmation)",
+                  )}
             </Button>
           </div>
         )}
 
         {data.escrowStatus === "DEPOSIT_CONFIRMING" && (
           <div className="mt-6 rounded-xl border border-info/30 bg-info/5 p-4 text-sm text-info">
-            관리자가 입금을 확인하고 있습니다. 확인이 완료되면 메일로 알려드립니다.
+            {t(
+              "관리자가 입금을 확인하고 있습니다. 확인이 완료되면 메일로 알려드립니다.",
+              "The admin is confirming your deposit. We'll email you once it's confirmed.",
+            )}
           </div>
         )}
 
         {data.escrowStatus === "FUNDED" && (
           <div className="mt-6 rounded-xl border border-success/30 bg-success/5 p-4 text-sm text-success">
-            예치금 입금이 확인되어 캠페인이 공개되었습니다.
+            {t(
+              "예치금 입금이 확인되어 캠페인이 공개되었습니다.",
+              "Your deposit has been confirmed and the campaign is now live.",
+            )}
           </div>
         )}
 
         {data.escrowStatus === "REFUNDED" && (
           <div className="mt-6 rounded-xl bg-surface-chip p-4 text-sm text-content-soft">
-            환불 처리된 캠페인입니다.
+            {t("환불 처리된 캠페인입니다.", "This campaign has been refunded.")}
           </div>
         )}
 
         {data.escrowTransactions.length > 0 && (
           <div className="mt-6">
             <h3 className="text-xs font-semibold uppercase tracking-wider text-muted">
-              예치금 이력
+              {t("예치금 이력", "Deposit history")}
             </h3>
             <ul className="mt-3 divide-y divide-line overflow-hidden rounded-xl border border-line">
               {data.escrowTransactions.map((tx) => (
@@ -380,7 +430,8 @@ export default function CompanyCampaignDetailPage() {
                 >
                   <span className="font-medium text-content-soft">{tx.type}</span>
                   <span className="font-semibold text-foreground">
-                    {tx.amount.toLocaleString()}원
+                    {tx.amount.toLocaleString()}
+                    {t("원", " KRW")}
                   </span>
                   <span className="text-faint">
                     {new Date(tx.createdAt).toLocaleString()}
@@ -393,13 +444,15 @@ export default function CompanyCampaignDetailPage() {
       </Card>
 
       <Card>
-        <h2 className="text-sm font-semibold uppercase tracking-wider text-muted">캠페인 내용</h2>
+        <h2 className="text-sm font-semibold uppercase tracking-wider text-muted">
+          {t("캠페인 내용", "Campaign details")}
+        </h2>
         <p className="mt-4 whitespace-pre-wrap text-sm leading-relaxed text-content-soft">
           {data.description}
         </p>
         {data.requirements && (
           <div className="mt-5 rounded-xl bg-surface-muted p-4 text-sm text-content-soft">
-            <p className="font-semibold text-foreground">제출 요구사항</p>
+            <p className="font-semibold text-foreground">{t("제출 요구사항", "Submission requirements")}</p>
             <p className="mt-1.5 whitespace-pre-wrap leading-relaxed">{data.requirements}</p>
           </div>
         )}
@@ -408,17 +461,17 @@ export default function CompanyCampaignDetailPage() {
       <div className="flex justify-end">
         <Link href={`/company/campaigns/${data.id}/performance`}>
           <Button variant="secondary" size="sm">
-            성과 리포트 보기 →
+            {t("성과 리포트 보기 →", "View performance report →")}
           </Button>
         </Link>
       </div>
 
       <Card>
         <h2 className="text-sm font-semibold uppercase tracking-wider text-muted">
-          지원자 ({data.applicationCount})
+          {t("지원자", "Applicants")} ({data.applicationCount})
         </h2>
         {data.applications.length === 0 ? (
-          <p className="mt-4 text-sm text-muted">아직 지원자가 없습니다.</p>
+          <p className="mt-4 text-sm text-muted">{t("아직 지원자가 없습니다.", "No applicants yet.")}</p>
         ) : (
           <ul className="mt-4 divide-y divide-line">
             {data.applications.map((a) => (
@@ -432,18 +485,21 @@ export default function CompanyCampaignDetailPage() {
                       >
                         {a.creator.name}
                       </Link>
-                      <Badge tone={APP_TONE[a.status]}>{APP_LABEL[a.status]}</Badge>
+                      <Badge tone={APP_TONE[a.status]}>
+                        {t(APP_LABEL[a.status].ko, APP_LABEL[a.status].en)}
+                      </Badge>
                       <Link
                         href={`/creators/${a.creator.id}`}
                         className="text-xs font-medium text-primary underline-offset-2 hover:underline"
                       >
-                        상세 프로필 →
+                        {t("상세 프로필 →", "View profile →")}
                       </Link>
                     </div>
                     <p className="mt-1 text-xs text-muted">{a.creator.email}</p>
                     {a.message && (
                       <p className="mt-2 whitespace-pre-wrap text-xs text-muted">
-                        지원 메시지: {a.message}
+                        {t("지원 메시지: ", "Application message: ")}
+                        {a.message}
                       </p>
                     )}
                     {!a.videoFileKey &&
@@ -455,28 +511,33 @@ export default function CompanyCampaignDetailPage() {
                           rel="noopener noreferrer"
                           className="mt-2 inline-block text-xs font-medium text-primary underline-offset-2 hover:underline"
                         >
-                          외부 링크 보기 (레거시) →
+                          {t("외부 링크 보기 (레거시) →", "View external link (legacy) →")}
                         </a>
                       )}
                     {a.status === "CHANGES_REQUESTED" && a.reviewComment && (
                       <div className="mt-2 rounded-xl border border-warning/30 bg-warning/5 p-3 text-xs text-warning">
-                        <span className="font-semibold">수정 요청 사유:</span> {a.reviewComment}
+                        <span className="font-semibold">{t("수정 요청 사유:", "Reason for changes:")}</span>{" "}
+                        {a.reviewComment}
                       </div>
                     )}
                     {a.rewardPaidAmount != null && (
                       <p className="mt-1.5 text-xs text-muted">
-                        지급:{" "}
+                        {t("지급: ", "Payment: ")}
                         <span className="font-semibold text-foreground">
-                          {a.rewardPaidAmount.toLocaleString()}원
+                          {a.rewardPaidAmount.toLocaleString()}
+                          {t("원", " KRW")}
                         </span>
                       </p>
                     )}
                     {a.submissions.length > 0 && (
                       <div className="mt-3">
                         <p className="mb-2 text-xs font-semibold text-muted">
-                          제출 이력
+                          {t("제출 이력", "Submission history")}
                           {(a.resubmissionCount ?? 0) > 0 &&
-                            ` (재제출 ${a.resubmissionCount}회)`}
+                            t(
+                              ` (재제출 ${a.resubmissionCount}회)`,
+                              ` (${a.resubmissionCount} resubmission(s))`,
+                            )}
                         </p>
                         <SubmissionTimeline submissions={a.submissions} />
                       </div>
@@ -490,7 +551,7 @@ export default function CompanyCampaignDetailPage() {
                           disabled={rowActingId === a.id}
                           onClick={() => reviewApplication(a.id, "APPROVE")}
                         >
-                          선정
+                          {t("선정", "Select")}
                         </Button>
                         <Button
                           variant="secondary"
@@ -498,7 +559,7 @@ export default function CompanyCampaignDetailPage() {
                           disabled={rowActingId === a.id}
                           onClick={() => reviewApplication(a.id, "REJECT")}
                         >
-                          탈락
+                          {t("탈락", "Reject")}
                         </Button>
                       </>
                     )}
@@ -509,7 +570,7 @@ export default function CompanyCampaignDetailPage() {
                           disabled={rowActingId === a.id}
                           onClick={() => reviewApplication(a.id, "APPROVE_VIDEO")}
                         >
-                          승인 · 정산
+                          {t("승인 · 정산", "Approve · settle")}
                         </Button>
                         <Button
                           variant="secondary"
@@ -520,23 +581,33 @@ export default function CompanyCampaignDetailPage() {
                             setChangesComment("");
                           }}
                         >
-                          수정 요청
+                          {t("수정 요청", "Request changes")}
                         </Button>
                         <Button
                           variant="ghost"
                           size="sm"
                           disabled={rowActingId === a.id}
                           onClick={() => {
-                            if (!confirm("이 영상을 최종 거절하시겠어요?")) return;
+                            if (
+                              !confirm(
+                                t(
+                                  "이 영상을 최종 거절하시겠어요?",
+                                  "Permanently reject this video?",
+                                ),
+                              )
+                            )
+                              return;
                             reviewApplication(a.id, "REJECT_VIDEO");
                           }}
                         >
-                          거절
+                          {t("거절", "Reject")}
                         </Button>
                       </>
                     )}
                     {a.status === "CHANGES_REQUESTED" && (
-                      <Badge tone="warning">크리에이터 재제출 대기 중</Badge>
+                      <Badge tone="warning">
+                        {t("크리에이터 재제출 대기 중", "Awaiting creator resubmission")}
+                      </Badge>
                     )}
                     {a.status === "SETTLED" && (
                       <Button
@@ -546,7 +617,7 @@ export default function CompanyCampaignDetailPage() {
                           setReviewModal({ appId: a.id, creatorName: a.creator.name })
                         }
                       >
-                        리뷰 작성
+                        {t("리뷰 작성", "Write review")}
                       </Button>
                     )}
                   </div>
@@ -560,7 +631,9 @@ export default function CompanyCampaignDetailPage() {
       {reviewModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
           <div className="w-full max-w-md rounded-2xl bg-surface p-6 shadow-2xl">
-            <h3 className="mb-1 text-lg font-semibold text-foreground">크리에이터 리뷰 작성</h3>
+            <h3 className="mb-1 text-lg font-semibold text-foreground">
+              {t("크리에이터 리뷰 작성", "Write a creator review")}
+            </h3>
             <p className="mb-5 text-sm text-muted">{reviewModal.creatorName}</p>
             <ReviewForm
               applicationId={reviewModal.appId}
@@ -577,20 +650,28 @@ export default function CompanyCampaignDetailPage() {
       {changesModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
           <div className="w-full max-w-md rounded-2xl bg-surface p-6 shadow-2xl">
-            <h3 className="mb-1 text-lg font-semibold text-foreground">수정 요청 사유</h3>
+            <h3 className="mb-1 text-lg font-semibold text-foreground">
+              {t("수정 요청 사유", "Reason for changes")}
+            </h3>
             <p className="mb-5 text-sm text-muted">
-              크리에이터에게 전달되는 피드백입니다. 무엇을 어떻게 수정해야 할지 구체적으로 작성해주세요.
+              {t(
+                "크리에이터에게 전달되는 피드백입니다. 무엇을 어떻게 수정해야 할지 구체적으로 작성해주세요.",
+                "This feedback is sent to the creator. Describe specifically what to change and how.",
+              )}
             </p>
             <textarea
               value={changesComment}
               onChange={(e) => setChangesComment(e.target.value)}
               rows={4}
-              placeholder="예: 로고 노출 시간이 3초 미만입니다. 중반부 이후에도 3초 이상 노출되도록 편집해주세요."
+              placeholder={t(
+                "예: 로고 노출 시간이 3초 미만입니다. 중반부 이후에도 3초 이상 노출되도록 편집해주세요.",
+                "e.g. The logo appears for under 3 seconds. Please edit so it stays on screen for at least 3 seconds past the midpoint.",
+              )}
               className={TEXTAREA_CLASS}
             />
             <div className="mt-5 flex justify-end gap-2">
               <Button variant="secondary" size="sm" onClick={() => setChangesModal(null)}>
-                취소
+                {t("취소", "Cancel")}
               </Button>
               <Button
                 size="sm"
@@ -603,7 +684,7 @@ export default function CompanyCampaignDetailPage() {
                 }}
                 disabled={!changesComment.trim() || rowActingId === changesModal.appId}
               >
-                수정 요청 보내기
+                {t("수정 요청 보내기", "Send change request")}
               </Button>
             </div>
           </div>

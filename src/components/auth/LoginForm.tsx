@@ -6,10 +6,12 @@ import api from "@/lib/api";
 import { decodeJwtPayload, removeTokens, setTokens } from "@/lib/auth";
 import { useAuthStore } from "@/store/useAuthStore";
 import { setGaUser, trackEvent } from "@/lib/gtag";
+import { useLang } from "@/lib/i18n";
 import AlertModal from "@/components/ui/AlertModal";
 import type { TokenResponse, UserRole } from "@/types";
 
 export default function LoginForm() {
+  const { t } = useLang();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -53,7 +55,12 @@ export default function LoginForm() {
         !validExp
       ) {
         removeTokens();
-        setError("로그인 토큰이 유효하지 않습니다. 다시 시도해주세요.");
+        setError(
+          t(
+            "로그인 토큰이 유효하지 않습니다. 다시 시도해주세요.",
+            "Your login token is invalid. Please try again.",
+          ),
+        );
         return;
       }
       setTokens(data.accessToken);
@@ -96,15 +103,35 @@ export default function LoginForm() {
       const code = response?.data?.code;
 
       if (status === 403 && code === "EMAIL_NOT_VERIFIED") {
-        setError("이메일 인증이 완료되지 않은 계정입니다. 관리자에게 문의해주세요.");
+        setError(
+          t(
+            "이메일 인증이 완료되지 않은 계정입니다. 관리자에게 문의해주세요.",
+            "This account's email is not verified yet. Please contact the administrator.",
+          ),
+        );
       } else if (status === 404 && code === "USER_NOT_FOUND") {
-        setWarning("존재하지 않는 계정입니다. 이메일을 확인해주세요.");
+        setWarning(
+          t(
+            "존재하지 않는 계정입니다. 이메일을 확인해주세요.",
+            "This account does not exist. Please check your email.",
+          ),
+        );
       } else if (status === 403 && code === "PENDING_APPROVAL") {
-        setError("아직 관리자 승인이 완료되지 않았습니다. 승인까지 영업일 기준 일주일 이상 걸릴 수 있으며, 승인되면 이메일로 알려드릴게요.");
+        setError(
+          t(
+            "아직 관리자 승인이 완료되지 않았습니다. 승인까지 영업일 기준 일주일 이상 걸릴 수 있으며, 승인되면 이메일로 알려드릴게요.",
+            "Your account is still awaiting admin approval. This can take more than a week in business days, and we'll email you once it's approved.",
+          ),
+        );
       } else if (status === 403 && code === "REJECTED") {
-        setError("가입이 거절되었습니다. 자세한 문의는 관리자에게 연락해주세요.");
+        setError(
+          t(
+            "가입이 거절되었습니다. 자세한 문의는 관리자에게 연락해주세요.",
+            "Your sign-up was rejected. Please contact the administrator for details.",
+          ),
+        );
       } else {
-        setError("비밀번호가 올바르지 않습니다");
+        setError(t("비밀번호가 올바르지 않습니다", "Your password is incorrect."));
       }
       trackEvent("login_fail", { status: status ?? null, reason: code ?? "unknown" });
     } finally {
@@ -119,7 +146,7 @@ export default function LoginForm() {
       )}
       <div>
         <label htmlFor="email" className="block text-sm font-medium text-content-soft">
-          이메일
+          {t("이메일", "Email")}
         </label>
         <input
           id="email"
@@ -133,7 +160,7 @@ export default function LoginForm() {
       </div>
       <div>
         <label htmlFor="password" className="block text-sm font-medium text-content-soft">
-          비밀번호
+          {t("비밀번호", "Password")}
         </label>
         <input
           id="password"
@@ -149,12 +176,12 @@ export default function LoginForm() {
         disabled={loading}
         className="w-full rounded-lg bg-primary py-2.5 text-white font-medium hover:bg-primary-dark disabled:opacity-50 transition-colors"
       >
-        {loading ? "로그인 중..." : "로그인"}
+        {loading ? t("로그인 중...", "Logging in...") : t("로그인", "Log in")}
       </button>
 
       <AlertModal
         open={!!warning}
-        title="로그인 실패"
+        title={t("로그인 실패", "Login failed")}
         message={warning}
         onClose={() => setWarning("")}
       />

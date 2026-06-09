@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import api from "@/lib/api";
 import Button from "@/components/ui/Button";
+import { useLang } from "@/lib/i18n";
 
 const ALLOWED_TYPES = ["video/mp4", "video/quicktime", "video/webm"];
 const MAX_SIZE_BYTES = 500 * 1024 * 1024; // 500MB
@@ -21,6 +22,7 @@ interface PresignedUpload {
 }
 
 export default function VideoUploader({ applicationId, onUploaded, onCancel }: Props) {
+  const { t } = useLang();
   const [file, setFile] = useState<File | null>(null);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState("");
@@ -35,11 +37,21 @@ export default function VideoUploader({ applicationId, onUploaded, onCancel }: P
       return;
     }
     if (!ALLOWED_TYPES.includes(candidate.type)) {
-      setError("지원하지 않는 영상 형식입니다. mp4, mov, webm 파일만 업로드할 수 있어요.");
+      setError(
+        t(
+          "지원하지 않는 영상 형식입니다. mp4, mov, webm 파일만 업로드할 수 있어요.",
+          "Unsupported video format. Only mp4, mov, and webm files can be uploaded.",
+        ),
+      );
       return;
     }
     if (candidate.size > MAX_SIZE_BYTES) {
-      setError("파일이 너무 큽니다. 최대 500MB 까지 업로드 가능합니다.");
+      setError(
+        t(
+          "파일이 너무 큽니다. 최대 500MB 까지 업로드 가능합니다.",
+          "File is too large. The maximum upload size is 500MB.",
+        ),
+      );
       return;
     }
     setFile(candidate);
@@ -55,9 +67,10 @@ export default function VideoUploader({ applicationId, onUploaded, onCancel }: P
       };
       xhr.onload = () => {
         if (xhr.status >= 200 && xhr.status < 300) resolve();
-        else reject(new Error(`업로드 실패 (HTTP ${xhr.status})`));
+        else reject(new Error(t(`업로드 실패 (HTTP ${xhr.status})`, `Upload failed (HTTP ${xhr.status})`)));
       };
-      xhr.onerror = () => reject(new Error("네트워크 오류로 업로드에 실패했습니다"));
+      xhr.onerror = () =>
+        reject(new Error(t("네트워크 오류로 업로드에 실패했습니다", "Upload failed due to a network error")));
       xhr.open("PUT", url);
       xhr.setRequestHeader("Content-Type", payload.type);
       xhr.send(payload);
@@ -85,7 +98,10 @@ export default function VideoUploader({ applicationId, onUploaded, onCancel }: P
       onUploaded();
     } catch (err: unknown) {
       const res = (err as { response?: { data?: { message?: string } } }).response;
-      const msg = res?.data?.message || (err as { message?: string }).message || "업로드에 실패했습니다";
+      const msg =
+        res?.data?.message ||
+        (err as { message?: string }).message ||
+        t("업로드에 실패했습니다", "Upload failed");
       setError(msg);
     } finally {
       setLoading(false);
@@ -127,8 +143,10 @@ export default function VideoUploader({ applicationId, onUploaded, onCancel }: P
           </div>
         ) : (
           <div>
-            <p className="text-sm text-muted">영상 파일을 끌어다 놓거나 클릭해서 선택해주세요</p>
-            <p className="mt-1 text-xs text-faint">mp4, mov, webm · 최대 500MB</p>
+            <p className="text-sm text-muted">
+              {t("영상 파일을 끌어다 놓거나 클릭해서 선택해주세요", "Drag and drop a video file or click to select")}
+            </p>
+            <p className="mt-1 text-xs text-faint">{t("mp4, mov, webm · 최대 500MB", "mp4, mov, webm · Max 500MB")}</p>
           </div>
         )}
       </div>
@@ -143,7 +161,7 @@ export default function VideoUploader({ applicationId, onUploaded, onCancel }: P
       {loading && (
         <div className="mt-4">
           <div className="mb-1.5 flex justify-between text-xs font-medium text-muted">
-            <span>업로드 중</span>
+            <span>{t("업로드 중", "Uploading")}</span>
             <span>{progress}%</span>
           </div>
           <div className="h-2 overflow-hidden rounded-full bg-surface-chip">
@@ -159,10 +177,10 @@ export default function VideoUploader({ applicationId, onUploaded, onCancel }: P
 
       <div className="mt-5 flex justify-end gap-2">
         <Button variant="secondary" size="sm" onClick={onCancel} disabled={loading}>
-          취소
+          {t("취소", "Cancel")}
         </Button>
         <Button size="sm" onClick={handleSubmit} disabled={!file || loading}>
-          {loading ? "업로드 중..." : "업로드 후 제출"}
+          {loading ? t("업로드 중...", "Uploading...") : t("업로드 후 제출", "Upload & submit")}
         </Button>
       </div>
     </div>

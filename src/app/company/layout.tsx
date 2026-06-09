@@ -5,6 +5,7 @@ import { useAuthStore } from "@/store/useAuthStore";
 import { removeTokens } from "@/lib/auth";
 import { useRouter } from "next/navigation";
 import { AuthGuard } from "@/components/auth/AuthGuard";
+import { useLang } from "@/lib/i18n";
 
 export default function CompanyLayout({
   children,
@@ -13,6 +14,7 @@ export default function CompanyLayout({
 }) {
   const { logout } = useAuthStore();
   const router = useRouter();
+  const { t } = useLang();
 
   const handleLogout = () => {
     removeTokens();
@@ -25,32 +27,32 @@ export default function CompanyLayout({
       <div className="flex min-h-[calc(100vh-65px)]">
         <aside className="w-56 border-r border-line bg-surface-muted p-5">
           <h2 className="mb-6 px-3 text-xs font-semibold uppercase tracking-wider text-muted">
-            기업 센터
+            {t("기업 센터", "Company Center")}
           </h2>
           <nav className="space-y-1">
             <Link
               href="/company/dashboard"
               className="block rounded-lg px-3 py-2 text-sm font-medium text-content-soft transition-colors hover:bg-surface hover:text-foreground"
             >
-              대시보드
+              {t("대시보드", "Dashboard")}
             </Link>
             <Link
               href="/company/campaigns"
               className="block rounded-lg px-3 py-2 text-sm font-medium text-content-soft transition-colors hover:bg-surface hover:text-foreground"
             >
-              내 캠페인
+              {t("내 캠페인", "My campaigns")}
             </Link>
             <Link
               href="/company/campaigns/new"
               className="block rounded-lg px-3 py-2 text-sm font-medium text-content-soft transition-colors hover:bg-surface hover:text-foreground"
             >
-              캠페인 등록
+              {t("캠페인 등록", "Create campaign")}
             </Link>
             <Link
               href="/company/profile"
               className="block rounded-lg px-3 py-2 text-sm font-medium text-content-soft transition-colors hover:bg-surface hover:text-foreground"
             >
-              회사 정보
+              {t("회사 정보", "Company info")}
             </Link>
           </nav>
           <div className="mt-8 border-t border-line pt-4">
@@ -58,7 +60,7 @@ export default function CompanyLayout({
               onClick={handleLogout}
               className="rounded-lg px-3 py-2 text-sm font-medium text-muted transition-colors hover:bg-surface hover:text-error"
             >
-              로그아웃
+              {t("로그아웃", "Log out")}
             </button>
           </div>
         </aside>

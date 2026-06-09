@@ -7,6 +7,7 @@ import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import ImageUploader from "@/components/ui/ImageUploader";
 import Input from "@/components/ui/Input";
+import { useLang } from "@/lib/i18n";
 import {
   canEditBudget,
   canEditCampaignFields,
@@ -35,6 +36,7 @@ const TEXTAREA_CLASS =
 
 export default function EditCampaignPage() {
   const params = useParams<{ id: string }>();
+  const { t } = useLang();
   const id = params?.id;
   const router = useRouter();
   const [detail, setDetail] = useState<Detail | null>(null);
@@ -70,8 +72,9 @@ export default function EditCampaignPage() {
         setDeadline(d.deadline ? d.deadline.slice(0, 16) : "");
         setPreviewUrl(d.thumbnailUrl ?? null);
       })
-      .catch(() => setError("캠페인을 불러오지 못했습니다"))
+      .catch(() => setError(t("캠페인을 불러오지 못했습니다", "Failed to load campaign")))
       .finally(() => setLoading(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   // 백엔드 CompanyService 가드와 일치시킨다.
@@ -114,23 +117,23 @@ export default function EditCampaignPage() {
         typeof err === "object" && err !== null && "response" in err
           ? (err as { response?: { data?: { message?: string } } }).response
           : undefined;
-      setError(response?.data?.message ?? "수정에 실패했습니다");
+      setError(response?.data?.message ?? t("수정에 실패했습니다", "Failed to save changes"));
     } finally {
       setSaving(false);
     }
   };
 
-  if (loading) return <p className="text-muted">불러오는 중...</p>;
-  if (!detail) return <p className="text-error">{error || "데이터 없음"}</p>;
+  if (loading) return <p className="text-muted">{t("불러오는 중...", "Loading...")}</p>;
+  if (!detail) return <p className="text-error">{error || t("데이터 없음", "No data")}</p>;
 
   return (
     <div className="mx-auto max-w-2xl">
       <h1 className="text-3xl font-bold tracking-tight text-foreground md:text-4xl">
-        캠페인 수정
+        {t("캠페인 수정", "Edit campaign")}
       </h1>
       {readOnly && (
         <Card className="mt-5 border-warning/30 bg-warning/5 p-3 text-sm text-warning">
-          현재 상태에서는 수정이 제한됩니다.
+          {t("현재 상태에서는 수정이 제한됩니다.", "Editing is restricted in the current status.")}
         </Card>
       )}
 
@@ -143,7 +146,7 @@ export default function EditCampaignPage() {
 
         <div>
           <label htmlFor="title" className="block text-sm font-medium text-content-soft">
-            캠페인 제목
+            {t("캠페인 제목", "Campaign title")}
           </label>
           <Input
             id="title"
@@ -157,7 +160,7 @@ export default function EditCampaignPage() {
         </div>
         <div>
           <label htmlFor="brandName" className="block text-sm font-medium text-content-soft">
-            브랜드명
+            {t("브랜드명", "Brand name")}
           </label>
           <Input
             id="brandName"
@@ -171,7 +174,7 @@ export default function EditCampaignPage() {
         </div>
         <div>
           <label htmlFor="description" className="block text-sm font-medium text-content-soft">
-            캠페인 설명
+            {t("캠페인 설명", "Campaign description")}
           </label>
           <textarea
             id="description"
@@ -185,7 +188,8 @@ export default function EditCampaignPage() {
         </div>
         <div>
           <label htmlFor="requirements" className="block text-sm font-medium text-content-soft">
-            제출 요구사항 <span className="text-faint">(선택)</span>
+            {t("제출 요구사항", "Submission requirements")}{" "}
+            <span className="text-faint">{t("(선택)", "(optional)")}</span>
           </label>
           <textarea
             id="requirements"
@@ -199,11 +203,14 @@ export default function EditCampaignPage() {
 
         <section className="space-y-5 border-t border-line pt-6">
           <h2 className="text-sm font-semibold uppercase tracking-wider text-muted">
-            보상 · 모집
+            {t("보상 · 모집", "Reward · recruiting")}
           </h2>
           {!budgetEditable && (
             <p className="text-xs text-warning">
-              예치 완료 후에는 보상/모집 인원을 수정할 수 없습니다.
+              {t(
+                "예치 완료 후에는 보상/모집 인원을 수정할 수 없습니다.",
+                "Reward and recruiting count can't be changed after the deposit is funded.",
+              )}
             </p>
           )}
           <div className="grid grid-cols-2 gap-4">
@@ -212,7 +219,7 @@ export default function EditCampaignPage() {
                 htmlFor="rewardAmount"
                 className="block text-sm font-medium text-content-soft"
               >
-                1인당 보상 (원)
+                {t("1인당 보상 (원)", "Reward per person (KRW)")}
               </label>
               <Input
                 id="rewardAmount"
@@ -230,7 +237,7 @@ export default function EditCampaignPage() {
                 htmlFor="maxParticipants"
                 className="block text-sm font-medium text-content-soft"
               >
-                모집 인원
+                {t("모집 인원", "Recruiting count")}
               </label>
               <Input
                 id="maxParticipants"
@@ -246,7 +253,8 @@ export default function EditCampaignPage() {
           </div>
           <div>
             <label htmlFor="deadline" className="block text-sm font-medium text-content-soft">
-              모집 마감일 <span className="text-faint">(선택)</span>
+              {t("모집 마감일", "Recruiting deadline")}{" "}
+              <span className="text-faint">{t("(선택)", "(optional)")}</span>
             </label>
             <Input
               id="deadline"
@@ -259,7 +267,7 @@ export default function EditCampaignPage() {
           </div>
           <div>
             <label className="mb-1.5 block text-sm font-medium text-content-soft">
-              썸네일 <span className="text-faint">(선택)</span>
+              {t("썸네일", "Thumbnail")} <span className="text-faint">{t("(선택)", "(optional)")}</span>
             </label>
             <ImageUploader
               aspect={16 / 9}
@@ -275,14 +283,14 @@ export default function EditCampaignPage() {
 
         <div className="flex gap-3 pt-2">
           <Button type="submit" disabled={saving || readOnly} className="flex-1">
-            {saving ? "저장 중..." : "저장"}
+            {saving ? t("저장 중...", "Saving...") : t("저장", "Save")}
           </Button>
           <Button
             type="button"
             variant="secondary"
             onClick={() => router.push(`/company/campaigns/${detail.id}`)}
           >
-            취소
+            {t("취소", "Cancel")}
           </Button>
         </div>
       </form>

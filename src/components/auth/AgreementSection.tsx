@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { X } from "lucide-react";
+import { useLang } from "@/lib/i18n";
 import { TERMS_BODY, TERMS_TITLE } from "@/lib/legal/terms";
 import { PRIVACY_BODY, PRIVACY_TITLE } from "@/lib/legal/privacy";
 import { THIRD_PARTY_BODY, THIRD_PARTY_TITLE } from "@/lib/legal/thirdParty";
@@ -30,14 +31,15 @@ interface Props {
 }
 
 export default function AgreementSection({ role, value, onChange }: Props) {
+  const { t } = useLang();
   const items = [
-    { key: "age14" as const, label: "만 14세 이상입니다", required: true, body: null, title: null },
-    { key: "terms" as const, label: "서비스 이용약관 동의", required: true, body: TERMS_BODY, title: TERMS_TITLE },
-    { key: "privacy" as const, label: "개인정보 수집·이용 동의", required: true, body: PRIVACY_BODY, title: PRIVACY_TITLE },
+    { key: "age14" as const, label: t("만 14세 이상입니다", "I am 14 years or older"), required: true, body: null, title: null },
+    { key: "terms" as const, label: t("서비스 이용약관 동의", "Agree to the Terms of Service"), required: true, body: TERMS_BODY, title: TERMS_TITLE },
+    { key: "privacy" as const, label: t("개인정보 수집·이용 동의", "Agree to the collection and use of personal information"), required: true, body: PRIVACY_BODY, title: PRIVACY_TITLE },
     ...(role === "CREATOR"
-      ? [{ key: "thirdParty" as const, label: "개인정보 제3자 제공 동의", required: true, body: THIRD_PARTY_BODY, title: THIRD_PARTY_TITLE }]
+      ? [{ key: "thirdParty" as const, label: t("개인정보 제3자 제공 동의", "Agree to the provision of personal information to third parties"), required: true, body: THIRD_PARTY_BODY, title: THIRD_PARTY_TITLE }]
       : []),
-    { key: "marketing" as const, label: "마케팅 정보 수신 동의", required: false, body: MARKETING_BODY, title: MARKETING_TITLE },
+    { key: "marketing" as const, label: t("마케팅 정보 수신 동의", "Agree to receive marketing information"), required: false, body: MARKETING_BODY, title: MARKETING_TITLE },
   ];
 
   const requiredKeys = items.filter((i) => i.required).map((i) => i.key);
@@ -61,7 +63,7 @@ export default function AgreementSection({ role, value, onChange }: Props) {
 
   return (
     <section className="space-y-3 border-t border-line pt-6">
-      <h2 className="text-sm font-semibold text-muted">약관 동의</h2>
+      <h2 className="text-sm font-semibold text-muted">{t("약관 동의", "Terms agreement")}</h2>
 
       <label className="flex cursor-pointer items-center gap-2 rounded border border-line-strong px-3 py-2 text-sm font-medium text-foreground hover:bg-surface-muted">
         <input
@@ -70,7 +72,7 @@ export default function AgreementSection({ role, value, onChange }: Props) {
           onChange={(e) => toggleAll(e.target.checked)}
           className="h-4 w-4"
         />
-        전체 동의 (선택 항목 포함)
+        {t("전체 동의 (선택 항목 포함)", "Agree to all (including optional items)")}
       </label>
 
       <ul className="space-y-2 px-1">
@@ -85,7 +87,7 @@ export default function AgreementSection({ role, value, onChange }: Props) {
               />
               <span>
                 <span className={item.required ? "text-foreground" : "text-muted"}>
-                  ({item.required ? "필수" : "선택"})
+                  ({item.required ? t("필수", "Required") : t("선택", "Optional")})
                 </span>{" "}
                 {item.label}
               </span>
@@ -96,14 +98,19 @@ export default function AgreementSection({ role, value, onChange }: Props) {
                 onClick={() => setOpenModal({ title: item.title, body: item.body })}
                 className="text-xs text-muted underline hover:text-foreground"
               >
-                보기
+                {t("보기", "View")}
               </button>
             )}
           </li>
         ))}
       </ul>
 
-      <p className="text-xs text-faint">필수 항목({requiredKeys.length}개)에 모두 동의해야 가입할 수 있습니다.</p>
+      <p className="text-xs text-faint">
+        {t(
+          `필수 항목(${requiredKeys.length}개)에 모두 동의해야 가입할 수 있습니다.`,
+          `You must agree to all ${requiredKeys.length} required items to sign up.`,
+        )}
+      </p>
 
       {openModal && (
         <LegalModal
@@ -117,6 +124,7 @@ export default function AgreementSection({ role, value, onChange }: Props) {
 }
 
 function LegalModal({ title, body, onClose }: { title: string; body: string; onClose: () => void }) {
+  const { t } = useLang();
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
@@ -140,7 +148,7 @@ function LegalModal({ title, body, onClose }: { title: string; body: string; onC
             type="button"
             onClick={onClose}
             className="text-muted hover:text-foreground transition-colors"
-            aria-label="닫기"
+            aria-label={t("닫기", "Close")}
           >
             <X className="h-5 w-5" />
           </button>
@@ -156,7 +164,7 @@ function LegalModal({ title, body, onClose }: { title: string; body: string; onC
             onClick={onClose}
             className="rounded bg-gray-900 px-4 py-2 text-sm text-white hover:bg-gray-700"
           >
-            확인
+            {t("확인", "Confirm")}
           </button>
         </div>
       </div>

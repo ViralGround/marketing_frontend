@@ -7,6 +7,7 @@ import ApplicationStatusBadge from "@/components/campaign/ApplicationStatusBadge
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import Input from "@/components/ui/Input";
+import { useLang } from "@/lib/i18n";
 
 type AppStatus = "PENDING" | "APPROVED" | "REJECTED" | "SUBMITTED" | "SETTLED";
 type SortKey = "recent" | "reward" | "deadline";
@@ -24,16 +25,17 @@ interface CampaignItem {
   myApplication: { id: number; status: AppStatus } | null;
 }
 
-const SORT_LABEL: Record<SortKey, string> = {
-  recent: "최신순",
-  reward: "보상 높은 순",
-  deadline: "마감 임박순",
+const SORT_LABEL: Record<SortKey, { ko: string; en: string }> = {
+  recent: { ko: "최신순", en: "Latest" },
+  reward: { ko: "보상 높은 순", en: "Highest reward" },
+  deadline: { ko: "마감 임박순", en: "Deadline soon" },
 };
 
 const NEW_WINDOW_MS = 3 * 24 * 60 * 60 * 1000;
 const URGENT_WINDOW_MS = 3 * 24 * 60 * 60 * 1000;
 
 export default function CreatorHomePage() {
+  const { t } = useLang();
   const [campaigns, setCampaigns] = useState<CampaignItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [sort, setSort] = useState<SortKey>("recent");
@@ -68,9 +70,9 @@ export default function CreatorHomePage() {
   return (
     <div className="mx-auto max-w-5xl px-6 py-10 md:px-10">
       <div className="mb-8">
-        <p className="text-sm font-medium text-muted">참여 가능한 캠페인</p>
+        <p className="text-sm font-medium text-muted">{t("참여 가능한 캠페인", "Available campaigns")}</p>
         <h1 className="mt-1 text-3xl font-bold tracking-tight text-foreground md:text-4xl">
-          지금 모집 중인 캠페인
+          {t("지금 모집 중인 캠페인", "Campaigns recruiting now")}
         </h1>
       </div>
 
@@ -89,7 +91,7 @@ export default function CreatorHomePage() {
                     : "border border-line text-content-soft hover:border-primary/40 hover:text-primary"
                 }`}
               >
-                {SORT_LABEL[s]}
+                {t(SORT_LABEL[s].ko, SORT_LABEL[s].en)}
               </button>
             );
           })}
@@ -99,11 +101,11 @@ export default function CreatorHomePage() {
             type="text"
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
-            placeholder="캠페인 제목·브랜드 검색"
+            placeholder={t("캠페인 제목·브랜드 검색", "Search by campaign title or brand")}
             className="w-64"
           />
           <Button type="submit" size="sm">
-            검색
+            {t("검색", "Search")}
           </Button>
           {search && (
             <button
@@ -115,20 +117,20 @@ export default function CreatorHomePage() {
               }}
               className="text-sm font-medium text-muted transition-colors hover:text-foreground"
             >
-              초기화
+              {t("초기화", "Reset")}
             </button>
           )}
         </form>
       </div>
 
       {loading ? (
-        <p className="text-muted">불러오는 중...</p>
+        <p className="text-muted">{t("불러오는 중...", "Loading...")}</p>
       ) : campaigns.length === 0 ? (
         <Card className="border-dashed bg-surface-muted py-16 text-center">
           <p className="text-muted">
             {search
-              ? `"${search}" 로 검색된 캠페인이 없습니다.`
-              : "현재 모집 중인 캠페인이 없습니다."}
+              ? t(`"${search}" 로 검색된 캠페인이 없습니다.`, `No campaigns found for "${search}".`)
+              : t("현재 모집 중인 캠페인이 없습니다.", "No campaigns are recruiting right now.")}
           </p>
         </Card>
       ) : (
@@ -157,7 +159,7 @@ export default function CreatorHomePage() {
                     <ApplicationStatusBadge status={c.myApplication.status} />
                   ) : (
                     <span className="text-xs text-muted">
-                      지원 {c.applicationCount} / {c.maxParticipants}
+                      {t("지원", "Applied")} {c.applicationCount} / {c.maxParticipants}
                     </span>
                   )
                 }

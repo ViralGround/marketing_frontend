@@ -12,6 +12,7 @@ import VideoUploader from "@/components/submission/VideoUploader";
 import ReviewForm from "@/components/review/ReviewForm";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
+import { useLang } from "@/lib/i18n";
 
 type AppStatus =
   | "PENDING"
@@ -47,19 +48,20 @@ interface ApplicationItem {
   };
 }
 
-const FILTER_LABEL: Record<Filter, string> = {
-  ALL: "전체",
-  PENDING: "대기",
-  APPROVED: "참여",
-  SUBMITTED: "제출",
-  CHANGES_REQUESTED: "수정요청",
-  SETTLED: "정산",
-  REJECTED: "거절",
+const FILTER_LABEL: Record<Filter, { ko: string; en: string }> = {
+  ALL: { ko: "전체", en: "All" },
+  PENDING: { ko: "대기", en: "Pending" },
+  APPROVED: { ko: "참여", en: "Approved" },
+  SUBMITTED: { ko: "제출", en: "Submitted" },
+  CHANGES_REQUESTED: { ko: "수정요청", en: "Changes requested" },
+  SETTLED: { ko: "정산", en: "Settled" },
+  REJECTED: { ko: "거절", en: "Rejected" },
 };
 
 export default function CreatorMyPage() {
   const { user, logout } = useAuthStore();
   const router = useRouter();
+  const { t } = useLang();
   const [stats, setStats] = useState<Stats | null>(null);
   const [statsLoading, setStatsLoading] = useState(true);
   const [applications, setApplications] = useState<ApplicationItem[]>([]);
@@ -119,7 +121,7 @@ export default function CreatorMyPage() {
     } catch (err: unknown) {
       const msg =
         (err as { response?: { data?: { message?: string } } }).response?.data?.message ||
-        "탈퇴에 실패했습니다";
+        t("탈퇴에 실패했습니다", "Failed to delete your account");
       setWithdrawError(msg);
       setWithdrawLoading(false);
     }
@@ -134,9 +136,12 @@ export default function CreatorMyPage() {
   return (
     <div className="mx-auto max-w-5xl px-6 py-10 md:px-10">
       <div className="mb-10">
-        <p className="text-sm font-medium text-muted">마이페이지</p>
+        <p className="text-sm font-medium text-muted">{t("마이페이지", "My Page")}</p>
         <h1 className="mt-1 text-3xl font-bold tracking-tight text-foreground md:text-4xl">
-          {user?.name ?? "크리에이터"} 님의 활동 요약
+          {t(
+            `${user?.name ?? "크리에이터"} 님의 활동 요약`,
+            `${user?.name ?? "Creator"}'s activity summary`,
+          )}
         </h1>
       </div>
 
@@ -163,31 +168,31 @@ export default function CreatorMyPage() {
           href="/creator/home"
           className="group rounded-2xl border border-line bg-surface p-6 transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-sm"
         >
-          <h2 className="mb-1 text-lg font-semibold text-foreground">캠페인 보러가기</h2>
-          <p className="text-sm text-muted">새로 열린 광고 탐색</p>
-          <p className="mt-4 text-sm font-medium text-primary">바로 가기 →</p>
+          <h2 className="mb-1 text-lg font-semibold text-foreground">{t("캠페인 보러가기", "Browse campaigns")}</h2>
+          <p className="text-sm text-muted">{t("새로 열린 광고 탐색", "Discover newly opened campaigns")}</p>
+          <p className="mt-4 text-sm font-medium text-primary">{t("바로 가기 →", "Go now →")}</p>
         </Link>
         <Link
           href="/profile/setup"
           className="group rounded-2xl border border-line bg-surface p-6 transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-sm"
         >
-          <h2 className="mb-1 text-lg font-semibold text-foreground">프로필 관리</h2>
-          <p className="text-sm text-muted">활동 정보와 채널 업데이트</p>
-          <p className="mt-4 text-sm font-medium text-primary">수정하기 →</p>
+          <h2 className="mb-1 text-lg font-semibold text-foreground">{t("프로필 관리", "Manage profile")}</h2>
+          <p className="text-sm text-muted">{t("활동 정보와 채널 업데이트", "Update your info and channels")}</p>
+          <p className="mt-4 text-sm font-medium text-primary">{t("수정하기 →", "Edit →")}</p>
         </Link>
         <Link
           href="/creator/performance"
           className="group rounded-2xl border border-line bg-surface p-6 transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-sm"
         >
-          <h2 className="mb-1 text-lg font-semibold text-foreground">성과 대시보드</h2>
-          <p className="text-sm text-muted">SNS 조회수·좋아요·댓글 입력 및 확인</p>
-          <p className="mt-4 text-sm font-medium text-primary">보러 가기 →</p>
+          <h2 className="mb-1 text-lg font-semibold text-foreground">{t("성과 대시보드", "Performance dashboard")}</h2>
+          <p className="text-sm text-muted">{t("SNS 조회수·좋아요·댓글 입력 및 확인", "Enter and review views, likes, and comments")}</p>
+          <p className="mt-4 text-sm font-medium text-primary">{t("보러 가기 →", "View →")}</p>
         </Link>
       </div>
 
       {/* 내 지원 현황 */}
       <section>
-        <h2 className="mb-4 text-lg font-semibold text-foreground">내 지원 현황</h2>
+        <h2 className="mb-4 text-lg font-semibold text-foreground">{t("내 지원 현황", "My application status")}</h2>
         <div className="mb-5 flex flex-wrap gap-1.5">
           {(
             [
@@ -211,22 +216,22 @@ export default function CreatorMyPage() {
                     : "border border-line text-content-soft hover:border-primary/40 hover:text-primary"
                 }`}
               >
-                {FILTER_LABEL[f]}
+                {t(FILTER_LABEL[f].ko, FILTER_LABEL[f].en)}
               </button>
             );
           })}
         </div>
 
         {appsLoading ? (
-          <p className="text-muted">불러오는 중...</p>
+          <p className="text-muted">{t("불러오는 중...", "Loading...")}</p>
         ) : applications.length === 0 ? (
           <Card className="border-dashed bg-surface-muted py-16 text-center">
-            <p className="text-muted">아직 지원한 캠페인이 없어요.</p>
+            <p className="text-muted">{t("아직 지원한 캠페인이 없어요.", "You haven't applied to any campaigns yet.")}</p>
             <Link
               href="/creator/home"
               className="mt-2 inline-block text-sm font-medium text-primary underline-offset-2 hover:underline"
             >
-              캠페인 탐색하러 가기
+              {t("캠페인 탐색하러 가기", "Browse campaigns")}
             </Link>
           </Card>
         ) : (
@@ -263,10 +268,12 @@ export default function CreatorMyPage() {
                   </Link>
                   <div className="mt-1.5 flex flex-wrap items-center gap-2 text-xs text-muted">
                     <ApplicationStatusBadge status={a.status} />
-                    <span>지원일: {new Date(a.appliedAt).toLocaleDateString("ko-KR")}</span>
+                    <span>
+                      {t("지원일", "Applied")}: {new Date(a.appliedAt).toLocaleDateString("ko-KR")}
+                    </span>
                     {a.rewardPaidAmount !== null && (
                       <span className="font-semibold text-foreground">
-                        정산 ₩{a.rewardPaidAmount.toLocaleString("ko-KR")}
+                        {t("정산", "Settled")} ₩{a.rewardPaidAmount.toLocaleString("ko-KR")}
                       </span>
                     )}
                   </div>
@@ -275,12 +282,14 @@ export default function CreatorMyPage() {
                   <div className="flex flex-wrap gap-2">
                     {(a.status === "APPROVED" || a.status === "SUBMITTED") && (
                       <Button size="sm" onClick={() => openSubmitModal(a.id, a.campaign.title)}>
-                        {a.status === "APPROVED" ? "영상 업로드" : "영상 재업로드"}
+                        {a.status === "APPROVED"
+                          ? t("영상 업로드", "Upload video")
+                          : t("영상 재업로드", "Re-upload video")}
                       </Button>
                     )}
                     {a.status === "CHANGES_REQUESTED" && (
                       <Button size="sm" onClick={() => openSubmitModal(a.id, a.campaign.title)}>
-                        재제출
+                        {t("재제출", "Resubmit")}
                       </Button>
                     )}
                     {a.status === "SETTLED" && (
@@ -291,12 +300,12 @@ export default function CreatorMyPage() {
                           setReviewModal({ id: a.id, campaignTitle: a.campaign.title })
                         }
                       >
-                        리뷰 작성
+                        {t("리뷰 작성", "Write review")}
                       </Button>
                     )}
                     {a.videoFileKey && a.status !== "CHANGES_REQUESTED" && (
                       <span className="inline-flex items-center rounded-full bg-surface-chip px-3 py-1.5 text-xs font-medium text-content-soft">
-                        영상 제출됨
+                        {t("영상 제출됨", "Video submitted")}
                       </span>
                     )}
                     {!a.videoFileKey && a.submissionUrl && isSafeExternalLink(a.submissionUrl) && (
@@ -306,13 +315,13 @@ export default function CreatorMyPage() {
                         rel="noopener noreferrer"
                         className="inline-flex items-center rounded-full border border-line-strong px-3 py-1.5 text-xs font-medium text-content-soft transition-colors hover:border-primary/40 hover:text-primary"
                       >
-                        외부 링크 보기
+                        {t("외부 링크 보기", "View external link")}
                       </a>
                     )}
                   </div>
                   {a.status === "CHANGES_REQUESTED" && a.reviewComment && (
                     <p className="max-w-xs rounded-xl border border-warning/30 bg-warning/5 px-3 py-2 text-xs text-warning">
-                      <span className="font-semibold">수정 요청:</span> {a.reviewComment}
+                      <span className="font-semibold">{t("수정 요청", "Changes requested")}:</span> {a.reviewComment}
                     </p>
                   )}
                 </div>
@@ -324,9 +333,12 @@ export default function CreatorMyPage() {
 
       {/* 계정 탈퇴 */}
       <section className="mt-20 border-t border-line pt-8">
-        <h2 className="mb-1 text-sm font-semibold text-muted">계정 관리</h2>
+        <h2 className="mb-1 text-sm font-semibold text-muted">{t("계정 관리", "Account settings")}</h2>
         <p className="mb-4 text-sm text-faint">
-          탈퇴 시 모든 지원 내역이 삭제되며 복구할 수 없습니다.
+          {t(
+            "탈퇴 시 모든 지원 내역이 삭제되며 복구할 수 없습니다.",
+            "Deleting your account permanently removes all application history.",
+          )}
         </p>
         <Button
           variant="secondary"
@@ -336,7 +348,7 @@ export default function CreatorMyPage() {
             setWithdrawError("");
           }}
         >
-          회원 탈퇴
+          {t("회원 탈퇴", "Delete account")}
         </Button>
       </section>
 
@@ -344,11 +356,18 @@ export default function CreatorMyPage() {
       {withdrawModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
           <div className="w-full max-w-sm rounded-2xl bg-surface p-6 shadow-2xl">
-            <h3 className="mb-2 text-lg font-semibold text-foreground">정말 탈퇴하시겠어요?</h3>
+            <h3 className="mb-2 text-lg font-semibold text-foreground">
+              {t("정말 탈퇴하시겠어요?", "Delete your account?")}
+            </h3>
             <p className="mb-1 text-sm text-muted">
-              탈퇴하면 모든 지원 내역과 계정 정보가 영구 삭제됩니다.
+              {t(
+                "탈퇴하면 모든 지원 내역과 계정 정보가 영구 삭제됩니다.",
+                "All your application history and account information will be permanently deleted.",
+              )}
             </p>
-            <p className="mb-4 text-sm font-medium text-error">이 작업은 되돌릴 수 없습니다.</p>
+            <p className="mb-4 text-sm font-medium text-error">
+              {t("이 작업은 되돌릴 수 없습니다.", "This action cannot be undone.")}
+            </p>
             {withdrawError && <p className="mb-3 text-sm text-error">{withdrawError}</p>}
             <div className="flex justify-end gap-2">
               <Button
@@ -357,7 +376,7 @@ export default function CreatorMyPage() {
                 onClick={() => setWithdrawModal(false)}
                 disabled={withdrawLoading}
               >
-                취소
+                {t("취소", "Cancel")}
               </Button>
               <Button
                 size="sm"
@@ -365,7 +384,7 @@ export default function CreatorMyPage() {
                 disabled={withdrawLoading}
                 className="!bg-error hover:!bg-error/90"
               >
-                {withdrawLoading ? "처리 중..." : "탈퇴하기"}
+                {withdrawLoading ? t("처리 중...", "Processing...") : t("탈퇴하기", "Delete account")}
               </Button>
             </div>
           </div>
@@ -376,7 +395,7 @@ export default function CreatorMyPage() {
       {reviewModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
           <div className="w-full max-w-md rounded-2xl bg-surface p-6 shadow-2xl">
-            <h3 className="mb-1 text-lg font-semibold text-foreground">기업 리뷰 작성</h3>
+            <h3 className="mb-1 text-lg font-semibold text-foreground">{t("기업 리뷰 작성", "Write a company review")}</h3>
             <p className="mb-4 text-sm text-muted">{reviewModal.campaignTitle}</p>
             <ReviewForm
               applicationId={reviewModal.id}
@@ -394,7 +413,7 @@ export default function CreatorMyPage() {
       {submitModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
           <div className="w-full max-w-md rounded-2xl bg-surface p-6 shadow-2xl">
-            <h3 className="mb-1 text-lg font-semibold text-foreground">영상 업로드</h3>
+            <h3 className="mb-1 text-lg font-semibold text-foreground">{t("영상 업로드", "Upload video")}</h3>
             <p className="mb-4 text-sm text-muted">{submitModal.campaignTitle}</p>
             <VideoUploader
               applicationId={submitModal.id}

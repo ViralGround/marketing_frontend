@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { useLang } from "@/lib/i18n";
 
 export default function AlertModal({
   open,
@@ -13,6 +14,7 @@ export default function AlertModal({
   message: string;
   onClose: () => void;
 }) {
+  const { t } = useLang();
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
@@ -43,7 +45,7 @@ export default function AlertModal({
             onClick={onClose}
             className="rounded bg-gray-900 px-4 py-2 text-sm text-white hover:bg-gray-700"
           >
-            확인
+            {t("확인", "Confirm")}
           </button>
         </div>
       </div>

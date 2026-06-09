@@ -1,6 +1,7 @@
 "use client";
 
 import Badge from "@/components/ui/Badge";
+import { useLang } from "@/lib/i18n";
 
 export type ReviewAuthorRole = "CREATOR" | "COMPANY" | "ADMIN";
 
@@ -16,15 +17,17 @@ export interface ReviewItem {
   createdAt: string;
 }
 
-const ROLE_LABEL: Record<ReviewAuthorRole, string> = {
-  CREATOR: "크리에이터",
-  COMPANY: "기업",
-  ADMIN: "관리자",
+const ROLE_LABEL: Record<ReviewAuthorRole, { ko: string; en: string }> = {
+  CREATOR: { ko: "크리에이터", en: "Creator" },
+  COMPANY: { ko: "기업", en: "Company" },
+  ADMIN: { ko: "관리자", en: "Admin" },
 };
 
 export default function ReviewList({ reviews }: { reviews: ReviewItem[] }) {
+  const { t, lang } = useLang();
+
   if (reviews.length === 0) {
-    return <p className="text-sm text-faint">아직 작성된 리뷰가 없습니다.</p>;
+    return <p className="text-sm text-faint">{t("아직 작성된 리뷰가 없습니다.", "No reviews yet.")}</p>;
   }
 
   return (
@@ -34,14 +37,14 @@ export default function ReviewList({ reviews }: { reviews: ReviewItem[] }) {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="font-medium text-foreground">{r.authorName}</span>
-              <Badge tone="neutral">{ROLE_LABEL[r.authorRole]}</Badge>
+              <Badge tone="neutral">{t(ROLE_LABEL[r.authorRole].ko, ROLE_LABEL[r.authorRole].en)}</Badge>
               <span className="text-sm text-warning">
                 {"★".repeat(r.rating)}
                 <span className="text-faint">{"★".repeat(5 - r.rating)}</span>
               </span>
             </div>
             <span className="text-xs text-faint">
-              {new Date(r.createdAt).toLocaleDateString("ko-KR")}
+              {new Date(r.createdAt).toLocaleDateString(lang === "en" ? "en-US" : "ko-KR")}
             </span>
           </div>
           {r.comment && (

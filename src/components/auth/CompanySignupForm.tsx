@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 import { trackEvent } from "@/lib/gtag";
+import { useLang } from "@/lib/i18n";
 import EmailVerificationField from "@/components/auth/EmailVerificationField";
 import AgreementSection, {
   EMPTY_AGREEMENT,
@@ -11,6 +12,7 @@ import AgreementSection, {
 } from "@/components/auth/AgreementSection";
 
 export default function CompanySignupForm() {
+  const { t } = useLang();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -33,11 +35,11 @@ export default function CompanySignupForm() {
     e.preventDefault();
     setError("");
     if (!verifiedToken) {
-      setError("이메일 인증을 완료해주세요");
+      setError(t("이메일 인증을 완료해주세요", "Please complete email verification"));
       return;
     }
     if (!agreement.age14 || !agreement.terms || !agreement.privacy) {
-      setError("필수 약관에 모두 동의해주세요");
+      setError(t("필수 약관에 모두 동의해주세요", "Please agree to all required terms"));
       return;
     }
     setLoading(true);
@@ -71,11 +73,19 @@ export default function CompanySignupForm() {
           : undefined;
       const status = response?.status;
       if (status === 409) {
-        setError("이미 등록된 이메일입니다");
+        setError(t("이미 등록된 이메일입니다", "This email is already registered"));
       } else if (status === 400) {
-        setError(response?.data?.message ?? "입력값을 확인해주세요");
+        setError(
+          response?.data?.message ??
+            t("입력값을 확인해주세요", "Please check your input"),
+        );
       } else {
-        setError("회원가입에 실패했습니다. 다시 시도해주세요.");
+        setError(
+          t(
+            "회원가입에 실패했습니다. 다시 시도해주세요.",
+            "Sign-up failed. Please try again.",
+          ),
+        );
       }
       trackEvent("signup_fail", { role: "COMPANY", status: status ?? 0 });
     } finally {
@@ -93,7 +103,7 @@ export default function CompanySignupForm() {
       )}
 
       <section className="space-y-4">
-        <h2 className="text-sm font-semibold text-muted">계정 정보</h2>
+        <h2 className="text-sm font-semibold text-muted">{t("계정 정보", "Account information")}</h2>
         <EmailVerificationField
           email={email}
           onEmailChange={setEmail}
@@ -102,7 +112,7 @@ export default function CompanySignupForm() {
         />
         <div>
           <label htmlFor="password" className="block text-sm font-medium text-content-soft">
-            비밀번호 (8자 이상)
+            {t("비밀번호 (8자 이상)", "Password (8+ characters)")}
           </label>
           <input
             id="password"
@@ -116,13 +126,13 @@ export default function CompanySignupForm() {
         </div>
         <div>
           <label htmlFor="name" className="block text-sm font-medium text-content-soft">
-            계정 사용자 이름
+            {t("계정 사용자 이름", "Account username")}
           </label>
           <input
             id="name"
             type="text"
             required
-            placeholder="로그인 계정의 표시 이름"
+            placeholder={t("로그인 계정의 표시 이름", "Display name for your login account")}
             value={name}
             onChange={(e) => setName(e.target.value)}
             className={inputCls}
@@ -131,10 +141,10 @@ export default function CompanySignupForm() {
       </section>
 
       <section className="space-y-4 border-t border-line pt-6">
-        <h2 className="text-sm font-semibold text-muted">기업 정보</h2>
+        <h2 className="text-sm font-semibold text-muted">{t("기업 정보", "Company information")}</h2>
         <div>
           <label htmlFor="companyName" className="block text-sm font-medium text-content-soft">
-            회사명
+            {t("회사명", "Company name")}
           </label>
           <input
             id="companyName"
@@ -147,7 +157,7 @@ export default function CompanySignupForm() {
         </div>
         <div>
           <label htmlFor="businessNumber" className="block text-sm font-medium text-content-soft">
-            사업자등록번호
+            {t("사업자등록번호", "Business registration number")}
           </label>
           <input
             id="businessNumber"
@@ -161,7 +171,7 @@ export default function CompanySignupForm() {
         </div>
         <div>
           <label htmlFor="representativeName" className="block text-sm font-medium text-content-soft">
-            대표자명
+            {t("대표자명", "Representative name")}
           </label>
           <input
             id="representativeName"
@@ -174,12 +184,12 @@ export default function CompanySignupForm() {
         </div>
         <div>
           <label htmlFor="industry" className="block text-sm font-medium text-content-soft">
-            업종 <span className="text-faint">(선택)</span>
+            {t("업종", "Industry")} <span className="text-faint">({t("선택", "Optional")})</span>
           </label>
           <input
             id="industry"
             type="text"
-            placeholder="예: 뷰티, 패션, F&B"
+            placeholder={t("예: 뷰티, 패션, F&B", "e.g. Beauty, Fashion, F&B")}
             value={industry}
             onChange={(e) => setIndustry(e.target.value)}
             className={inputCls}
@@ -187,7 +197,7 @@ export default function CompanySignupForm() {
         </div>
         <div>
           <label htmlFor="address" className="block text-sm font-medium text-content-soft">
-            주소 <span className="text-faint">(선택)</span>
+            {t("주소", "Address")} <span className="text-faint">({t("선택", "Optional")})</span>
           </label>
           <input
             id="address"
@@ -199,7 +209,7 @@ export default function CompanySignupForm() {
         </div>
         <div>
           <label htmlFor="homepage" className="block text-sm font-medium text-content-soft">
-            홈페이지 <span className="text-faint">(선택)</span>
+            {t("홈페이지", "Website")} <span className="text-faint">({t("선택", "Optional")})</span>
           </label>
           <input
             id="homepage"
@@ -213,10 +223,10 @@ export default function CompanySignupForm() {
       </section>
 
       <section className="space-y-4 border-t border-line pt-6">
-        <h2 className="text-sm font-semibold text-muted">담당자 정보</h2>
+        <h2 className="text-sm font-semibold text-muted">{t("담당자 정보", "Contact information")}</h2>
         <div>
           <label htmlFor="contactName" className="block text-sm font-medium text-content-soft">
-            담당자명
+            {t("담당자명", "Contact name")}
           </label>
           <input
             id="contactName"
@@ -229,7 +239,7 @@ export default function CompanySignupForm() {
         </div>
         <div>
           <label htmlFor="contactPhone" className="block text-sm font-medium text-content-soft">
-            담당자 연락처
+            {t("담당자 연락처", "Contact phone number")}
           </label>
           <input
             id="contactPhone"
@@ -246,7 +256,10 @@ export default function CompanySignupForm() {
       <AgreementSection role="COMPANY" value={agreement} onChange={setAgreement} />
 
       <p className="text-xs text-muted">
-        이메일 인증을 완료한 뒤 가입하기를 눌러주세요. 가입 후 바로 로그인할 수 있습니다.
+        {t(
+          "이메일 인증을 완료한 뒤 가입하기를 눌러주세요. 가입 후 바로 로그인할 수 있습니다.",
+          "Please complete email verification before signing up. You can log in right after signing up.",
+        )}
       </p>
 
       <button
@@ -254,7 +267,7 @@ export default function CompanySignupForm() {
         disabled={loading || !verifiedToken}
         className="w-full rounded-lg bg-primary py-2.5 text-white font-medium hover:bg-primary-dark disabled:opacity-50 transition-colors"
       >
-        {loading ? "가입 중..." : "가입하기"}
+        {loading ? t("가입 중...", "Signing up...") : t("가입하기", "Sign up")}
       </button>
     </form>
   );

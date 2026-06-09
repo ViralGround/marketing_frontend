@@ -4,6 +4,7 @@ import { useState } from "react";
 import api from "@/lib/api";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
+import { useLang } from "@/lib/i18n";
 
 interface Props {
   applicationId: number;
@@ -18,6 +19,7 @@ interface Props {
 }
 
 export default function MetricForm({ applicationId, initial, onSaved, onCancel }: Props) {
+  const { t } = useLang();
   const [views, setViews] = useState(initial?.views ?? 0);
   const [likes, setLikes] = useState(initial?.likes ?? 0);
   const [comments, setComments] = useState(initial?.comments ?? 0);
@@ -39,7 +41,7 @@ export default function MetricForm({ applicationId, initial, onSaved, onCancel }
     } catch (err: unknown) {
       const msg =
         (err as { response?: { data?: { message?: string } } }).response?.data?.message ||
-        "저장에 실패했습니다";
+        t("저장에 실패했습니다", "Failed to save");
       setError(msg);
     } finally {
       setLoading(false);
@@ -49,16 +51,17 @@ export default function MetricForm({ applicationId, initial, onSaved, onCancel }
   return (
     <div>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <NumberField label="조회수" value={views} onChange={setViews} />
-        <NumberField label="좋아요" value={likes} onChange={setLikes} />
-        <NumberField label="댓글" value={comments} onChange={setComments} />
+        <NumberField label={t("조회수", "Views")} value={views} onChange={setViews} />
+        <NumberField label={t("좋아요", "Likes")} value={likes} onChange={setLikes} />
+        <NumberField label={t("댓글", "Comments")} value={comments} onChange={setComments} />
       </div>
 
       <label
         htmlFor="metric-url"
         className="mt-5 block text-sm font-medium text-content-soft"
       >
-        게시물 URL <span className="text-faint">(선택, http/https)</span>
+        {t("게시물 URL", "Post URL")}{" "}
+        <span className="text-faint">{t("(선택, http/https)", "(optional, http/https)")}</span>
       </label>
       <Input
         id="metric-url"
@@ -73,10 +76,10 @@ export default function MetricForm({ applicationId, initial, onSaved, onCancel }
 
       <div className="mt-5 flex justify-end gap-2">
         <Button variant="secondary" size="sm" onClick={onCancel} disabled={loading}>
-          취소
+          {t("취소", "Cancel")}
         </Button>
         <Button size="sm" onClick={submit} disabled={loading}>
-          {loading ? "저장 중..." : "저장"}
+          {loading ? t("저장 중...", "Saving...") : t("저장", "Save")}
         </Button>
       </div>
     </div>

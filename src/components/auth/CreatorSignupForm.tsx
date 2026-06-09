@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 import { trackEvent } from "@/lib/gtag";
+import { useLang } from "@/lib/i18n";
 import AlertModal from "@/components/ui/AlertModal";
 import EmailVerificationField from "@/components/auth/EmailVerificationField";
 import AgreementSection, {
@@ -20,24 +21,25 @@ type EditingTool =
   | "OTHER"
   | "NONE";
 
-const EDITING_TOOL_OPTIONS: { value: EditingTool; label: string }[] = [
-  { value: "CAPCUT", label: "캡컷(CapCut)" },
-  { value: "PREMIERE", label: "프리미어 프로" },
-  { value: "FINAL_CUT", label: "파이널 컷" },
-  { value: "VN", label: "VN" },
-  { value: "OTHER", label: "기타" },
-  { value: "NONE", label: "편집 경험 없음" },
+const EDITING_TOOL_OPTIONS: { value: EditingTool; label: string; labelEn: string }[] = [
+  { value: "CAPCUT", label: "캡컷(CapCut)", labelEn: "CapCut" },
+  { value: "PREMIERE", label: "프리미어 프로", labelEn: "Premiere Pro" },
+  { value: "FINAL_CUT", label: "파이널 컷", labelEn: "Final Cut" },
+  { value: "VN", label: "VN", labelEn: "VN" },
+  { value: "OTHER", label: "기타", labelEn: "Other" },
+  { value: "NONE", label: "편집 경험 없음", labelEn: "No editing experience" },
 ];
 
-const GENDER_OPTIONS: { value: Gender; label: string }[] = [
-  { value: "FEMALE", label: "여성" },
-  { value: "MALE", label: "남성" },
+const GENDER_OPTIONS: { value: Gender; label: string; labelEn: string }[] = [
+  { value: "FEMALE", label: "여성", labelEn: "Female" },
+  { value: "MALE", label: "남성", labelEn: "Male" },
 ];
 
 const MIN_AGE = 14;
 const MAX_AGE = 64;
 
 export default function CreatorSignupForm() {
+  const { t } = useLang();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -64,13 +66,28 @@ export default function CreatorSignupForm() {
     e.preventDefault();
     setError("");
 
-    if (!verifiedToken) return setValidationModal("이메일 인증을 완료해주세요");
-    if (!gender) return setValidationModal("성별을 선택해주세요");
-    if (!birthYear) return setValidationModal("출생연도를 선택해주세요");
-    if (!faceExposure) return setValidationModal("얼굴 공개 여부를 선택해주세요");
-    if (!editingTool) return setValidationModal("주로 사용하는 편집 툴을 선택해주세요");
+    if (!verifiedToken)
+      return setValidationModal(
+        t("이메일 인증을 완료해주세요", "Please complete email verification"),
+      );
+    if (!gender)
+      return setValidationModal(t("성별을 선택해주세요", "Please select your gender"));
+    if (!birthYear)
+      return setValidationModal(
+        t("출생연도를 선택해주세요", "Please select your birth year"),
+      );
+    if (!faceExposure)
+      return setValidationModal(
+        t("얼굴 공개 여부를 선택해주세요", "Please select whether you can show your face"),
+      );
+    if (!editingTool)
+      return setValidationModal(
+        t("주로 사용하는 편집 툴을 선택해주세요", "Please select the editing tool you mainly use"),
+      );
     if (!agreement.age14 || !agreement.terms || !agreement.privacy || !agreement.thirdParty) {
-      return setValidationModal("필수 약관에 모두 동의해주세요");
+      return setValidationModal(
+        t("필수 약관에 모두 동의해주세요", "Please agree to all required terms"),
+      );
     }
 
     setLoading(true);
@@ -106,14 +123,19 @@ export default function CreatorSignupForm() {
           ? (err as { response: { status: number } }).response.status
           : 0;
       if (status === 409) {
-        setError("이미 등록된 이메일입니다");
+        setError(t("이미 등록된 이메일입니다", "This email is already registered"));
       } else if (status === 400) {
         const msg =
           (err as { response?: { data?: { message?: string } } }).response?.data
-            ?.message ?? "입력값을 확인해주세요";
+            ?.message ?? t("입력값을 확인해주세요", "Please check your input");
         setError(msg);
       } else {
-        setError("회원가입에 실패했습니다. 다시 시도해주세요.");
+        setError(
+          t(
+            "회원가입에 실패했습니다. 다시 시도해주세요.",
+            "Sign-up failed. Please try again.",
+          ),
+        );
       }
       trackEvent("signup_fail", { role: "CREATOR", status });
     } finally {
@@ -129,16 +151,16 @@ export default function CreatorSignupForm() {
 
       {/* 기본 정보 */}
       <section className="space-y-4">
-        <h2 className="text-sm font-semibold text-muted">기본 정보</h2>
+        <h2 className="text-sm font-semibold text-muted">{t("기본 정보", "Basic information")}</h2>
         <div>
           <label htmlFor="name" className="block text-sm font-medium text-content-soft">
-            활동명 (닉네임)
+            {t("활동명 (닉네임)", "Display name (nickname)")}
           </label>
           <input
             id="name"
             type="text"
             required
-            placeholder="채널에서 사용할 활동명"
+            placeholder={t("채널에서 사용할 활동명", "Display name to use on your channel")}
             value={name}
             onChange={(e) => setName(e.target.value)}
             className="mt-1 block w-full rounded border border-line-strong px-3 py-2 text-foreground placeholder-faint focus:border-gray-500 focus:outline-none"
@@ -151,7 +173,7 @@ export default function CreatorSignupForm() {
         />
         <div>
           <label htmlFor="password" className="block text-sm font-medium text-content-soft">
-            비밀번호 (8자 이상)
+            {t("비밀번호 (8자 이상)", "Password (8+ characters)")}
           </label>
           <input
             id="password"
@@ -167,10 +189,10 @@ export default function CreatorSignupForm() {
 
       {/* 설문 */}
       <section className="space-y-4 border-t border-line pt-6">
-        <h2 className="text-sm font-semibold text-muted">가입 설문</h2>
+        <h2 className="text-sm font-semibold text-muted">{t("가입 설문", "Sign-up survey")}</h2>
 
         <div>
-          <p className="mb-2 block text-sm font-medium text-content-soft">성별</p>
+          <p className="mb-2 block text-sm font-medium text-content-soft">{t("성별", "Gender")}</p>
           <div className="flex gap-2">
             {GENDER_OPTIONS.map((g) => (
               <label
@@ -189,7 +211,7 @@ export default function CreatorSignupForm() {
                   onChange={() => setGender(g.value)}
                   className="sr-only"
                 />
-                {g.label}
+                {t(g.label, g.labelEn)}
               </label>
             ))}
           </div>
@@ -197,7 +219,7 @@ export default function CreatorSignupForm() {
 
         <div>
           <label htmlFor="birthYear" className="block text-sm font-medium text-content-soft">
-            출생연도
+            {t("출생연도", "Birth year")}
           </label>
           <select
             id="birthYear"
@@ -205,27 +227,29 @@ export default function CreatorSignupForm() {
             onChange={(e) => setBirthYear(e.target.value)}
             className="mt-1 block w-full rounded border border-line-strong px-3 py-2 text-foreground focus:border-gray-500 focus:outline-none"
           >
-            <option value="">몇년생인지 선택해주세요</option>
+            <option value="">{t("몇년생인지 선택해주세요", "Please select your birth year")}</option>
             {Array.from(
               { length: MAX_AGE - MIN_AGE + 1 },
               (_, i) => new Date().getFullYear() - MIN_AGE - i,
             ).map((y) => (
               <option key={y} value={y}>
-                {y}년생
+                {t(`${y}년생`, String(y))}
               </option>
             ))}
           </select>
-          <p className="mt-1 text-xs text-faint">만 14세 이상부터 가입할 수 있습니다.</p>
+          <p className="mt-1 text-xs text-faint">
+            {t("만 14세 이상부터 가입할 수 있습니다.", "You must be 14 or older to sign up.")}
+          </p>
         </div>
 
         <div>
           <p className="mb-2 block text-sm font-medium text-content-soft">
-            얼굴 공개 가능 여부
+            {t("얼굴 공개 가능 여부", "Can you show your face?")}
           </p>
           <div className="flex gap-2">
             {[
-              { value: "YES", label: "가능" },
-              { value: "NO", label: "불가능" },
+              { value: "YES", label: "가능", labelEn: "Yes" },
+              { value: "NO", label: "불가능", labelEn: "No" },
             ].map((opt) => (
               <label
                 key={opt.value}
@@ -243,7 +267,7 @@ export default function CreatorSignupForm() {
                   onChange={() => setFaceExposure(opt.value as "YES" | "NO")}
                   className="sr-only"
                 />
-                {opt.label}
+                {t(opt.label, opt.labelEn)}
               </label>
             ))}
           </div>
@@ -251,7 +275,7 @@ export default function CreatorSignupForm() {
 
         <div>
           <label htmlFor="editingTool" className="block text-sm font-medium text-content-soft">
-            주로 사용하는 편집 툴
+            {t("주로 사용하는 편집 툴", "Editing tool you mainly use")}
           </label>
           <select
             id="editingTool"
@@ -260,10 +284,10 @@ export default function CreatorSignupForm() {
             onChange={(e) => setEditingTool(e.target.value as EditingTool)}
             className="mt-1 block w-full rounded border border-line-strong px-3 py-2 text-foreground focus:border-gray-500 focus:outline-none"
           >
-            <option value="">선택해주세요</option>
-            {EDITING_TOOL_OPTIONS.map((t) => (
-              <option key={t.value} value={t.value}>
-                {t.label}
+            <option value="">{t("선택해주세요", "Please select")}</option>
+            {EDITING_TOOL_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {t(opt.label, opt.labelEn)}
               </option>
             ))}
           </select>
@@ -271,36 +295,39 @@ export default function CreatorSignupForm() {
 
         <div className="space-y-3">
           <p className="block text-sm font-medium text-content-soft">
-            SNS 아이디 <span className="text-faint">(선택, 경험 있으신 분만)</span>
+            {t("SNS 아이디", "Social media handles")}{" "}
+            <span className="text-faint">
+              {t("(선택, 경험 있으신 분만)", "(Optional, only if you have experience)")}
+            </span>
           </p>
           <div>
-            <label htmlFor="instagramId" className="sr-only">인스타그램</label>
+            <label htmlFor="instagramId" className="sr-only">{t("인스타그램", "Instagram")}</label>
             <input
               id="instagramId"
               type="text"
-              placeholder="인스타그램 아이디 (@ 없이)"
+              placeholder={t("인스타그램 아이디 (@ 없이)", "Instagram handle (without @)")}
               value={instagramId}
               onChange={(e) => setInstagramId(e.target.value)}
               className="block w-full rounded border border-line-strong px-3 py-2 text-foreground placeholder-faint focus:border-gray-500 focus:outline-none"
             />
           </div>
           <div>
-            <label htmlFor="tiktokId" className="sr-only">틱톡</label>
+            <label htmlFor="tiktokId" className="sr-only">{t("틱톡", "TikTok")}</label>
             <input
               id="tiktokId"
               type="text"
-              placeholder="틱톡 아이디 (@ 없이)"
+              placeholder={t("틱톡 아이디 (@ 없이)", "TikTok handle (without @)")}
               value={tiktokId}
               onChange={(e) => setTiktokId(e.target.value)}
               className="block w-full rounded border border-line-strong px-3 py-2 text-foreground placeholder-faint focus:border-gray-500 focus:outline-none"
             />
           </div>
           <div>
-            <label htmlFor="youtubeId" className="sr-only">유튜브</label>
+            <label htmlFor="youtubeId" className="sr-only">{t("유튜브", "YouTube")}</label>
             <input
               id="youtubeId"
               type="text"
-              placeholder="유튜브 채널명 또는 핸들 (@ 없이)"
+              placeholder={t("유튜브 채널명 또는 핸들 (@ 없이)", "YouTube channel name or handle (without @)")}
               value={youtubeId}
               onChange={(e) => setYoutubeId(e.target.value)}
               className="block w-full rounded border border-line-strong px-3 py-2 text-foreground placeholder-faint focus:border-gray-500 focus:outline-none"
@@ -312,7 +339,10 @@ export default function CreatorSignupForm() {
       <AgreementSection role="CREATOR" value={agreement} onChange={setAgreement} />
 
       <p className="text-xs text-muted">
-        가입 신청 후 관리자가 검토하며, 승인까지 영업일 기준 일주일 이상 걸릴 수 있어요. 승인 결과는 이메일로 알려드리며, 승인 전에는 로그인할 수 없습니다.
+        {t(
+          "가입 신청 후 관리자가 검토하며, 승인까지 영업일 기준 일주일 이상 걸릴 수 있어요. 승인 결과는 이메일로 알려드리며, 승인 전에는 로그인할 수 없습니다.",
+          "After you apply, an administrator reviews your application, which can take more than a week in business days. We'll email you the result, and you can't log in until you're approved.",
+        )}
       </p>
 
       <button
@@ -320,20 +350,25 @@ export default function CreatorSignupForm() {
         disabled={loading || !verifiedToken}
         className="w-full rounded-lg bg-primary py-2.5 text-white font-medium hover:bg-primary-dark disabled:opacity-50 transition-colors"
       >
-        {loading ? "가입 신청 중..." : "가입 신청하기"}
+        {loading
+          ? t("가입 신청 중...", "Submitting application...")
+          : t("가입 신청하기", "Apply to sign up")}
       </button>
 
       <AlertModal
         open={!!validationModal}
-        title="필수 항목을 확인해주세요"
+        title={t("필수 항목을 확인해주세요", "Please check the required fields")}
         message={validationModal}
         onClose={() => setValidationModal("")}
       />
 
       <AlertModal
         open={pendingModalOpen}
-        title="가입 신청이 접수되었습니다"
-        message={"승인까지 영업일 기준 일주일 이상 걸릴 수 있어요.\n관리자 승인 후 이메일로 결과를 알려드리며, 승인 전에는 로그인할 수 없습니다."}
+        title={t("가입 신청이 접수되었습니다", "Your application has been received")}
+        message={t(
+          "승인까지 영업일 기준 일주일 이상 걸릴 수 있어요.\n관리자 승인 후 이메일로 결과를 알려드리며, 승인 전에는 로그인할 수 없습니다.",
+          "Approval can take more than a week in business days.\nWe'll email you the result after an administrator reviews it, and you can't log in until you're approved.",
+        )}
         onClose={() => router.push("/login")}
       />
     </form>

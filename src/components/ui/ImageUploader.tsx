@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import api from "@/lib/api";
 import ImageCropModal from "@/components/ui/ImageCropModal";
+import { useLang } from "@/lib/i18n";
 
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const MAX_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
@@ -23,6 +24,7 @@ interface Props {
 }
 
 export default function ImageUploader({ previewUrl, onChange, disabled, aspect }: Props) {
+  const { t } = useLang();
   const [localPreview, setLocalPreview] = useState<string | null>(null);
   const [cropSrc, setCropSrc] = useState<string | null>(null);
   const [progress, setProgress] = useState(0);
@@ -47,10 +49,16 @@ export default function ImageUploader({ previewUrl, onChange, disabled, aspect }
 
   const validate = (candidate: File): string | null => {
     if (!ALLOWED_TYPES.includes(candidate.type)) {
-      return "지원하지 않는 이미지 형식입니다. jpg, png, webp 파일만 업로드할 수 있어요.";
+      return t(
+        "지원하지 않는 이미지 형식입니다. jpg, png, webp 파일만 업로드할 수 있어요.",
+        "Unsupported image format. Only jpg, png, and webp files can be uploaded.",
+      );
     }
     if (candidate.size > MAX_SIZE_BYTES) {
-      return "이미지가 너무 큽니다. 최대 10MB 까지 업로드 가능합니다.";
+      return t(
+        "이미지가 너무 큽니다. 최대 10MB 까지 업로드 가능합니다.",
+        "The image is too large. You can upload up to 10MB.",
+      );
     }
     return null;
   };
@@ -65,9 +73,10 @@ export default function ImageUploader({ previewUrl, onChange, disabled, aspect }
       };
       xhr.onload = () => {
         if (xhr.status >= 200 && xhr.status < 300) resolve();
-        else reject(new Error(`업로드 실패 (HTTP ${xhr.status})`));
+        else reject(new Error(t(`업로드 실패 (HTTP ${xhr.status})`, `Upload failed (HTTP ${xhr.status})`)));
       };
-      xhr.onerror = () => reject(new Error("네트워크 오류로 업로드에 실패했습니다"));
+      xhr.onerror = () =>
+        reject(new Error(t("네트워크 오류로 업로드에 실패했습니다", "Upload failed due to a network error")));
       xhr.open("PUT", url);
       xhr.setRequestHeader("Content-Type", payload.type);
       xhr.send(payload);
@@ -93,7 +102,9 @@ export default function ImageUploader({ previewUrl, onChange, disabled, aspect }
       URL.revokeObjectURL(previewObjectUrl);
       const res = (err as { response?: { data?: { message?: string } } }).response;
       const msg =
-        res?.data?.message || (err as { message?: string }).message || "업로드에 실패했습니다";
+        res?.data?.message ||
+        (err as { message?: string }).message ||
+        t("업로드에 실패했습니다", "Upload failed");
       setError(msg);
     } finally {
       setLoading(false);
@@ -143,13 +154,16 @@ export default function ImageUploader({ previewUrl, onChange, disabled, aspect }
     !aspect
       ? null
       : Math.abs(aspect - 1) < 0.01
-        ? "정사각형(1:1)"
+        ? t("정사각형(1:1)", "Square (1:1)")
         : Math.abs(aspect - 16 / 9) < 0.01
           ? "16:9"
           : `${aspect.toFixed(2)} : 1`;
   const hint = ratioLabel
-    ? `jpg, png, webp · 최대 10MB · ${ratioLabel} 로 잘라 업로드`
-    : "jpg, png, webp · 최대 10MB";
+    ? t(
+        `jpg, png, webp · 최대 10MB · ${ratioLabel} 로 잘라 업로드`,
+        `jpg, png, webp · up to 10MB · cropped to ${ratioLabel}`,
+      )
+    : t("jpg, png, webp · 최대 10MB", "jpg, png, webp · up to 10MB");
 
   return (
     <div>
@@ -174,16 +188,16 @@ export default function ImageUploader({ previewUrl, onChange, disabled, aspect }
         {display ? (
           <>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={display} alt="썸네일 미리보기" className="h-full w-full object-cover" />
+            <img src={display} alt={t("썸네일 미리보기", "Thumbnail preview")} className="h-full w-full object-cover" />
             <div className="absolute inset-0 flex items-center justify-center bg-black/0 opacity-0 transition hover:bg-black/30 hover:opacity-100">
               <span className="rounded bg-black/60 px-3 py-1 text-xs text-white">
-                다른 이미지로 교체
+                {t("다른 이미지로 교체", "Replace with another image")}
               </span>
             </div>
           </>
         ) : (
           <div className="flex h-full w-full flex-col items-center justify-center bg-surface-chip text-center">
-            <p className="text-sm text-muted">이미지를 끌어다 놓거나 클릭해서 선택해주세요</p>
+            <p className="text-sm text-muted">{t("이미지를 끌어다 놓거나 클릭해서 선택해주세요", "Drag and drop an image or click to select")}</p>
             <p className="mt-1 text-xs text-faint">{hint}</p>
           </div>
         )}
@@ -199,7 +213,7 @@ export default function ImageUploader({ previewUrl, onChange, disabled, aspect }
       {loading && (
         <div className="mt-2">
           <div className="mb-1 flex justify-between text-xs text-muted">
-            <span>업로드 중</span>
+            <span>{t("업로드 중", "Uploading")}</span>
             <span>{progress}%</span>
           </div>
           <div className="h-1.5 overflow-hidden rounded bg-surface-chip">
@@ -218,7 +232,7 @@ export default function ImageUploader({ previewUrl, onChange, disabled, aspect }
           disabled={disabled}
           className="mt-2 text-xs text-muted hover:text-red-600 disabled:opacity-50"
         >
-          썸네일 제거
+          {t("썸네일 제거", "Remove thumbnail")}
         </button>
       )}
 

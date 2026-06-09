@@ -9,6 +9,7 @@ import {
   renderCropToWebp,
   viewportToCropRect,
 } from "@/lib/image";
+import { useLang } from "@/lib/i18n";
 
 const MIN_SOURCE_WIDTH = 800;
 const MAX_ZOOM = 3;
@@ -27,6 +28,7 @@ interface Props {
  * 슬라이더(확대)로 노출 영역을 정한 뒤 webp 로 잘라 onApply 한다.
  */
 export default function ImageCropModal({ src, aspect, onApply, onCancel }: Props) {
+  const { t } = useLang();
   const frameRef = useRef<HTMLDivElement>(null);
   const imgRef = useRef<HTMLImageElement>(null);
   const drag = useRef<{ startX: number; startY: number; ox: number; oy: number } | null>(null);
@@ -109,7 +111,7 @@ export default function ImageCropModal({ src, aspect, onApply, onCancel }: Props
       const blob = await renderCropToWebp(el, crop, out.width, out.height);
       onApply(blob);
     } catch (e) {
-      setErr((e as Error).message || "이미지 처리에 실패했습니다");
+      setErr((e as Error).message || t("이미지 처리에 실패했습니다", "Failed to process the image"));
       setBusy(false);
     }
   };
@@ -125,9 +127,12 @@ export default function ImageCropModal({ src, aspect, onApply, onCancel }: Props
         className="w-full max-w-md rounded-xl bg-surface p-5 shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <h3 className="mb-1 text-base font-semibold text-foreground">표시 영역 선택</h3>
+        <h3 className="mb-1 text-base font-semibold text-foreground">{t("표시 영역 선택", "Select display area")}</h3>
         <p className="mb-3 text-xs text-muted">
-          드래그로 위치를 옮기고, 슬라이더로 확대해 노출할 영역을 맞춰주세요.
+          {t(
+            "드래그로 위치를 옮기고, 슬라이더로 확대해 노출할 영역을 맞춰주세요.",
+            "Drag to reposition and use the slider to zoom in on the area to show.",
+          )}
         </p>
 
         <div
@@ -143,7 +148,7 @@ export default function ImageCropModal({ src, aspect, onApply, onCancel }: Props
           <img
             ref={imgRef}
             src={src}
-            alt="크롭할 이미지"
+            alt={t("크롭할 이미지", "Image to crop")}
             onLoad={onImgLoad}
             draggable={false}
             className="absolute max-w-none cursor-move"
@@ -153,7 +158,7 @@ export default function ImageCropModal({ src, aspect, onApply, onCancel }: Props
         </div>
 
         <div className="mt-3 flex items-center gap-2">
-          <span className="text-xs text-muted">확대</span>
+          <span className="text-xs text-muted">{t("확대", "Zoom")}</span>
           <input
             type="range"
             min={1}
@@ -168,7 +173,12 @@ export default function ImageCropModal({ src, aspect, onApply, onCancel }: Props
 
         {lowRes && (
           <p className="mt-2 text-xs text-amber-600">
-            원본 해상도가 낮아 확대 시 흐릿할 수 있어요. 가로 {MIN_SOURCE_WIDTH}px 이상 이미지를 권장합니다.
+            {t(
+              "원본 해상도가 낮아 확대 시 흐릿할 수 있어요. 가로 ",
+              "The source resolution is low, so zooming may look blurry. We recommend images at least ",
+            )}
+            {MIN_SOURCE_WIDTH}px
+            {t(" 이상 이미지를 권장합니다.", " wide.")}
           </p>
         )}
         {err && <p className="mt-2 text-xs text-red-600">{err}</p>}
@@ -180,7 +190,7 @@ export default function ImageCropModal({ src, aspect, onApply, onCancel }: Props
             disabled={busy}
             className="rounded px-4 py-2 text-sm text-content-soft hover:bg-surface-muted disabled:opacity-50"
           >
-            취소
+            {t("취소", "Cancel")}
           </button>
           <button
             type="button"
@@ -188,7 +198,7 @@ export default function ImageCropModal({ src, aspect, onApply, onCancel }: Props
             disabled={busy || !nat}
             className="rounded bg-gray-900 px-4 py-2 text-sm text-white hover:bg-gray-700 disabled:opacity-50"
           >
-            {busy ? "처리 중…" : "적용"}
+            {busy ? t("처리 중…", "Processing…") : t("적용", "Apply")}
           </button>
         </div>
       </div>

@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
 import Badge from "@/components/ui/Badge";
+import { useLang } from "@/lib/i18n";
 
 interface CampaignCardProps {
   href: string;
@@ -24,8 +27,9 @@ export default function CampaignCard({
   isUrgent,
   rightSlot,
 }: CampaignCardProps) {
+  const { t, lang } = useLang();
   const deadlineText = deadline
-    ? new Date(deadline).toLocaleDateString("ko-KR", {
+    ? new Date(deadline).toLocaleDateString(lang === "en" ? "en-US" : "ko-KR", {
         month: "short",
         day: "numeric",
       })
@@ -46,14 +50,14 @@ export default function CampaignCard({
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center text-sm text-faint">
-            썸네일 없음
+            {t("썸네일 없음", "No thumbnail")}
           </div>
         )}
 
         {/* 뱃지 */}
         <div className="absolute top-2.5 left-2.5 flex gap-1.5">
           {isNew && <Badge tone="info">NEW</Badge>}
-          {isUrgent && <Badge tone="error">마감 임박</Badge>}
+          {isUrgent && <Badge tone="error">{t("마감 임박", "Deadline soon")}</Badge>}
         </div>
       </div>
       <div className="p-5">
@@ -61,7 +65,7 @@ export default function CampaignCard({
         <h3 className="mt-1 line-clamp-2 text-base font-semibold text-foreground">{title}</h3>
         <div className="mt-3 flex items-center justify-between">
           <span className="text-base font-bold tracking-tight text-foreground">
-            ₩{rewardAmount.toLocaleString("ko-KR")}
+            ₩{rewardAmount.toLocaleString(lang === "en" ? "en-US" : "ko-KR")}
           </span>
           {deadlineText && (
             <span className="text-xs text-muted">~{deadlineText}</span>

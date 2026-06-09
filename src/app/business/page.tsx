@@ -1,4 +1,5 @@
 import BusinessHeroSection from "@/components/landing/business/BusinessHeroSection";
+import BusinessPartnersSection from "@/components/landing/business/BusinessPartnersSection";
 import BusinessPerformanceSection from "@/components/landing/business/BusinessPerformanceSection";
 import BusinessFeaturesSection from "@/components/landing/business/BusinessFeaturesSection";
 import BusinessCasesSection from "@/components/landing/business/BusinessCasesSection";
@@ -15,6 +16,7 @@ export default function BusinessLandingPage() {
   return (
     <>
       <BusinessHeroSection />
+      <BusinessPartnersSection />
       <div id="performance" className="scroll-mt-20">
         <BusinessPerformanceSection />
       </div>

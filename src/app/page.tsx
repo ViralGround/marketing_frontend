@@ -1,15 +1,14 @@
 import HeroSection from "@/components/landing/HeroSection";
 import StatsSection from "@/components/landing/StatsSection";
-import PainPointSection from "@/components/landing/PainPointSection";
-import AudienceSection from "@/components/landing/AudienceSection";
+import ResultsShowcaseSection from "@/components/landing/ResultsShowcaseSection";
 import FeaturedCampaignsSection from "@/components/landing/FeaturedCampaignsSection";
-import SupportSection from "@/components/landing/SupportSection";
-import RewardTableSection from "@/components/landing/RewardTableSection";
+import MarketContextSection from "@/components/landing/MarketContextSection";
+import TestimonialsSection from "@/components/landing/TestimonialsSection";
+import CommunityBenefitsSection from "@/components/landing/CommunityBenefitsSection";
+import ProgramTimelineSection from "@/components/landing/ProgramTimelineSection";
 import EarningsSimulator from "@/components/landing/EarningsSimulator";
-import HowItWorksSection from "@/components/landing/HowItWorksSection";
-import FeaturesSection from "@/components/landing/FeaturesSection";
 import FAQSection from "@/components/landing/FAQSection";
-import BottomCTA from "@/components/landing/BottomCTA";
+import FinalCTASection from "@/components/landing/FinalCTASection";
 import Footer from "@/components/landing/Footer";
 
 export default function Home() {
@@ -17,26 +16,21 @@ export default function Home() {
     <>
       <HeroSection />
       <StatsSection />
-      <PainPointSection />
-      <AudienceSection />
+      <ResultsShowcaseSection />
       <div id="campaigns" className="scroll-mt-20">
         <FeaturedCampaignsSection />
       </div>
-      <SupportSection />
-      <div id="rewards" className="scroll-mt-20">
-        <RewardTableSection />
-      </div>
+      <MarketContextSection />
+      <TestimonialsSection />
+      <CommunityBenefitsSection />
+      <ProgramTimelineSection />
       <div id="earnings" className="scroll-mt-20">
         <EarningsSimulator />
       </div>
-      <div id="how" className="scroll-mt-20">
-        <HowItWorksSection />
-      </div>
-      <FeaturesSection />
       <div id="faq" className="scroll-mt-20">
         <FAQSection />
       </div>
-      <BottomCTA />
+      <FinalCTASection />
       <Footer />
     </>
   );

@@ -7,7 +7,10 @@ import { Menu, X } from "lucide-react";
 import { useAuthStore } from "@/store/useAuthStore";
 import { removeTokens } from "@/lib/auth";
 import ThemeToggle from "@/components/ui/ThemeToggle";
+import LanguageToggle from "@/components/landing/LanguageToggle";
+import BookACallButton from "@/components/landing/BookACallButton";
 import { isLandingPath } from "@/lib/landingPaths";
+import { useLang } from "@/lib/i18n";
 import { clearGaUser, trackEvent } from "@/lib/gtag";
 import type { UserRole } from "@/types";
 
@@ -15,7 +18,8 @@ import type { UserRole } from "@/types";
  * 사이트 전역 단일 헤더 (SSOT).
  * - 데스크탑(lg+): 좌측 로고+토글, 우측 인라인 nav.
  * - 모바일(<lg): 로고 + 테마 + 햄버거. 햄버거 메뉴에 토글·섹션 바로가기·인증 메뉴.
- * - sticky 로 자연스러운 docflow 유지.
+ * - 한국어/영어 토글은 모든 페이지에 노출(기본 한국어, 선택은 쿠키로 유지).
+ * - Book a Call(Calendly)은 크리에이터 랜딩 한정.
  */
 
 const ROLE_HOME: Record<UserRole, string> = {
@@ -24,10 +28,10 @@ const ROLE_HOME: Record<UserRole, string> = {
   CREATOR: "/creator/home",
 };
 
-const ROLE_MYPAGE: Record<UserRole, { href: string; label: string }> = {
-  ADMIN: { href: "/admin/dashboard", label: "대시보드" },
-  COMPANY: { href: "/company/dashboard", label: "마이페이지" },
-  CREATOR: { href: "/creator/mypage", label: "마이페이지" },
+const ROLE_MYPAGE: Record<UserRole, { href: string; ko: string; en: string }> = {
+  ADMIN: { href: "/admin/dashboard", ko: "대시보드", en: "Dashboard" },
+  COMPANY: { href: "/company/dashboard", ko: "마이페이지", en: "My Page" },
+  CREATOR: { href: "/creator/mypage", ko: "마이페이지", en: "My Page" },
 };
 
 function RoleToggle({
@@ -37,6 +41,8 @@ function RoleToggle({
   isBusiness: boolean;
   onNavigate?: () => void;
 }) {
+  // 라벨은 영어 모드에서만 For Brands/For Creators 로 표기(기본 한국어).
+  const { t } = useLang();
   const baseTab = "rounded-full px-4 py-1.5 text-sm font-medium transition-colors";
   const activeTab = "bg-surface text-foreground shadow-sm";
   const inactiveTab = "text-muted hover:text-foreground";
@@ -48,14 +54,14 @@ function RoleToggle({
         onClick={onNavigate}
         className={`${baseTab} ${isBusiness ? activeTab : inactiveTab}`}
       >
-        기업
+        {t("기업", "For Brands")}
       </Link>
       <Link
         href="/"
         onClick={onNavigate}
         className={`${baseTab} ${!isBusiness ? activeTab : inactiveTab}`}
       >
-        크리에이터
+        {t("크리에이터", "For Creators")}
       </Link>
     </div>
   );
@@ -67,8 +73,11 @@ export default function Header() {
   const pathname = usePathname();
   const onLanding = isLandingPath(pathname);
   const isBusiness = pathname?.startsWith("/business") ?? false;
+  const isCreatorLanding = onLanding && !isBusiness;
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+
+  const { t } = useLang();
 
   const handleLogout = () => {
     trackEvent("logout", { role: user?.role ?? null });
@@ -87,21 +96,18 @@ export default function Header() {
 
   const logoHref = isAuthenticated && user ? ROLE_HOME[user.role] : "/";
   const signupHref = isBusiness ? "/signup/company" : "/signup/creator";
-  const signupLabel = isBusiness ? "기업 가입" : "시작하기";
 
   // 랜딩 섹션 바로가기 — 클릭 시 해당 섹션으로 부드럽게 스크롤. (각 섹션 id 는 page.tsx 에서 부여)
   const sectionLinks = isBusiness
     ? [
-        { href: "#performance", label: "성과" },
-        { href: "#features", label: "기능" },
-        { href: "#cases", label: "사례" },
+        { href: "#performance", label: t("성과", "Performance") },
+        { href: "#features", label: t("기능", "Features") },
+        { href: "#cases", label: t("사례", "Cases") },
       ]
     : [
-        { href: "#campaigns", label: "캠페인" },
-        { href: "#rewards", label: "보상" },
-        { href: "#earnings", label: "수익 계산" },
-        { href: "#how", label: "이용 방법" },
-        { href: "#faq", label: "FAQ" },
+        { href: "#results", label: t("성과", "Results") },
+        { href: "#earnings", label: t("수익 계산", "Earnings") },
+        { href: "#faq", label: t("FAQ", "FAQ") },
       ];
 
   const scrollToSection = (href: string) => {
@@ -164,15 +170,16 @@ export default function Header() {
                 href={ROLE_MYPAGE[user.role].href}
                 className="rounded-lg px-3 py-2 text-sm text-muted transition-colors hover:text-primary"
               >
-                {ROLE_MYPAGE[user.role].label}
+                {t(ROLE_MYPAGE[user.role].ko, ROLE_MYPAGE[user.role].en)}
               </Link>
               <span className="text-sm text-muted">{user.name}</span>
               <button
                 onClick={handleLogout}
                 className="rounded-lg px-4 py-2 text-sm font-medium text-foreground transition-colors hover:text-primary"
               >
-                로그아웃
+                {t("로그아웃", "Log out")}
               </button>
+              <LanguageToggle />
               <ThemeToggle />
             </>
           ) : (
@@ -182,22 +189,28 @@ export default function Header() {
                 onClick={() => trackEvent("cta_click", { location: "header", target: "login" })}
                 className="rounded-lg px-4 py-2 text-sm font-medium text-foreground transition-colors hover:text-primary"
               >
-                로그인
+                {t("로그인", "Log in")}
               </Link>
-              {onLanding && (
+              {isCreatorLanding && (
+                <BookACallButton
+                  location="header"
+                  className="rounded-lg bg-primary px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-dark"
+                >
+                  {t("무료 상담 예약", "Book a Call")}
+                </BookACallButton>
+              )}
+              {onLanding && isBusiness && (
                 <Link
                   href={signupHref}
                   onClick={() =>
-                    trackEvent("cta_click", {
-                      location: "header",
-                      target: isBusiness ? "signup_company" : "signup_creator",
-                    })
+                    trackEvent("cta_click", { location: "header", target: "signup_company" })
                   }
                   className="rounded-lg bg-primary px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-dark"
                 >
-                  {signupLabel}
+                  {t("기업 가입", "Sign up")}
                 </Link>
               )}
+              <LanguageToggle />
               <ThemeToggle />
             </>
           )}
@@ -225,11 +238,12 @@ export default function Header() {
       {/* 모바일 메뉴 패널 */}
       {menuOpen && (
         <div className="border-t border-line bg-surface px-6 py-4 lg:hidden">
-          {onLanding && (
-            <div className="mb-4">
+          <div className="mb-4 flex items-center justify-between gap-2">
+            {onLanding && (
               <RoleToggle isBusiness={isBusiness} onNavigate={() => setMenuOpen(false)} />
-            </div>
-          )}
+            )}
+            <LanguageToggle className="ml-auto" />
+          </div>
 
           {onLanding && !isAuthenticated && (
             <div className="flex flex-col">
@@ -257,13 +271,13 @@ export default function Header() {
                   onClick={() => setMenuOpen(false)}
                   className="rounded-lg px-2 py-2.5 text-sm font-medium text-content-soft hover:bg-surface-muted hover:text-primary"
                 >
-                  {ROLE_MYPAGE[user.role].label}
+                  {t(ROLE_MYPAGE[user.role].ko, ROLE_MYPAGE[user.role].en)}
                 </Link>
                 <button
                   onClick={handleLogout}
                   className="rounded-lg px-2 py-2.5 text-left text-sm font-medium text-content-soft hover:bg-surface-muted hover:text-primary"
                 >
-                  로그아웃
+                  {t("로그아웃", "Log out")}
                 </button>
               </>
             ) : (
@@ -276,21 +290,30 @@ export default function Header() {
                   }}
                   className="rounded-lg px-2 py-2.5 text-sm font-medium text-content-soft hover:bg-surface-muted hover:text-primary"
                 >
-                  로그인
+                  {t("로그인", "Log in")}
                 </Link>
-                {onLanding && (
+                {isCreatorLanding && (
+                  <BookACallButton
+                    location="header_mobile"
+                    onClick={() => setMenuOpen(false)}
+                    className="rounded-lg bg-primary px-4 py-2.5 text-center text-sm font-medium text-white hover:bg-primary-dark"
+                  >
+                    {t("무료 상담 예약", "Book a Call")}
+                  </BookACallButton>
+                )}
+                {onLanding && isBusiness && (
                   <Link
                     href={signupHref}
                     onClick={() => {
                       trackEvent("cta_click", {
                         location: "header_mobile",
-                        target: isBusiness ? "signup_company" : "signup_creator",
+                        target: "signup_company",
                       });
                       setMenuOpen(false);
                     }}
                     className="rounded-lg bg-primary px-4 py-2.5 text-center text-sm font-medium text-white hover:bg-primary-dark"
                   >
-                    {signupLabel}
+                    {t("기업 가입", "Sign up")}
                   </Link>
                 )}
               </>

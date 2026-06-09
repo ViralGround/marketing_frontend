@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import { Calculator, Sigma } from "lucide-react";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
+import { useLang, type Lang } from "@/lib/i18n";
 
 const BASE_PAY_PER_VIDEO = 20_000;
 
@@ -27,16 +28,24 @@ function performanceRewardPerVideo(views: number): number {
 }
 
 function formatKRW(n: number): string {
-  return n.toLocaleString("ko-KR");
+  return n.toLocaleString("en-US");
 }
 
-function formatViews(v: number): string {
-  if (v >= 10_000) return `${(v / 10_000).toLocaleString("ko-KR", { maximumFractionDigits: 1 })}만뷰`;
-  return `${formatKRW(v)}뷰`;
+function formatViews(v: number, lang: Lang): string {
+  if (lang === "en") {
+    if (v >= 1_000_000)
+      return `${(v / 1_000_000).toLocaleString("en-US", { maximumFractionDigits: 1 })}M views`;
+    if (v >= 1_000) return `${Math.round(v / 1_000)}K views`;
+    return `${v} views`;
+  }
+  if (v >= 10_000)
+    return `${(v / 10_000).toLocaleString("ko-KR", { maximumFractionDigits: 1 })}만뷰`;
+  return `${v.toLocaleString("ko-KR")}뷰`;
 }
 
 export default function EarningsSimulator() {
   const ref = useScrollAnimation<HTMLDivElement>();
+  const { lang, t } = useLang();
   const [videosPerMonth, setVideosPerMonth] = useState(8);
   const [averageViews, setAverageViews] = useState(50_000);
 
@@ -52,13 +61,16 @@ export default function EarningsSimulator() {
         <div className="text-center">
           <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-2 text-sm font-medium text-primary">
             <Calculator className="h-4 w-4" strokeWidth={2.5} />
-            수익 시뮬레이터
+            {t("수익 시뮬레이터", "Earnings simulator")}
           </div>
           <h2 className="mt-5 text-3xl font-bold text-foreground md:text-4xl">
-            한 달에 얼마나 벌 수 있을까?
+            {t("한 달에 얼마나 벌 수 있을까?", "How much could you make a month?")}
           </h2>
           <p className="mt-4 text-muted">
-            업로드 편수와 평균 조회수를 조절해 예상 월 수익을 확인해보세요
+            {t(
+              "업로드 편수와 평균 조회수를 조절해 예상 월 수익을 확인해보세요",
+              "Adjust your uploads and average views to see your estimated monthly income.",
+            )}
           </p>
         </div>
 
@@ -68,11 +80,11 @@ export default function EarningsSimulator() {
             <div>
               <div className="flex items-baseline justify-between">
                 <label className="text-sm font-semibold text-foreground">
-                  월 업로드 편수
+                  {t("월 업로드 편수", "Uploads per month")}
                 </label>
                 <span className="text-xl font-extrabold tracking-tight text-primary">
                   {videosPerMonth}
-                  <span className="ml-1 text-sm font-bold text-muted">편</span>
+                  {lang === "ko" && <span className="ml-1 text-sm font-bold text-muted">편</span>}
                 </span>
               </div>
               <input
@@ -85,18 +97,18 @@ export default function EarningsSimulator() {
                 className="mt-4 w-full accent-primary"
               />
               <div className="mt-2 flex justify-between text-xs text-faint">
-                <span>1편</span>
-                <span>12편</span>
+                <span>{t("1편", "1")}</span>
+                <span>{t("12편", "12")}</span>
               </div>
             </div>
 
             <div>
               <div className="flex items-baseline justify-between">
                 <label className="text-sm font-semibold text-foreground">
-                  영상당 평균 조회수
+                  {t("영상당 평균 조회수", "Avg. views per video")}
                 </label>
                 <span className="text-xl font-extrabold tracking-tight text-primary">
-                  {formatViews(averageViews)}
+                  {formatViews(averageViews, lang)}
                 </span>
               </div>
               <input
@@ -109,8 +121,8 @@ export default function EarningsSimulator() {
                 className="mt-4 w-full accent-primary"
               />
               <div className="mt-2 flex justify-between text-xs text-faint">
-                <span>1천뷰</span>
-                <span>100만뷰</span>
+                <span>{t("1천뷰", "1K")}</span>
+                <span>{t("100만뷰", "1M")}</span>
               </div>
             </div>
           </div>
@@ -118,20 +130,28 @@ export default function EarningsSimulator() {
           {/* 결과부 */}
           <div className="border-t border-line bg-primary/5 px-8 py-12 text-center md:px-10">
             <p className="text-xs font-bold uppercase tracking-widest text-primary">
-              예상 월 수익 (제작지원금 + 성과급 합산)
+              {t("예상 월 수익 (제작지원금 + 성과급 합산)", "Estimated monthly income (base + bonus)")}
             </p>
             <p className="mt-3 text-5xl font-black tracking-tight text-primary md:text-6xl">
-              약 {formatKRW(total)}
-              <span className="text-2xl font-bold text-primary/70">원</span>
+              {lang === "en" ? (
+                <>~₩{formatKRW(total)}</>
+              ) : (
+                <>
+                  약 {formatKRW(total)}
+                  <span className="text-2xl font-bold text-primary/70">원</span>
+                </>
+              )}
             </p>
           </div>
 
           {/* 디스클레이머 */}
           <div className="flex items-start gap-3 border-t border-line bg-section-alt px-6 py-5 md:px-10">
             <Sigma className="mt-0.5 h-4 w-4 flex-shrink-0 text-faint" strokeWidth={2.5} />
-            <p className="text-xs text-muted leading-relaxed">
-              본 시뮬레이션은 예상 수익이며, 실제 단가는 캠페인별 기준에 따라 변동될 수 있습니다.
-              정산은 마지막 업로드 후 14일 기준으로 일괄 지급됩니다.
+            <p className="text-xs leading-relaxed text-muted">
+              {t(
+                "본 시뮬레이션은 예상 수익이며, 실제 단가는 캠페인별 기준에 따라 변동될 수 있습니다. 정산은 마지막 업로드 후 14일 기준으로 일괄 지급됩니다.",
+                "This is an estimate; actual rates may vary by campaign. Payouts are settled in a lump sum 14 days after your last upload.",
+              )}
             </p>
           </div>
         </div>

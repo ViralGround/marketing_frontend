@@ -6,6 +6,7 @@ import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 import type { FeaturedCampaign } from "@/types/landing";
 import FeaturedCampaignCard from "./FeaturedCampaignCard";
 import CompanyInfoModal from "./CompanyInfoModal";
+import { useLang } from "@/lib/i18n";
 
 interface ModalState {
   open: boolean;
@@ -16,6 +17,7 @@ interface ModalState {
 
 export default function FeaturedCampaignsSection() {
   const ref = useScrollAnimation<HTMLDivElement>();
+  const { t } = useLang();
   const [campaigns, setCampaigns] = useState<FeaturedCampaign[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [modal, setModal] = useState<ModalState>({ open: false, campaign: null, seq: 0 });
@@ -39,10 +41,13 @@ export default function FeaturedCampaignsSection() {
     <section className="bg-section-alt py-20 md:py-28">
       <div ref={ref} className="mx-auto max-w-6xl px-6">
         <h2 className="text-center text-3xl font-bold text-foreground md:text-4xl">
-          지금 모집 중인 대표 캠페인
+          {t("지금 모집 중인 대표 캠페인", "Campaigns recruiting now")}
         </h2>
         <p className="mt-4 text-center text-muted">
-          검증된 브랜드들이 Viral Ground에서 크리에이터를 찾고 있어요
+          {t(
+            "검증된 브랜드들이 Viral Ground에서 크리에이터를 찾고 있어요",
+            "Trusted brands are looking for creators on Viral Ground.",
+          )}
         </p>
 
         <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">

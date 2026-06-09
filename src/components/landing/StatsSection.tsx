@@ -1,37 +1,28 @@
 "use client";
 
-import { useCountUp } from "@/hooks/useScrollAnimation";
+import { useLang } from "@/lib/i18n";
 
-function StatItem({
-  value,
-  suffix,
-  label,
-}: {
-  value: number;
-  suffix: string;
-  label: string;
-}) {
-  const ref = useCountUp(value);
-
-  return (
-    <div className="text-center">
-      <p className="text-4xl font-black tracking-tight text-primary md:text-5xl">
-        <span ref={ref}>0</span>
-        <span className="text-2xl font-bold text-primary/70">{suffix}</span>
-      </p>
-      <p className="mt-2 text-sm text-muted">{label}</p>
-    </div>
-  );
-}
+// 모두 우리 실제 수치. 영어는 동일 값의 영문 표기.
+const STATS = [
+  { ko: "2만원", en: "₩20K", labelKo: "편당 기본급", labelEn: "Base per upload" },
+  { ko: "250만원", en: "₩2.5M", labelKo: "최대 성과급 / 편", labelEn: "Max per video" },
+  { ko: "0원", en: "₩0", labelKo: "가입비 · 수수료", labelEn: "No fees" },
+];
 
 export default function StatsSection() {
+  const { lang, t } = useLang();
+
   return (
     <section className="border-y border-line bg-surface py-16">
-      <div className="mx-auto grid max-w-5xl grid-cols-2 gap-8 px-6 md:grid-cols-4">
-        <StatItem value={2} suffix="만원" label="편당 기본급" />
-        <StatItem value={250} suffix="만원" label="최대 성과급 / 편" />
-        <StatItem value={1} suffix="개월" label="계약 단위" />
-        <StatItem value={0} suffix="원" label="가입비" />
+      <div className="mx-auto grid max-w-3xl grid-cols-3 gap-6 px-6 sm:gap-8">
+        {STATS.map((s) => (
+          <div key={s.labelEn} className="text-center">
+            <p className="text-3xl font-black tracking-tight text-primary sm:text-4xl md:text-5xl">
+              {lang === "en" ? s.en : s.ko}
+            </p>
+            <p className="mt-2 text-xs text-muted sm:text-sm">{t(s.labelKo, s.labelEn)}</p>
+          </div>
+        ))}
       </div>
     </section>
   );

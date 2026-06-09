@@ -145,6 +145,20 @@ body {
   animation: float 3s ease-in-out infinite;
 }
 
+/* 파트너 로고 marquee (좌우 무한 흐름) — 로고가 충분히 쌓이면 사용 */
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  animation: marquee 40s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
 /* 스크롤 트리거: 초기 상태 숨김 */
 .scroll-hidden {
   opacity: 0;
@@ -162,7 +176,8 @@ body {
   .animate-fade-in-up,
   .animate-fade-in,
   .animate-scale-in,
-  .animate-float {
+  .animate-float,
+  .animate-marquee {
     animation: none;
   }
   .scroll-hidden {

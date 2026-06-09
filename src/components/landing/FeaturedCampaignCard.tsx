@@ -2,6 +2,7 @@
 
 import { Coins, CalendarClock, Users, UserCheck } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { useLang } from "@/lib/i18n";
 import type { FeaturedCampaign } from "@/types/landing";
 
 interface Props {
@@ -10,8 +11,8 @@ interface Props {
 }
 
 /** 마감까지 남은 '달력 일수'. deadline 이 없으면 상시모집으로 표기. */
-function deadlineLabel(deadline: string | null): string {
-  if (!deadline) return "상시모집";
+function deadlineLabel(deadline: string | null, t: (ko: string, en: string) => string): string {
+  if (!deadline) return t("상시모집", "Always open");
   const end = new Date(deadline);
   end.setHours(0, 0, 0, 0);
   const today = new Date();
@@ -43,6 +44,7 @@ function InfoCell({
 }
 
 export default function FeaturedCampaignCard({ campaign, onOpen }: Props) {
+  const { t } = useLang();
   const initial = campaign.brandName.trim().charAt(0) || "?";
 
   return (
@@ -63,7 +65,7 @@ export default function FeaturedCampaignCard({ campaign, onOpen }: Props) {
             />
           ) : (
             <div className="flex h-full w-full items-center justify-center text-sm text-faint">
-              썸네일 없음
+              {t("썸네일 없음", "No thumbnail")}
             </div>
           )}
         </div>
@@ -72,7 +74,7 @@ export default function FeaturedCampaignCard({ campaign, onOpen }: Props) {
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={campaign.logoUrl}
-              alt={`${campaign.brandName} 로고`}
+              alt={`${campaign.brandName} ${t("로고", "logo")}`}
               className="h-full w-full object-cover"
             />
           ) : (
@@ -95,14 +97,20 @@ export default function FeaturedCampaignCard({ campaign, onOpen }: Props) {
             value={`₩${campaign.rewardAmount.toLocaleString("ko-KR")}`}
             highlight
           />
-          <InfoCell icon={CalendarClock} value={deadlineLabel(campaign.deadline)} />
-          <InfoCell icon={Users} value={`모집 ${campaign.maxParticipants}`} />
-          <InfoCell icon={UserCheck} value={`지원 ${campaign.applicationCount}`} />
+          <InfoCell icon={CalendarClock} value={deadlineLabel(campaign.deadline, t)} />
+          <InfoCell
+            icon={Users}
+            value={t(`모집 ${campaign.maxParticipants}`, `${campaign.maxParticipants} slots`)}
+          />
+          <InfoCell
+            icon={UserCheck}
+            value={t(`지원 ${campaign.applicationCount}`, `${campaign.applicationCount} applied`)}
+          />
         </div>
 
         {/* 하단 CTA (시각용 — 클릭은 카드 전체가 처리) */}
         <div className="mt-5 w-full rounded-full bg-surface-muted py-3 text-center text-sm font-semibold text-content-soft transition-colors group-hover:bg-primary group-hover:text-white">
-          회사 정보 보기
+          {t("회사 정보 보기", "View company")}
         </div>
       </div>
     </button>

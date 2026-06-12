@@ -132,11 +132,19 @@ export default function Header() {
       <div className="flex items-center justify-between px-6 py-4 md:px-10">
         {/* 좌측: 로고 + (랜딩·데스크탑) 토글 */}
         <div className="flex items-center gap-4">
-          <Link
-            href={logoHref}
-            className="text-2xl font-extrabold tracking-tight text-primary md:text-3xl"
-          >
-            Viral Ground
+          <Link href={logoHref} aria-label="Viral Ground" className="inline-flex items-center gap-2.5">
+            {/* 다크모드: 다크 마크를 흰색 실루엣으로 반전(brightness-0→invert). 이름은 텍스트로 병기.
+                alt 빈값+aria-hidden: 옆 텍스트와 Link aria-label 이 이미 이름을 제공(중복 낭독 방지). */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/viral-ground-mark.png"
+              alt=""
+              aria-hidden="true"
+              className="h-7 w-auto md:h-8 dark:brightness-0 dark:invert"
+            />
+            <span className="text-xl font-extrabold tracking-tight text-foreground md:text-2xl">
+              Viral Ground
+            </span>
           </Link>
           {onLanding && (
             <div className="hidden lg:block">

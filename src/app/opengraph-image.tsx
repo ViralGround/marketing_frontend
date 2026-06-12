@@ -1,8 +1,15 @@
 import { ImageResponse } from "next/og";
-import { BrandLogo } from "@/lib/brandLogo";
+import { readFileSync } from "fs";
+import { join } from "path";
 
+export const runtime = "nodejs";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
+
+// 흰색 VG 마크를 data URL 로 임베드(OG 렌더러는 로컬 경로 대신 인라인 데이터가 필요).
+const markSrc =
+  "data:image/png;base64," +
+  readFileSync(join(process.cwd(), "public", "viral-ground-mark-white.png")).toString("base64");
 
 export default function Image() {
   return new ImageResponse(
@@ -46,23 +53,9 @@ export default function Image() {
           }}
         />
 
-        {/* 상단: 로고 + 서비스명 */}
-        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-          <div
-            style={{
-              width: 56,
-              height: 56,
-              borderRadius: 14,
-              background:
-                "linear-gradient(135deg, #1a1025 0%, #5B21B6 55%, #A78BFA 100%)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              boxShadow: "0 8px 24px rgba(124,58,237,0.45)",
-            }}
-          >
-            <BrandLogo size={36} />
-          </div>
+        {/* 상단: 로고(흰 VG 마크) + 서비스명 */}
+        <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
+          <img src={markSrc} width={89} height={56} alt="" style={{ objectFit: "contain" }} />
           <span
             style={{
               color: "#ffffff",

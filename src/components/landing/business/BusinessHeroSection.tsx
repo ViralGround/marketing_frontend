@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { ArrowRight } from "lucide-react";
 import Button from "@/components/ui/Button";
+import InteractiveDots from "@/components/landing/InteractiveDots";
 import ConsultationModal from "./ConsultationModal";
 import { useLang } from "@/lib/i18n";
 import { trackEvent } from "@/lib/gtag";
@@ -12,11 +13,20 @@ export default function BusinessHeroSection() {
   const { t } = useLang();
 
   return (
-    <section className="relative overflow-hidden bg-gradient-to-br from-primary-bg via-background to-background pt-28 pb-20 md:pt-36 md:pb-28">
-      <div className="absolute top-20 right-0 w-72 h-72 bg-primary/10 rounded-full blur-3xl" />
-      <div className="absolute bottom-0 left-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
+    <section className="relative overflow-hidden bg-[#f3f2fb] pt-28 pb-20 dark:bg-[#0d0a1c] md:pt-36 md:pb-28">
+      {/* 커서에 반응하는 인터랙티브 도트 그리드(canvas) — 크리에이터 히어로와 동일 */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0"
+        style={{
+          maskImage: "radial-gradient(ellipse 85% 70% at 50% 35%, black, transparent 80%)",
+          WebkitMaskImage: "radial-gradient(ellipse 85% 70% at 50% 35%, black, transparent 80%)",
+        }}
+      >
+        <InteractiveDots className="block h-full w-full" />
+      </div>
 
-      <div className="relative mx-auto max-w-7xl px-6 md:px-10">
+      <div className="relative z-10 mx-auto max-w-7xl px-6 md:px-10">
         <div className="grid items-center gap-12 lg:grid-cols-2">
           <div className="text-center lg:text-left">
             <h1 className="text-4xl font-extrabold leading-tight tracking-tight text-foreground md:text-5xl lg:text-6xl">

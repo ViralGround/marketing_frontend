@@ -57,8 +57,8 @@ export default function BusinessFeaturesSection() {
               key={title}
               className="group rounded-2xl border border-line bg-section-alt p-8 transition-all duration-300 hover:border-primary/30 hover:shadow-lg hover:-translate-y-1"
             >
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary transition-transform duration-300 group-hover:scale-110">
-                <Icon className="h-6 w-6" strokeWidth={2} />
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-white shadow-lg shadow-primary/30 transition-transform duration-300 group-hover:scale-110">
+                <Icon className="h-7 w-7" strokeWidth={2} />
               </div>
               <h3 className="mt-5 text-lg font-semibold text-foreground">
                 {t(title, titleEn)}

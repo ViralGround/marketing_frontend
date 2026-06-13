@@ -57,10 +57,11 @@ export default function HowItWorksSection() {
   return (
     <section className="bg-section-alt py-20 md:py-28">
       <div ref={ref} className="mx-auto max-w-6xl px-6">
-        <h2 className="text-center text-3xl font-bold text-foreground md:text-4xl">
-          {t("경험이 없어도 조회수가 나는 이유", "Why beginners still get views")}
+        <h2 className="text-center text-3xl font-bold tracking-tight text-foreground md:text-4xl">
+          {t("경험이 없어도 ", "Why beginners still ")}
+          <span className="text-primary">{t("조회수가 나는 이유", "get views")}</span>
         </h2>
-        <p className="mx-auto mt-4 max-w-2xl text-center text-muted">
+        <p className="mx-auto mt-4 max-w-2xl text-center text-lg text-muted">
           {t(
             "맨땅에서 시작하지 않아요. 검증된 포맷과 피드백으로 함께 만듭니다.",
             "You don't start from zero — proven formats and feedback get you there.",
@@ -68,22 +69,25 @@ export default function HowItWorksSection() {
         </p>
 
         <div className="mt-14 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-          {STEPS.map((s, i) => (
-            <div key={s.num} className="relative text-center">
-              {/* 연결 점선 (데스크톱에서만) */}
-              {i < STEPS.length - 1 && (
-                <div className="absolute top-12 left-[62%] hidden w-[76%] border-t-2 border-dashed border-primary/20 lg:block" />
-              )}
-              <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-2xl bg-primary-bg text-primary transition-transform duration-300 hover:scale-110">
-                <s.icon className="h-10 w-10" strokeWidth={1.75} />
+          {STEPS.map((s, i) => {
+            const Icon = s.icon;
+            return (
+              <div key={s.num} className="relative text-center">
+                {/* 연결 점선 (데스크톱에서만) */}
+                {i < STEPS.length - 1 && (
+                  <div className="absolute left-[62%] top-8 hidden w-[76%] border-t-2 border-dashed border-primary/20 lg:block" />
+                )}
+                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-primary text-white shadow-lg shadow-primary/30 transition-transform duration-300 hover:-translate-y-1">
+                  <Icon className="h-7 w-7" strokeWidth={2} />
+                </div>
+                <span className="mt-5 inline-block text-xs font-bold uppercase tracking-widest text-primary">
+                  Step {s.num}
+                </span>
+                <h3 className="mt-2 text-lg font-semibold text-foreground">{t(s.titleKo, s.titleEn)}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-muted">{t(s.descKo, s.descEn)}</p>
               </div>
-              <span className="mt-4 inline-block text-xs font-bold uppercase tracking-widest text-primary">
-                Step {s.num}
-              </span>
-              <h3 className="mt-2 text-lg font-semibold text-foreground">{t(s.titleKo, s.titleEn)}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-muted">{t(s.descKo, s.descEn)}</p>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>

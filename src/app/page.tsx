@@ -4,7 +4,6 @@ import ResultsShowcaseSection from "@/components/landing/ResultsShowcaseSection"
 import MarketContextSection from "@/components/landing/MarketContextSection";
 import HowItWorksSection from "@/components/landing/HowItWorksSection";
 import TestimonialsSection from "@/components/landing/TestimonialsSection";
-import CommunityBenefitsSection from "@/components/landing/CommunityBenefitsSection";
 import ProgramTimelineSection from "@/components/landing/ProgramTimelineSection";
 import EarningsSimulator from "@/components/landing/EarningsSimulator";
 import FAQSection from "@/components/landing/FAQSection";
@@ -20,7 +19,6 @@ export default function Home() {
       <HowItWorksSection />
       <ResultsShowcaseSection />
       <TestimonialsSection />
-      <CommunityBenefitsSection />
       <ProgramTimelineSection />
       <div id="earnings" className="scroll-mt-20">
         <EarningsSimulator />

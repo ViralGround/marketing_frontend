@@ -68,6 +68,11 @@ const TESTIMONIALS = [
   },
 ];
 
+// 후기 아바타 — Memoji 풍 일러스트 아바타(DiceBear avataaars). 이름 기반 자동 생성이라 사람마다 얼굴이 다름.
+// (애플 Memoji 는 독점이라 사용 불가 — 가장 비슷한 무료 일러스트 아바타로 대체)
+const avatarUrl = (seed: string) =>
+  `https://api.dicebear.com/9.x/avataaars/svg?seed=${encodeURIComponent(seed)}&radius=50&backgroundColor=ede9fe,dbeafe,dcfce7,fce7f3,ffedd5`;
+
 export default function TestimonialsSection() {
   const ref = useScrollAnimation<HTMLDivElement>();
   const { t } = useLang();
@@ -96,9 +101,16 @@ export default function TestimonialsSection() {
               </Badge>
               <p className="text-sm leading-relaxed text-muted">{t(item.quoteKo, item.quoteEn)}</p>
               <div className="mt-6 flex items-center gap-3 border-t border-line pt-5">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/15 text-sm font-bold text-primary">
-                  {item.avatar}
-                </div>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={avatarUrl(item.avatar)}
+                  alt=""
+                  aria-hidden="true"
+                  width={44}
+                  height={44}
+                  loading="lazy"
+                  className="h-11 w-11 shrink-0 rounded-full bg-primary/5 ring-1 ring-black/5 dark:ring-white/10"
+                />
                 <div>
                   <p className="text-sm font-semibold text-foreground">{item.name}</p>
                   <p className="text-xs text-faint">{t(item.roleKo, item.roleEn)}</p>

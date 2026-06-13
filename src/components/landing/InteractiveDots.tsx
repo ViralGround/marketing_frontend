@@ -5,7 +5,7 @@ import { useEffect, useRef } from "react";
 /**
  * 커서에 반응하는 인터랙티브 도트 그리드(canvas).
  * 커서가 가까우면 점들이 밀려났다가 부드럽게 제자리로 돌아온다(lerp). 라이트/다크 색 자동.
- * Stitch(stitch.withgoogle.com) 히어로의 인터랙티브 배경 참고. prefers-reduced-motion 시 정적.
+ * Stitch(stitch.withgoogle.com) 히어로의 인터랙티브 배경 참고. prefers-reduced-motion 시 정적(1회 렌더).
  */
 export default function InteractiveDots({ className = "" }: { className?: string }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -68,7 +68,7 @@ export default function InteractiveDots({ className = "" }: { className?: string
         ctx.arc(d.x, d.y, DOT_R, 0, Math.PI * 2);
       }
       ctx.fill();
-      raf = requestAnimationFrame(paint);
+      if (!reduced) raf = requestAnimationFrame(paint);
     };
 
     const onMove = (e: MouseEvent) => {
@@ -84,26 +84,11 @@ export default function InteractiveDots({ className = "" }: { className?: string
     build();
     const ro = new ResizeObserver(() => build());
     ro.observe(canvas);
-
-    if (reduced) {
-      paintStatic();
-    } else {
+    if (!reduced) {
       window.addEventListener("mousemove", onMove);
       window.addEventListener("mouseout", onLeave);
-      raf = requestAnimationFrame(paint);
     }
-
-    function paintStatic() {
-      ctx.clearRect(0, 0, w, h);
-      const dark = document.documentElement.classList.contains("dark");
-      ctx.fillStyle = dark ? "rgba(150,130,235,0.42)" : "rgba(146,130,222,0.60)";
-      ctx.beginPath();
-      for (const d of dots) {
-        ctx.moveTo(d.ox + DOT_R, d.oy);
-        ctx.arc(d.ox, d.oy, DOT_R, 0, Math.PI * 2);
-      }
-      ctx.fill();
-    }
+    paint(); // 최초 렌더(움직임 모드면 이후 rAF 로 계속)
 
     return () => {
       cancelAnimationFrame(raf);

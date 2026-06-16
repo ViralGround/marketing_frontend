@@ -3,8 +3,7 @@
  *
  * - 최초 호출 시 위젯 스크립트/CSS 를 1회 주입하고, 이후 팝업을 띄운다.
  *   (랜딩에서만 호출되므로 대시보드 등 다른 페이지엔 스크립트가 실리지 않는다.)
- * - 이벤트 URL 은 `NEXT_PUBLIC_CALENDLY_URL`. 미설정 시 placeholder 를 쓰며
- *   실제 URL 을 받으면 .env 한 줄로 교체된다.
+ * - 이벤트 URL 은 `NEXT_PUBLIC_CALENDLY_URL` 로 덮어쓸 수 있고, 미설정 시 코드의 기본 URL 을 쓴다.
  * - 스크립트 차단/실패 시 새 탭으로 폴백한다.
  */
 
@@ -14,7 +13,7 @@ const CSS_HREF = "https://assets.calendly.com/assets/external/widget.css";
 // 실제 Calendly 이벤트 URL. .env(NEXT_PUBLIC_CALENDLY_URL)로 덮어쓸 수 있으나,
 // 배포 환경에서 환경변수 누락 시에도 동작하도록 공개 URL 을 기본값으로 둔다.
 export const CALENDLY_URL =
-  process.env.NEXT_PUBLIC_CALENDLY_URL ?? "https://calendly.com/viralground-marketing/30min";
+  process.env.NEXT_PUBLIC_CALENDLY_URL ?? "https://calendly.com/aqua4595/30min";
 
 declare global {
   interface Window {

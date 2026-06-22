@@ -43,6 +43,12 @@ export default function AdminLayout({
               {t("캠페인 관리", "Campaigns")}
             </Link>
             <Link
+              href="/admin/analytics"
+              className="block rounded-lg px-3 py-2 text-sm font-medium text-content-soft transition-colors hover:bg-surface hover:text-foreground"
+            >
+              {t("릴스 분석", "Reel analytics")}
+            </Link>
+            <Link
               href="/admin/escrow"
               className="block rounded-lg px-3 py-2 text-sm font-medium text-content-soft transition-colors hover:bg-surface hover:text-foreground"
             >

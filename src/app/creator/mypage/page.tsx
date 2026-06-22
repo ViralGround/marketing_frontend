@@ -7,6 +7,7 @@ import api from "@/lib/api";
 import { removeTokens } from "@/lib/auth";
 import { useAuthStore } from "@/store/useAuthStore";
 import StatCards from "@/components/creator/StatCards";
+import InstagramConnectCard from "@/components/creator/InstagramConnectCard";
 import ApplicationStatusBadge from "@/components/campaign/ApplicationStatusBadge";
 import VideoUploader from "@/components/submission/VideoUploader";
 import ReviewForm from "@/components/review/ReviewForm";
@@ -188,6 +189,11 @@ export default function CreatorMyPage() {
           <p className="text-sm text-muted">{t("SNS 조회수·좋아요·댓글 입력 및 확인", "Enter and review views, likes, and comments")}</p>
           <p className="mt-4 text-sm font-medium text-primary">{t("보러 가기 →", "View →")}</p>
         </Link>
+      </div>
+
+      {/* 인스타그램 연동 */}
+      <div className="mb-12">
+        <InstagramConnectCard />
       </div>
 
       {/* 내 지원 현황 */}

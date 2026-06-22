@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import api from "@/lib/api";
 import KPICards from "@/components/metric/KPICards";
 import MetricForm from "@/components/metric/MetricForm";
+import BackButton from "@/components/ui/BackButton";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import { useLang } from "@/lib/i18n";
@@ -50,6 +51,7 @@ export default function CreatorPerformancePage() {
 
   return (
     <div className="mx-auto max-w-4xl px-6 py-10 md:px-10">
+      <BackButton href="/creator/home" labelKo="홈으로" labelEn="Back to home" />
       <div className="mb-10">
         <p className="text-sm font-medium text-muted">{t("성과 대시보드", "Performance dashboard")}</p>
         <h1 className="mt-1 text-3xl font-bold tracking-tight text-foreground md:text-4xl">

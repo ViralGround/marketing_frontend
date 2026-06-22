@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import api from "@/lib/api";
+import BackButton from "@/components/ui/BackButton";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import ImageUploader from "@/components/ui/ImageUploader";
@@ -128,6 +129,7 @@ export default function EditCampaignPage() {
 
   return (
     <div className="mx-auto max-w-2xl">
+      <BackButton href="/company/campaigns" labelKo="캠페인 목록으로" labelEn="Back to campaigns" />
       <h1 className="text-3xl font-bold tracking-tight text-foreground md:text-4xl">
         {t("캠페인 수정", "Edit campaign")}
       </h1>

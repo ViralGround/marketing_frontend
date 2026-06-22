@@ -8,6 +8,7 @@ import SubmissionTimeline, {
   type SubmissionHistoryItem,
 } from "@/components/submission/SubmissionTimeline";
 import ReviewForm from "@/components/review/ReviewForm";
+import BackButton from "@/components/ui/BackButton";
 import Badge from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
@@ -271,6 +272,7 @@ export default function CompanyCampaignDetailPage() {
 
   return (
     <div className="mx-auto max-w-4xl space-y-8">
+      <BackButton href="/company/campaigns" labelKo="캠페인 목록으로" labelEn="Back to campaigns" />
       {data.thumbnailUrl && (
         <div className="aspect-video overflow-hidden rounded-2xl bg-surface-chip">
           {/* eslint-disable-next-line @next/next/no-img-element */}

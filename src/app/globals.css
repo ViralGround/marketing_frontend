@@ -159,6 +159,20 @@ body {
   animation-play-state: paused;
 }
 
+/* 후기 카드 세로 marquee (위로 무한 흐름) — duration 은 컬럼별 인라인 style 로 지정 */
+@keyframes marquee-vertical {
+  from { transform: translateY(0); }
+  to { transform: translateY(-50%); }
+}
+
+.animate-marquee-vertical {
+  animation: marquee-vertical 30s linear infinite;
+}
+
+.animate-marquee-vertical:hover {
+  animation-play-state: paused;
+}
+
 /* 스크롤 트리거: 초기 상태 숨김 */
 .scroll-hidden {
   opacity: 0;
@@ -177,7 +191,8 @@ body {
   .animate-fade-in,
   .animate-scale-in,
   .animate-float,
-  .animate-marquee {
+  .animate-marquee,
+  .animate-marquee-vertical {
     animation: none;
   }
   .scroll-hidden {

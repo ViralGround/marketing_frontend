@@ -1,5 +1,6 @@
 "use client";
 
+import { Fragment } from "react";
 import Badge from "@/components/ui/Badge";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 import { useLang } from "@/lib/i18n";
@@ -73,15 +74,86 @@ const TESTIMONIALS = [
 const avatarUrl = (seed: string) =>
   `https://api.dicebear.com/9.x/avataaars/svg?seed=${encodeURIComponent(seed)}&radius=50&backgroundColor=ede9fe,dbeafe,dcfce7,fce7f3,ffedd5`;
 
+type Testimonial = (typeof TESTIMONIALS)[number];
+type Translate = (ko: string, en: string) => string;
+
+/** 후기 카드 — 수입 배지 + 후기 + 아바타. 마퀴 컬럼 내부에서 사용. */
+function TestimonialCard({ item, t, hidden }: { item: Testimonial; t: Translate; hidden?: boolean }) {
+  return (
+    <div
+      aria-hidden={hidden || undefined}
+      className="flex w-72 flex-col rounded-2xl border border-line bg-surface p-7 shadow-lg shadow-primary/5"
+    >
+      <Badge className="mb-4 self-start px-3 py-1 text-sm font-semibold">
+        {t(item.incomeKo, item.incomeEn)}
+      </Badge>
+      <p className="text-sm leading-relaxed text-muted">{t(item.quoteKo, item.quoteEn)}</p>
+      <div className="mt-6 flex items-center gap-3 border-t border-line pt-5">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={avatarUrl(item.avatar)}
+          alt=""
+          aria-hidden="true"
+          width={44}
+          height={44}
+          loading="lazy"
+          className="h-11 w-11 shrink-0 rounded-full bg-primary/5 ring-1 ring-black/5 dark:ring-white/10"
+        />
+        <div>
+          <p className="text-sm font-semibold text-foreground">{item.name}</p>
+          <p className="text-xs text-faint">{t(item.roleKo, item.roleEn)}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/** 위로 무한 스크롤되는 후기 컬럼. 카드를 2벌 렌더해 -50% 이동으로 끊김 없이 순환(hover 시 일시정지). */
+function TestimonialColumn({
+  items,
+  duration,
+  t,
+  className = "",
+}: {
+  items: Testimonial[];
+  duration: number;
+  t: Translate;
+  className?: string;
+}) {
+  return (
+    <div className={className}>
+      <div
+        className="animate-marquee-vertical flex flex-col gap-6 pb-6"
+        style={{ animationDuration: `${duration}s` }}
+      >
+        {[0, 1].map((dup) => (
+          <Fragment key={dup}>
+            {items.map((item) => (
+              <TestimonialCard key={`${dup}-${item.name}`} item={item} t={t} hidden={dup === 1} />
+            ))}
+          </Fragment>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function TestimonialsSection() {
   const ref = useScrollAnimation<HTMLDivElement>();
   const { t } = useLang();
 
+  const columns = [
+    { items: TESTIMONIALS.slice(0, 2), duration: 32, className: "" },
+    { items: TESTIMONIALS.slice(2, 4), duration: 26, className: "hidden md:block" },
+    { items: TESTIMONIALS.slice(4, 6), duration: 38, className: "hidden lg:block" },
+  ];
+
   return (
     <section className="bg-section-alt py-20 md:py-28">
       <div ref={ref} className="mx-auto max-w-6xl px-6">
-        <h2 className="text-center text-3xl font-bold text-foreground md:text-4xl">
-          {t("먼저 시작한 크리에이터들의 이야기", "Stories from creators who started first")}
+        <h2 className="text-center text-3xl font-bold tracking-tight text-foreground md:text-4xl">
+          {t("먼저 시작한 ", "Stories from ")}
+          <span className="text-primary">{t("크리에이터들의 이야기", "creators who started first")}</span>
         </h2>
         <p className="mx-auto mt-4 max-w-2xl text-center text-muted">
           {t(
@@ -90,33 +162,21 @@ export default function TestimonialsSection() {
           )}
         </p>
 
-        <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {TESTIMONIALS.map((item) => (
-            <div
-              key={item.name}
-              className="flex flex-col rounded-2xl border border-line bg-surface p-7 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
-            >
-              <Badge className="mb-4 self-start px-3 py-1 text-sm font-semibold">
-                {t(item.incomeKo, item.incomeEn)}
-              </Badge>
-              <p className="text-sm leading-relaxed text-muted">{t(item.quoteKo, item.quoteEn)}</p>
-              <div className="mt-6 flex items-center gap-3 border-t border-line pt-5">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={avatarUrl(item.avatar)}
-                  alt=""
-                  aria-hidden="true"
-                  width={44}
-                  height={44}
-                  loading="lazy"
-                  className="h-11 w-11 shrink-0 rounded-full bg-primary/5 ring-1 ring-black/5 dark:ring-white/10"
-                />
-                <div>
-                  <p className="text-sm font-semibold text-foreground">{item.name}</p>
-                  <p className="text-xs text-faint">{t(item.roleKo, item.roleEn)}</p>
-                </div>
-              </div>
-            </div>
+        <div
+          className="mt-12 flex max-h-[640px] justify-center gap-6 overflow-hidden"
+          style={{
+            maskImage: "linear-gradient(to bottom, transparent, #000 18%, #000 82%, transparent)",
+            WebkitMaskImage: "linear-gradient(to bottom, transparent, #000 18%, #000 82%, transparent)",
+          }}
+        >
+          {columns.map((col) => (
+            <TestimonialColumn
+              key={col.items[0].name}
+              items={col.items}
+              duration={col.duration}
+              t={t}
+              className={col.className}
+            />
           ))}
         </div>
       </div>

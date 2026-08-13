@@ -3,10 +3,9 @@
 import { useState } from "react";
 import api from "@/lib/api";
 import Button from "@/components/ui/Button";
+import Textarea from "@/components/ui/Textarea";
 import { useLang } from "@/lib/i18n";
 
-const TEXTAREA_CLASS =
-  "block w-full rounded-lg border border-line-strong bg-surface px-3 py-2.5 text-sm text-foreground placeholder-faint transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20";
 
 interface Props {
   applicationId: number;
@@ -65,13 +64,13 @@ export default function ReviewForm({ applicationId, onSubmitted, onCancel }: Pro
       >
         {t("코멘트", "Comment")} <span className="text-faint">{t("(선택)", "(optional)")}</span>
       </label>
-      <textarea
+      <Textarea
         id="review-comment"
         value={comment}
         onChange={(e) => setComment(e.target.value)}
         rows={4}
         placeholder={t("협업 경험을 간단히 남겨주세요.", "Briefly share your collaboration experience.")}
-        className={`${TEXTAREA_CLASS} mt-1.5`}
+        className="mt-1.5"
       />
 
       {error && <p className="mt-3 text-sm text-error">{error}</p>}

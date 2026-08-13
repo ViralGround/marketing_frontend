@@ -3,54 +3,69 @@
 import type { ButtonHTMLAttributes, Ref } from "react";
 
 /**
- * 디자인 시스템 표준 버튼.
- * - 라운드는 항상 full (토스 톤)
- * - variant: primary(채움) / secondary(아웃라인) / ghost(투명)
- * - size: sm / md / lg
- * - 클래스 합성 시 추가 className 은 마지막에 와서 utility override 가능
+ * VG UI System 표준 버튼 — 킷 "BUTTONS & CONTROLS" 시트 01 스펙.
+ * - 크기: sm 32px / md 40px / lg 48px, 라운드 10px
+ * - variant: primary(보라 채움) / secondary(보라 아웃라인) / ghost / destructive(삭제)
+ * - loading: 스피너 + 비활성 (킷 Loading 상태)
+ * - focus: 라벤더 3px 링
  */
 
-type Variant = "primary" | "secondary" | "ghost";
+type Variant = "primary" | "secondary" | "ghost" | "destructive";
 type Size = "sm" | "md" | "lg";
 
 interface Props extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: Variant;
   size?: Size;
   fullWidth?: boolean;
+  loading?: boolean;
   ref?: Ref<HTMLButtonElement>;
 }
 
 const VARIANT: Record<Variant, string> = {
   primary:
-    "bg-primary text-white shadow-sm hover:bg-primary-dark hover:shadow disabled:bg-primary",
+    "bg-primary text-white hover:bg-primary-dark active:bg-primary-dark disabled:bg-primary",
   secondary:
-    "border border-line-strong bg-surface text-foreground hover:border-primary/40 hover:text-primary",
+    "border border-primary/60 bg-surface text-primary hover:border-primary hover:bg-primary-bg active:bg-primary-bg",
   ghost:
-    "text-content-soft hover:text-foreground hover:bg-surface-muted",
+    "text-content-soft hover:text-foreground hover:bg-surface-chip active:bg-surface-chip",
+  destructive:
+    "bg-error text-white hover:brightness-95 active:brightness-90 disabled:bg-error",
 };
 
 const SIZE: Record<Size, string> = {
-  sm: "px-4 py-2 text-sm",
-  md: "px-6 py-2.5 text-sm md:text-base",
-  lg: "px-8 py-3.5 text-base md:text-lg",
+  sm: "h-8 px-3.5 text-[13px]",
+  md: "h-10 px-5 text-sm",
+  lg: "h-12 px-7 text-[15px]",
 };
 
 const BASE =
-  "inline-flex items-center justify-center whitespace-nowrap rounded-full font-semibold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-primary/30";
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-[10px] font-semibold transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-[3px] focus-visible:ring-primary-bg focus-visible:border-primary";
 
 export default function Button({
   variant = "primary",
   size = "md",
   fullWidth = false,
+  loading = false,
   className = "",
+  disabled,
+  children,
   ref,
   ...rest
 }: Props) {
   return (
     <button
       ref={ref}
+      disabled={disabled || loading}
       className={`${BASE} ${VARIANT[variant]} ${SIZE[size]} ${fullWidth ? "w-full" : ""} ${className}`}
       {...rest}
-    />
+    >
+      {loading && (
+        <span
+          aria-hidden="true"
+          className="h-4 w-4 flex-shrink-0 animate-spin rounded-full border-2 border-current border-t-transparent opacity-80"
+        />
+      )}
+      {children}
+    </button>
   );
 }

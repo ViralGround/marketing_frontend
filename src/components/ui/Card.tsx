@@ -15,8 +15,9 @@ interface Props extends HTMLAttributes<HTMLDivElement> {
 }
 
 const VARIANT: Record<Variant, string> = {
-  flat: "bg-surface border border-line",
-  elevated: "bg-surface border border-line/60 shadow-sm",
+  // 킷 카드 스펙: 16px 라운드(기본 rounded-2xl 유지) + 은은한 확산 그림자
+  flat: "bg-surface border border-line shadow-[0_8px_24px_rgba(0,0,0,0.06)]",
+  elevated: "bg-surface border border-line/60 shadow-[0_12px_32px_rgba(0,0,0,0.08)]",
   highlight: "bg-gradient-to-br from-primary to-primary-dark text-white shadow-lg",
 };
 

@@ -1,10 +1,10 @@
 import type { InputHTMLAttributes, Ref } from "react";
 
 /**
- * 디자인 시스템 표준 텍스트 input.
- * - 라운드 lg(8px). border + focus ring(primary/20) 의 토스 톤.
- * - placeholder 는 faint, 본문은 foreground.
- * - textarea 는 별도 컴포넌트 없이 동일 className 패턴을 따른다 (Phase 3 에서 정리).
+ * VG UI System 표준 텍스트 input — 킷 검색/폼 필드 스펙.
+ * - 높이 44px, 라운드 10px
+ * - focus: 보라 보더 + 라벤더 3px 링 (킷 Focus 상태)
+ * - aria-invalid: 레드 보더 (킷 오류 상태) — 폼 검증에서 aria-invalid 를 지정
  */
 
 interface Props extends InputHTMLAttributes<HTMLInputElement> {
@@ -12,7 +12,7 @@ interface Props extends InputHTMLAttributes<HTMLInputElement> {
 }
 
 const BASE =
-  "block w-full rounded-lg border border-line-strong bg-surface px-3 py-2.5 text-sm text-foreground placeholder-faint transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-50 disabled:cursor-not-allowed";
+  "block h-11 w-full rounded-[10px] border border-line bg-surface px-3.5 text-sm text-foreground placeholder-faint transition-[border-color,box-shadow] duration-150 focus:border-primary focus:outline-none focus:ring-[3px] focus:ring-primary-bg aria-invalid:border-error aria-invalid:ring-error/10 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-surface-muted";
 
 export default function Input({ className = "", ref, ...rest }: Props) {
   return <input ref={ref} className={`${BASE} ${className}`} {...rest} />;

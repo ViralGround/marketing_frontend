@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Search as SearchIcon } from "lucide-react";
 import api from "@/lib/api";
 import CampaignCard from "@/components/campaign/CampaignCard";
 import ApplicationStatusBadge from "@/components/campaign/ApplicationStatusBadge";
@@ -86,17 +87,26 @@ export default function CreatorHomePage() {
 
       {/* 정렬 + 검색 */}
       <div className="mb-8 flex flex-wrap items-center gap-3">
-        <div className="flex gap-1.5">
-          {(["recent", "reward", "deadline"] as SortKey[]).map((s) => {
+        {/* 킷 세그먼트 컨트롤 — 붙은 그룹, 활성 보라 채움 */}
+        <div
+          role="group"
+          aria-label={t("정렬", "Sort")}
+          className="inline-flex overflow-hidden rounded-[10px] border border-line bg-surface"
+        >
+          {(["recent", "reward", "deadline"] as SortKey[]).map((s, index) => {
             const active = sort === s;
             return (
               <button
                 key={s}
+                type="button"
+                aria-pressed={active}
                 onClick={() => changeSort(s)}
-                className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
+                className={`h-10 px-4 text-sm font-semibold transition-colors ${
+                  index > 0 ? "border-l border-line" : ""
+                } ${
                   active
                     ? "bg-primary text-white"
-                    : "border border-line text-content-soft hover:border-primary/40 hover:text-primary"
+                    : "text-content-soft hover:bg-surface-chip hover:text-foreground"
                 }`}
               >
                 {t(SORT_LABEL[s].ko, SORT_LABEL[s].en)}
@@ -105,13 +115,19 @@ export default function CreatorHomePage() {
           })}
         </div>
         <form onSubmit={handleSearch} className="flex items-center gap-2">
-          <Input
-            type="text"
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-            placeholder={t("캠페인 제목·브랜드 검색", "Search by campaign title or brand")}
-            className="w-64"
-          />
+          <div className="relative">
+            <SearchIcon
+              aria-hidden="true"
+              className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-faint"
+            />
+            <Input
+              type="search"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              placeholder={t("캠페인 제목·브랜드 검색", "Search by campaign title or brand")}
+              className="w-64 pl-10"
+            />
+          </div>
           <Button type="submit" size="sm">
             {t("검색", "Search")}
           </Button>

@@ -11,6 +11,7 @@ import ReviewForm from "@/components/review/ReviewForm";
 import BackButton from "@/components/ui/BackButton";
 import Badge from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
+import Textarea from "@/components/ui/Textarea";
 import Card from "@/components/ui/Card";
 import { useLang } from "@/lib/i18n";
 
@@ -121,8 +122,6 @@ const APP_TONE: Record<AppStatus, Tone> = {
   SETTLED: "primary",
 };
 
-const TEXTAREA_CLASS =
-  "block w-full rounded-lg border border-line-strong bg-surface px-3 py-2.5 text-sm text-foreground placeholder-faint transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20";
 
 export default function CompanyCampaignDetailPage() {
   const params = useParams<{ id: string }>();
@@ -667,7 +666,7 @@ export default function CompanyCampaignDetailPage() {
                 "This feedback is sent to the creator. Describe specifically what to change and how.",
               )}
             </p>
-            <textarea
+            <Textarea
               value={changesComment}
               onChange={(e) => setChangesComment(e.target.value)}
               rows={4}
@@ -675,7 +674,6 @@ export default function CompanyCampaignDetailPage() {
                 "예: 로고 노출 시간이 3초 미만입니다. 중반부 이후에도 3초 이상 노출되도록 편집해주세요.",
                 "e.g. The logo appears for under 3 seconds. Please edit so it stays on screen for at least 3 seconds past the midpoint.",
               )}
-              className={TEXTAREA_CLASS}
             />
             <div className="mt-5 flex justify-end gap-2">
               <Button variant="secondary" size="sm" onClick={() => setChangesModal(null)}>

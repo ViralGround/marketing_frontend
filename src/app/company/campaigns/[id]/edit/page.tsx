@@ -8,6 +8,7 @@ import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import ImageUploader from "@/components/ui/ImageUploader";
 import Input from "@/components/ui/Input";
+import Textarea from "@/components/ui/Textarea";
 import { useLang } from "@/lib/i18n";
 import PageHeader from "@/components/workspace/PageHeader";
 import {
@@ -33,8 +34,6 @@ interface Detail {
   applicationCount: number;
 }
 
-const TEXTAREA_CLASS =
-  "block w-full rounded-lg border border-line-strong bg-surface px-3 py-2.5 text-sm text-foreground placeholder-faint transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:bg-surface-muted disabled:text-muted";
 
 export default function EditCampaignPage() {
   const params = useParams<{ id: string }>();
@@ -177,14 +176,14 @@ export default function EditCampaignPage() {
           <label htmlFor="description" className="block text-sm font-medium text-content-soft">
             {t("캠페인 설명", "Campaign description")}
           </label>
-          <textarea
+          <Textarea
             id="description"
             rows={5}
             required
             disabled={readOnly}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            className={`${TEXTAREA_CLASS} mt-1.5`}
+            className="mt-1.5"
           />
         </div>
         <div>
@@ -192,13 +191,13 @@ export default function EditCampaignPage() {
             {t("제출 요구사항", "Submission requirements")}{" "}
             <span className="text-faint">{t("(선택)", "(optional)")}</span>
           </label>
-          <textarea
+          <Textarea
             id="requirements"
             rows={4}
             disabled={readOnly}
             value={requirements}
             onChange={(e) => setRequirements(e.target.value)}
-            className={`${TEXTAREA_CLASS} mt-1.5`}
+            className="mt-1.5"
           />
         </div>
 

@@ -5,6 +5,7 @@ import api from "@/lib/api";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import Input from "@/components/ui/Input";
+import Textarea from "@/components/ui/Textarea";
 import ImageUploader from "@/components/ui/ImageUploader";
 import CompanyAccountDeletion from "@/components/company/CompanyAccountDeletion";
 import MarketingConsentSettings from "@/components/account/MarketingConsentSettings";
@@ -19,8 +20,6 @@ interface ProfileData {
   logoUrl: string | null;
 }
 
-const TEXTAREA_CLASS =
-  "block w-full rounded-lg border border-line-strong bg-surface px-3 py-2.5 text-sm text-foreground placeholder-faint transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20";
 
 export default function CompanyProfilePage() {
   const { t } = useLang();
@@ -119,7 +118,7 @@ export default function CompanyProfilePage() {
               {t("회사 소개", "Company introduction")}{" "}
               <span className="text-faint">{t("(선택)", "(optional)")}</span>
             </label>
-            <textarea
+            <Textarea
               id="introduction"
               value={introduction}
               onChange={(e) => setIntroduction(e.target.value)}
@@ -128,7 +127,6 @@ export default function CompanyProfilePage() {
                 "회사와 브랜드를 소개해주세요. 크리에이터의 신뢰를 높이는 데 도움이 됩니다.",
                 "Introduce your company and brand. It helps build creators' trust.",
               )}
-              className={TEXTAREA_CLASS}
             />
           </div>
 

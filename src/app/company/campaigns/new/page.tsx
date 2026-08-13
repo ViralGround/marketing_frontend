@@ -5,14 +5,13 @@ import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 import BackButton from "@/components/ui/BackButton";
 import Button from "@/components/ui/Button";
-import Card from "@/components/ui/Card";
 import ImageUploader from "@/components/ui/ImageUploader";
+import Field from "@/components/ui/Field";
 import Input from "@/components/ui/Input";
+import Textarea from "@/components/ui/Textarea";
 import { useLang } from "@/lib/i18n";
 import PageHeader from "@/components/workspace/PageHeader";
 
-const TEXTAREA_CLASS =
-  "block w-full rounded-lg border border-line-strong bg-surface px-3 py-2.5 text-sm text-foreground placeholder-faint transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20";
 
 export default function NewCampaignPage() {
   const { t } = useLang();
@@ -74,146 +73,134 @@ export default function NewCampaignPage() {
         )}
       />
 
-      <form onSubmit={handleSubmit} className="mt-8 space-y-6">
+      <form onSubmit={handleSubmit} className="mt-8 space-y-5">
         {error && (
-          <div className="rounded-xl border border-error/30 bg-error/5 p-3 text-sm text-error">
+          <div
+            role="alert"
+            className="flex items-center gap-2.5 rounded-[10px] border border-error/25 bg-error/5 px-4 py-3 text-sm font-medium text-error"
+          >
+            <span aria-hidden="true" className="grid h-5 w-5 flex-shrink-0 place-items-center rounded-full bg-error text-[11px] font-black text-white">!</span>
             {error}
           </div>
         )}
 
-        <section className="space-y-5">
-          <div>
-            <label htmlFor="title" className="block text-sm font-medium text-content-soft">
-              {t("캠페인 제목", "Campaign title")}
-            </label>
-            <Input
-              id="title"
-              type="text"
-              required
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="mt-1.5"
-            />
-          </div>
-          <div>
-            <label htmlFor="brandName" className="block text-sm font-medium text-content-soft">
-              {t("브랜드명", "Brand name")}
-            </label>
-            <Input
-              id="brandName"
-              type="text"
-              required
-              value={brandName}
-              onChange={(e) => setBrandName(e.target.value)}
-              className="mt-1.5"
-            />
-          </div>
-          <div>
-            <label htmlFor="description" className="block text-sm font-medium text-content-soft">
-              {t("캠페인 설명", "Campaign description")}
-            </label>
-            <textarea
-              id="description"
-              required
-              rows={5}
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className={`${TEXTAREA_CLASS} mt-1.5`}
-            />
-          </div>
-          <div>
-            <label htmlFor="requirements" className="block text-sm font-medium text-content-soft">
-              {t("제출 요구사항", "Submission requirements")} <span className="text-faint">{t("(선택)", "(optional)")}</span>
-            </label>
-            <textarea
-              id="requirements"
-              rows={4}
-              value={requirements}
-              onChange={(e) => setRequirements(e.target.value)}
-              className={`${TEXTAREA_CLASS} mt-1.5`}
-              placeholder={t(
-                "예: 제품 노출 3초 이상, 릴스 15초 이상 등",
-                "e.g. show the product for 3s+, Reels 15s+, etc.",
-              )}
-            />
-          </div>
-        </section>
-
-        <section className="space-y-5 border-t border-line pt-6">
-          <h2 className="text-sm font-semibold uppercase tracking-wider text-muted">
-            {t("보상 · 모집", "Reward · Recruitment")}
+        {/* 01 — 캠페인 기본 정보 (킷 폼 문법: 넘버드 섹션 패널) */}
+        <section className="rounded-2xl border border-line bg-surface p-6 shadow-[0_8px_24px_rgba(0,0,0,0.06)]">
+          <h2 className="mb-5 flex items-baseline gap-2.5 border-b border-line pb-4">
+            <span className="font-display text-sm text-primary">01</span>
+            <span className="text-base font-extrabold text-foreground">{t("캠페인 기본 정보", "Campaign basics")}</span>
           </h2>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label
-                htmlFor="rewardAmount"
-                className="block text-sm font-medium text-content-soft"
-              >
-                {t("1인당 보상 (원)", "Reward per creator (KRW)")}
-              </label>
+          <div className="space-y-5">
+            <Field label={t("캠페인 제목", "Campaign title")} htmlFor="title" required>
               <Input
-                id="rewardAmount"
-                type="number"
-                min={0}
+                id="title"
+                type="text"
                 required
-                value={rewardAmount}
-                onChange={(e) => setRewardAmount(e.target.value)}
-                className="mt-1.5"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder={t("눈에 띄는 캠페인 제목을 입력하세요", "Enter a campaign title that stands out")}
               />
-            </div>
-            <div>
-              <label
-                htmlFor="maxParticipants"
-                className="block text-sm font-medium text-content-soft"
-              >
-                {t("모집 인원", "Number of creators")}
-              </label>
+            </Field>
+            <Field label={t("브랜드명", "Brand name")} htmlFor="brandName" required>
               <Input
-                id="maxParticipants"
-                type="number"
-                min={1}
+                id="brandName"
+                type="text"
                 required
-                value={maxParticipants}
-                onChange={(e) => setMaxParticipants(e.target.value)}
-                className="mt-1.5"
+                value={brandName}
+                onChange={(e) => setBrandName(e.target.value)}
               />
-            </div>
-          </div>
-          <Card className="bg-surface-muted p-5">
-            <p className="text-xs font-medium text-muted">{t("예상 총 예산", "Estimated total budget")}</p>
-            <p className="mt-1 text-2xl font-bold tracking-tight text-foreground">
-              {t(`${totalBudget.toLocaleString()}원`, `₩${totalBudget.toLocaleString()}`)}
-            </p>
-            <p className="mt-2 text-xs text-muted">
-              {t("등록 직후 캠페인은 ", "Right after creation, the campaign is ")}
-              <span className="font-semibold text-warning">{t("결제 비활성", "Payment unavailable")}</span>{" "}
-              {t(
-                "상태로 저장됩니다. 현재 어떤 계좌로도 송금하지 마세요. 결제·모집은 PG 활성화와 계약 확인 후 진행합니다.",
-                ". Do not transfer money to any account. Payment and recruiting begin only after PG activation and contract confirmation.",
-              )}
-            </p>
-          </Card>
-          <div>
-            <label htmlFor="deadline" className="block text-sm font-medium text-content-soft">
-              {t("모집 마감일", "Recruitment deadline")} <span className="text-faint">{t("(선택)", "(optional)")}</span>
-            </label>
-            <Input
-              id="deadline"
-              type="datetime-local"
-              value={deadline}
-              onChange={(e) => setDeadline(e.target.value)}
-              className="mt-1.5"
-            />
-          </div>
-          <div>
-            <label className="mb-1.5 block text-sm font-medium text-content-soft">
-              {t("썸네일", "Thumbnail")} <span className="text-faint">{t("(선택)", "(optional)")}</span>
-            </label>
-            <ImageUploader previewUrl={null} onChange={setThumbnailFileKey} aspect={16 / 9} />
+            </Field>
+            <Field label={t("캠페인 설명", "Campaign description")} htmlFor="description" required>
+              <Textarea
+                id="description"
+                required
+                rows={5}
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+              />
+            </Field>
+            <Field
+              label={t("제출 요구사항", "Submission requirements")}
+              htmlFor="requirements"
+              optionalLabel={t("(선택)", "(optional)")}
+            >
+              <Textarea
+                id="requirements"
+                rows={4}
+                value={requirements}
+                onChange={(e) => setRequirements(e.target.value)}
+                placeholder={t(
+                  "예: 제품 노출 3초 이상, 릴스 15초 이상 등",
+                  "e.g. show the product for 3s+, Reels 15s+, etc.",
+                )}
+              />
+            </Field>
           </div>
         </section>
 
-        <Button type="submit" disabled={loading} fullWidth>
+        {/* 02 — 보상 · 모집 */}
+        <section className="rounded-2xl border border-line bg-surface p-6 shadow-[0_8px_24px_rgba(0,0,0,0.06)]">
+          <h2 className="mb-5 flex items-baseline gap-2.5 border-b border-line pb-4">
+            <span className="font-display text-sm text-primary">02</span>
+            <span className="text-base font-extrabold text-foreground">{t("보상 · 모집", "Reward · Recruitment")}</span>
+          </h2>
+          <div className="space-y-5">
+            <div className="grid grid-cols-2 gap-4">
+              <Field label={t("1인당 보상 (원)", "Reward per creator (KRW)")} htmlFor="rewardAmount" required>
+                <Input
+                  id="rewardAmount"
+                  type="number"
+                  min={0}
+                  required
+                  value={rewardAmount}
+                  onChange={(e) => setRewardAmount(e.target.value)}
+                  className="tabular-nums"
+                />
+              </Field>
+              <Field label={t("모집 인원", "Number of creators")} htmlFor="maxParticipants" required>
+                <Input
+                  id="maxParticipants"
+                  type="number"
+                  min={1}
+                  required
+                  value={maxParticipants}
+                  onChange={(e) => setMaxParticipants(e.target.value)}
+                  className="tabular-nums"
+                />
+              </Field>
+            </div>
+
+            {/* 예산 요약 — 킷 라벤더 하이라이트 카드 */}
+            <div className="rounded-[10px] border border-primary/25 bg-primary-bg p-5">
+              <p className="text-xs font-semibold text-primary">{t("예상 총 예산", "Estimated total budget")}</p>
+              <p className="mt-1 text-2xl font-black tracking-tight text-foreground tabular-nums">
+                {t(`${totalBudget.toLocaleString()}원`, `₩${totalBudget.toLocaleString()}`)}
+              </p>
+              <p className="mt-2 text-xs leading-relaxed text-content-soft">
+                {t("등록 직후 캠페인은 ", "Right after creation, the campaign is ")}
+                <span className="font-semibold text-warning">{t("결제 비활성", "Payment unavailable")}</span>{" "}
+                {t(
+                  "상태로 저장됩니다. 현재 어떤 계좌로도 송금하지 마세요. 결제·모집은 PG 활성화와 계약 확인 후 진행합니다.",
+                  ". Do not transfer money to any account. Payment and recruiting begin only after PG activation and contract confirmation.",
+                )}
+              </p>
+            </div>
+
+            <Field label={t("모집 마감일", "Recruitment deadline")} htmlFor="deadline" optionalLabel={t("(선택)", "(optional)")}>
+              <Input
+                id="deadline"
+                type="datetime-local"
+                value={deadline}
+                onChange={(e) => setDeadline(e.target.value)}
+              />
+            </Field>
+            <Field label={t("썸네일", "Thumbnail")} optionalLabel={t("(선택)", "(optional)")}>
+              <ImageUploader previewUrl={null} onChange={setThumbnailFileKey} aspect={16 / 9} />
+            </Field>
+          </div>
+        </section>
+
+        <Button type="submit" size="lg" loading={loading} fullWidth>
           {loading ? t("등록 중...", "Creating...") : t("캠페인 등록", "Create campaign")}
         </Button>
       </form>

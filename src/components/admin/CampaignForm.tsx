@@ -8,6 +8,7 @@ import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import ImageUploader from "@/components/ui/ImageUploader";
 import Input from "@/components/ui/Input";
+import Textarea from "@/components/ui/Textarea";
 import { canEditBudget, EscrowStatus } from "@/lib/campaignPolicy";
 import { useLang } from "@/lib/i18n";
 
@@ -25,8 +26,6 @@ export interface CampaignFormInitial {
   maxParticipants?: number;
 }
 
-const TEXTAREA_CLASS =
-  "block w-full rounded-lg border border-line-strong bg-surface px-3 py-2.5 text-sm text-foreground placeholder-faint transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:bg-surface-muted disabled:text-muted";
 
 export default function CampaignForm({
   mode,
@@ -178,7 +177,7 @@ export default function CampaignForm({
           >
             {t("브랜드 소개", "Brand introduction")} <span className="text-faint">{t("(선택)", "(optional)")}</span>
           </label>
-          <textarea
+          <Textarea
             id="brandIntroduction"
             rows={4}
             value={brandIntroduction}
@@ -187,7 +186,7 @@ export default function CampaignForm({
               "브랜드와 회사를 소개해주세요. 랜딩 회사 소개 모달에 표시됩니다.",
               "Introduce your brand and company. Shown in the landing company introduction modal.",
             )}
-            className={`${TEXTAREA_CLASS} mt-1.5`}
+            className="mt-1.5"
           />
         </div>
 
@@ -235,13 +234,13 @@ export default function CampaignForm({
           <label htmlFor="description" className="block text-sm font-medium text-content-soft">
             {t("설명", "Description")}
           </label>
-          <textarea
+          <Textarea
             id="description"
             rows={4}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder={t("캠페인 상세 설명", "Campaign details")}
-            className={`${TEXTAREA_CLASS} mt-1.5`}
+            className="mt-1.5"
           />
         </div>
 
@@ -249,7 +248,7 @@ export default function CampaignForm({
           <label htmlFor="requirements" className="block text-sm font-medium text-content-soft">
             {t("요구사항/가이드라인", "Requirements / guidelines")} <span className="text-faint">{t("(선택)", "(optional)")}</span>
           </label>
-          <textarea
+          <Textarea
             id="requirements"
             rows={3}
             value={requirements}
@@ -258,7 +257,7 @@ export default function CampaignForm({
               "예: 30초 이상 세로형 영상, 얼굴 공개 필요, 지정 해시태그 포함",
               "e.g. Vertical video 30s+, face shown, include the required hashtags",
             )}
-            className={`${TEXTAREA_CLASS} mt-1.5`}
+            className="mt-1.5"
           />
         </div>
 

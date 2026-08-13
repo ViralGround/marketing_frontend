@@ -7,6 +7,7 @@ import { trackEvent } from "@/lib/gtag";
 import { useLang } from "@/lib/i18n";
 import ApplicationStatusBadge from "@/components/campaign/ApplicationStatusBadge";
 import Button from "@/components/ui/Button";
+import Textarea from "@/components/ui/Textarea";
 import Card from "@/components/ui/Card";
 
 type AppStatus = "PENDING" | "WITHDRAWN" | "APPROVED" | "REJECTED" | "SUBMITTED" | "SETTLED";
@@ -31,8 +32,6 @@ interface CampaignDetail {
   } | null;
 }
 
-const TEXTAREA_CLASS =
-  "block w-full rounded-lg border border-line-strong bg-surface px-3 py-2.5 text-sm text-foreground placeholder-faint transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20";
 
 export default function CreatorCampaignDetailPage() {
   const { id } = useParams();
@@ -185,7 +184,7 @@ export default function CreatorCampaignDetailPage() {
           <label htmlFor="message" className="block text-sm font-medium text-content-soft">
             {t("지원 메시지", "Application message")} <span className="text-faint">{t("(선택)", "(optional)")}</span>
           </label>
-          <textarea
+          <Textarea
             id="message"
             rows={3}
             value={message}
@@ -194,7 +193,7 @@ export default function CreatorCampaignDetailPage() {
               "어떤 스타일의 영상을 만들 계획인지 간단히 소개해주세요.",
               "Briefly describe the style of video you plan to create.",
             )}
-            className={`${TEXTAREA_CLASS} mt-1.5`}
+            className="mt-1.5"
           />
           {error && <p className="mt-2 text-sm text-error">{error}</p>}
           <Button onClick={handleApply} disabled={applying} fullWidth className="mt-5">

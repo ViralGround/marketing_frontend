@@ -72,14 +72,14 @@ export default function CampaignPerformancePage() {
     );
 
   return (
-    <div className="mx-auto max-w-4xl px-6 py-10 md:px-10">
+    <div className="mx-auto max-w-4xl">
       <Link
         href={`/company/campaigns/${data.campaignId}`}
         className="text-sm font-medium text-muted transition-colors hover:text-foreground"
       >
         &larr; {t("캠페인 상세로", "Back to campaign")}
       </Link>
-      <h1 className="mt-3 text-3xl font-bold tracking-tight text-foreground md:text-4xl">
+      <h1 className="mt-3 text-3xl font-black tracking-[-0.03em] text-foreground md:text-4xl">
         {data.campaignTitle}
       </h1>
       <p className="mt-2 text-sm text-muted">{t("지원 영상 성과 리포트", "Submission performance report")}</p>

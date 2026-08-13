@@ -7,6 +7,7 @@ import Badge from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import { useLang } from "@/lib/i18n";
+import PageHeader from "@/components/workspace/PageHeader";
 
 type CampaignStatus = "DRAFT" | "OPEN" | "CLOSED";
 type EscrowStatus =
@@ -92,17 +93,15 @@ export default function CompanyCampaignsPage() {
 
   return (
     <div className="mx-auto max-w-5xl">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground md:text-4xl">
-            {t("내 캠페인", "My campaigns")}
-          </h1>
-          <p className="mt-2 text-sm text-muted">{t("등록한 캠페인과 관리 베타 결제 기록을 확인하세요.", "Check your campaigns and managed-beta payment records.")}</p>
-        </div>
-        <Link href="/company/campaigns/new">
-          <Button>{t("새 캠페인 등록", "Create campaign")}</Button>
-        </Link>
-      </div>
+      <PageHeader
+        display="CAMPAIGNS"
+        subtitle={t("등록한 캠페인과 관리 베타 결제 기록을 확인하세요.", "Check your campaigns and managed-beta payment records.")}
+        action={
+          <Link href="/company/campaigns/new">
+            <Button>{t("새 캠페인 등록", "Create campaign")}</Button>
+          </Link>
+        }
+      />
 
       {loading ? (
         <p className="mt-10 text-muted">{t("불러오는 중...", "Loading...")}</p>

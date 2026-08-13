@@ -38,6 +38,29 @@
   line-height: .78;
   letter-spacing: -.035em;
 }
+
+/* 내부 페이지 공용 헤더 — 대시보드 타이틀 문법의 소형판 */
+.pageHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem 2rem;
+  width: min(100%, 82rem);
+  margin: 0 auto 1.35rem;
+  animation: dashboardReveal 480ms cubic-bezier(.16, 1, .3, 1) both;
+}
+.pageTitle {
+  margin: 0;
+  color: #111014;
+  font-family: var(--font-archivo), Pretendard, sans-serif;
+  font-size: clamp(1.7rem, 3.4vw, 2.7rem);
+  line-height: .84;
+  letter-spacing: -.03em;
+  text-transform: uppercase;
+}
+.pageSub { max-width: 44rem; margin-top: .7rem; color: #565159; font-size: .85rem; line-height: 1.55; }
+.pageAction { flex: 0 0 auto; }
 .title span { display: block; }
 .titleOutline { margin-top: .16em; color: transparent; -webkit-text-stroke: 1.4px #111014; }
 .subtitle { max-width: 44rem; margin-top: 1rem; color: #565159; font-size: .88rem; line-height: 1.55; }

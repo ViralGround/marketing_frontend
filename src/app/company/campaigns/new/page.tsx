@@ -9,6 +9,7 @@ import Card from "@/components/ui/Card";
 import ImageUploader from "@/components/ui/ImageUploader";
 import Input from "@/components/ui/Input";
 import { useLang } from "@/lib/i18n";
+import PageHeader from "@/components/workspace/PageHeader";
 
 const TEXTAREA_CLASS =
   "block w-full rounded-lg border border-line-strong bg-surface px-3 py-2.5 text-sm text-foreground placeholder-faint transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20";
@@ -65,15 +66,13 @@ export default function NewCampaignPage() {
   return (
     <div className="mx-auto max-w-2xl">
       <BackButton href="/company/campaigns" labelKo="캠페인 목록으로" labelEn="Back to campaigns" />
-      <h1 className="text-3xl font-bold tracking-tight text-foreground md:text-4xl">
-        {t("캠페인 등록", "Create campaign")}
-      </h1>
-      <p className="mt-2 text-sm text-muted">
-        {t(
+      <PageHeader
+        display="NEW BRIEF"
+        subtitle={t(
           "캠페인은 초안으로 저장됩니다. 관리 베타의 결제·모집 절차는 운영 계약 확정 후 별도로 안내됩니다.",
           "The campaign is saved as a draft. Payment and recruiting steps for the managed beta are provided after the operating agreement is finalized.",
         )}
-      </p>
+      />
 
       <form onSubmit={handleSubmit} className="mt-8 space-y-6">
         {error && (

@@ -87,7 +87,7 @@ export default function CreatorCampaignDetailPage() {
   const locale = lang === "en" ? "en-US" : "ko-KR";
 
   return (
-    <div className="mx-auto max-w-3xl px-6 py-10 md:px-10">
+    <div className="mx-auto max-w-3xl">
       <button
         onClick={() => router.push("/creator/campaigns")}
         className="mb-6 text-sm font-medium text-muted transition-colors hover:text-foreground"
@@ -112,7 +112,7 @@ export default function CreatorCampaignDetailPage() {
           <ApplicationStatusBadge status={campaign.myApplication.status} />
         )}
       </div>
-      <h1 className="mb-6 text-3xl font-bold tracking-tight text-foreground md:text-4xl">
+      <h1 className="mb-6 text-3xl font-black tracking-[-0.03em] text-foreground md:text-4xl">
         {campaign.title}
       </h1>
 

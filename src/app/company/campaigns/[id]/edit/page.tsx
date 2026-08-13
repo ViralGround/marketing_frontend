@@ -9,6 +9,7 @@ import Card from "@/components/ui/Card";
 import ImageUploader from "@/components/ui/ImageUploader";
 import Input from "@/components/ui/Input";
 import { useLang } from "@/lib/i18n";
+import PageHeader from "@/components/workspace/PageHeader";
 import {
   canEditBudget,
   canEditCampaignFields,
@@ -130,9 +131,7 @@ export default function EditCampaignPage() {
   return (
     <div className="mx-auto max-w-2xl">
       <BackButton href="/company/campaigns" labelKo="캠페인 목록으로" labelEn="Back to campaigns" />
-      <h1 className="text-3xl font-bold tracking-tight text-foreground md:text-4xl">
-        {t("캠페인 수정", "Edit campaign")}
-      </h1>
+      <PageHeader display="EDIT BRIEF" subtitle={t("저장된 브리프의 내용을 수정합니다.", "Update the saved brief.")} />
       {readOnly && (
         <Card className="mt-5 border-warning/30 bg-warning/5 p-3 text-sm text-warning">
           {t("현재 상태에서는 수정이 제한됩니다.", "Editing is restricted in the current status.")}

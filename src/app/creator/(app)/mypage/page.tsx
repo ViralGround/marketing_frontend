@@ -14,6 +14,7 @@ import ReviewForm from "@/components/review/ReviewForm";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import { useLang } from "@/lib/i18n";
+import PageHeader from "@/components/workspace/PageHeader";
 
 type AppStatus =
   | "PENDING"
@@ -141,16 +142,14 @@ export default function CreatorMyPage() {
   };
 
   return (
-    <div className="mx-auto max-w-5xl px-6 py-10 md:px-10">
-      <div className="mb-10">
-        <p className="text-sm font-medium text-muted">{t("마이페이지", "My Page")}</p>
-        <h1 className="mt-1 text-3xl font-bold tracking-tight text-foreground md:text-4xl">
-          {t(
-            `${user?.name ?? "크리에이터"} 님의 활동 요약`,
-            `${user?.name ?? "Creator"}'s activity summary`,
-          )}
-        </h1>
-      </div>
+    <div className="mx-auto max-w-5xl">
+      <PageHeader
+        display="MY WORK"
+        subtitle={t(
+          `${user?.name ?? "크리에이터"} 님의 지원 현황과 콘텐츠 제출을 관리하세요.`,
+          `Manage ${user?.name ?? "your"} applications and content submissions.`,
+        )}
+      />
 
       {/* 스탯 카드 */}
       <div className="mb-10">

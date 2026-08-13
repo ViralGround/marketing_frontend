@@ -9,6 +9,7 @@ import ImageUploader from "@/components/ui/ImageUploader";
 import CompanyAccountDeletion from "@/components/company/CompanyAccountDeletion";
 import MarketingConsentSettings from "@/components/account/MarketingConsentSettings";
 import { useLang } from "@/lib/i18n";
+import PageHeader from "@/components/workspace/PageHeader";
 
 interface ProfileData {
   companyName: string;
@@ -77,15 +78,13 @@ export default function CompanyProfilePage() {
 
   return (
     <div className="mx-auto max-w-2xl">
-      <h1 className="mb-2 text-3xl font-bold tracking-tight text-foreground">
-        {t("회사 정보", "Company info")}
-      </h1>
-      <p className="mb-8 text-sm text-muted">
-        {t(
+      <PageHeader
+        display="BRAND PROFILE"
+        subtitle={t(
           "여기서 입력한 소개와 로고는 랜딩 페이지의 회사 소개 모달과 대표 캠페인 카드에 노출됩니다.",
           "The introduction and logo you enter here appear in the company intro modal and featured campaign cards on the landing page.",
         )}
-      </p>
+      />
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <Card className="space-y-5">

@@ -2,6 +2,28 @@
   --workspace-ink: #09090b;
   --workspace-paper: #f4f1ed;
   --workspace-violet: #7331e0;
+
+  /* ── 워크스페이스 토큰 리맵 ──────────────────────────────────
+     셸 내부의 모든 페이지·공용 컴포넌트(Button/Card/Input/Badge, bg-surface,
+     border-line, text-muted …)는 앱 토큰을 참조한다. 여기서 토큰을 페이퍼·잉크·
+     바이올렛 값으로 재정의하면 워크스페이스 전체가 시안 컨셉을 입는다.
+     이 화면은 라이트로 확정된 세계 — html.dark 보다 이 스코프가 우선한다. */
+  --background: #f4f1ed;
+  --foreground: #111014;
+  --primary: #7331e0;
+  --primary-light: #9a64f5;
+  --primary-dark: #5d1fc5;
+  --primary-bg: #f0e8ff;
+  --section-alt: #faf8f5;
+  --surface: #ffffff;
+  --surface-muted: #faf8f5;
+  --surface-chip: #f0ede9;
+  --content-soft: #3f3b42;
+  --muted: #6e6870;
+  --faint: #9a939b;
+  --line: #ddd9d4;
+  --line-strong: #c9c4bd;
+
   min-height: 100vh;
   background: var(--workspace-paper);
   color: var(--workspace-ink);

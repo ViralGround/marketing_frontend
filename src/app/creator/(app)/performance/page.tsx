@@ -8,6 +8,7 @@ import BackButton from "@/components/ui/BackButton";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import { useLang } from "@/lib/i18n";
+import PageHeader from "@/components/workspace/PageHeader";
 
 interface PerformanceItem {
   applicationId: number;
@@ -70,20 +71,15 @@ export default function CreatorPerformancePage() {
     return <p className="mx-auto max-w-4xl px-6 py-10 text-error">{t("데이터 없음", "No data")}</p>;
 
   return (
-    <div className="mx-auto max-w-4xl px-6 py-10 md:px-10">
+    <div className="mx-auto max-w-4xl">
       <BackButton href="/creator/home" labelKo="홈으로" labelEn="Back to home" />
-      <div className="mb-10">
-        <p className="text-sm font-medium text-muted">{t("성과 대시보드", "Performance dashboard")}</p>
-        <h1 className="mt-1 text-3xl font-bold tracking-tight text-foreground md:text-4xl">
-          {t("내 영상 누적 성과", "My cumulative video performance")}
-        </h1>
-        <p className="mt-3 text-sm text-muted">
-          {t(
-            "SNS 게시물의 조회수·좋아요·댓글을 직접 입력하면 포트폴리오에 반영됩니다.",
-            "Enter views, likes, and comments from your posts to update your portfolio.",
-          )}
-        </p>
-      </div>
+      <PageHeader
+        display="PERFORMANCE"
+        subtitle={t(
+          "SNS 게시물의 조회수·좋아요·댓글을 직접 입력하면 포트폴리오에 반영됩니다.",
+          "Enter views, likes, and comments from your posts to update your portfolio.",
+        )}
+      />
 
       <div className="mb-12">
         <KPICards

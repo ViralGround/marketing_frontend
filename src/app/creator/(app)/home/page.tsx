@@ -8,6 +8,7 @@ import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import Input from "@/components/ui/Input";
 import { useLang } from "@/lib/i18n";
+import PageHeader from "@/components/workspace/PageHeader";
 
 type AppStatus = "PENDING" | "WITHDRAWN" | "APPROVED" | "REJECTED" | "SUBMITTED" | "SETTLED";
 type SortKey = "recent" | "reward" | "deadline";
@@ -77,13 +78,11 @@ export default function CreatorHomePage() {
   const [now] = useState(() => Date.now());
 
   return (
-    <div className="mx-auto max-w-5xl px-6 py-10 md:px-10">
-      <div className="mb-8">
-        <p className="text-sm font-medium text-muted">{t("참여 가능한 캠페인", "Available campaigns")}</p>
-        <h1 className="mt-1 text-3xl font-bold tracking-tight text-foreground md:text-4xl">
-          {t("지금 모집 중인 캠페인", "Campaigns recruiting now")}
-        </h1>
-      </div>
+    <div className="mx-auto max-w-5xl">
+      <PageHeader
+        display="DISCOVER"
+        subtitle={t("지금 모집 중인 캠페인을 찾아 내 채널과 맞는 브리프에 지원하세요.", "Find recruiting campaigns and apply to briefs that fit your channel.")}
+      />
 
       {/* 정렬 + 검색 */}
       <div className="mb-8 flex flex-wrap items-center gap-3">

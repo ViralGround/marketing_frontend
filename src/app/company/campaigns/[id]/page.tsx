@@ -311,7 +311,7 @@ export default function CompanyCampaignDetailPage() {
               )}
             </span>
           </div>
-          <h1 className="mt-3 text-3xl font-bold tracking-tight text-foreground md:text-4xl">
+          <h1 className="mt-3 text-3xl font-black tracking-[-0.03em] text-foreground md:text-4xl">
             {data.title}
           </h1>
           <p className="mt-1 text-sm font-medium text-muted">{data.brandName}</p>

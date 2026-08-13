@@ -1,28 +1,28 @@
 .shell {
-  --workspace-ink: #09090b;
-  --workspace-paper: #f4f1ed;
-  --workspace-violet: #7331e0;
+  --workspace-ink: #0B0B0D;
+  --workspace-paper: #F5F5F7;
+  --workspace-violet: #6B3DFF;
 
   /* ── 워크스페이스 토큰 리맵 ──────────────────────────────────
      셸 내부의 모든 페이지·공용 컴포넌트(Button/Card/Input/Badge, bg-surface,
      border-line, text-muted …)는 앱 토큰을 참조한다. 여기서 토큰을 페이퍼·잉크·
      바이올렛 값으로 재정의하면 워크스페이스 전체가 시안 컨셉을 입는다.
      이 화면은 라이트로 확정된 세계 — html.dark 보다 이 스코프가 우선한다. */
-  --background: #f4f1ed;
-  --foreground: #111014;
-  --primary: #7331e0;
-  --primary-light: #9a64f5;
-  --primary-dark: #5d1fc5;
-  --primary-bg: #f0e8ff;
-  --section-alt: #faf8f5;
+  --background: #F5F5F7;
+  --foreground: #0B0B0D;
+  --primary: #6B3DFF;
+  --primary-light: #8B63FF;
+  --primary-dark: #5A2FE0;
+  --primary-bg: #EDE6FF;
+  --section-alt: #FAFAFB;
   --surface: #ffffff;
-  --surface-muted: #faf8f5;
-  --surface-chip: #f0ede9;
-  --content-soft: #3f3b42;
-  --muted: #6e6870;
-  --faint: #9a939b;
-  --line: #ddd9d4;
-  --line-strong: #c9c4bd;
+  --surface-muted: #FAFAFB;
+  --surface-chip: #F1F1F4;
+  --content-soft: #3F3F46;
+  --muted: #6B6B74;
+  --faint: #A1A1AA;
+  --line: #E4E4EA;
+  --line-strong: #D4D4DC;
 
   min-height: 100vh;
   background: var(--workspace-paper);
@@ -36,10 +36,10 @@
   display: grid;
   grid-template-columns: minmax(12rem, 1fr) auto minmax(12rem, 1fr);
   align-items: center;
-  min-height: 3.35rem;
+  min-height: 4rem;
   padding: 0 1.25rem;
   color: #fff;
-  background: #050506;
+  background: #0B0B0D;
   border-bottom: 1px solid #27272a;
 }
 
@@ -50,8 +50,8 @@
 .topbarStart { gap: 1rem; }
 .topbarEnd { justify-content: flex-end; gap: .75rem; }
 .roleSwitch { gap: .9rem; }
-.roleName { color: #b98cff; font-size: .78rem; font-weight: 800; }
-.roleContext { color: #a1a1aa; font-size: .74rem; }
+.roleName { color: #B9A3FF; font-size: .9rem; font-weight: 800; }
+.roleContext { color: #a1a1aa; font-size: .875rem; }
 
 .topLogo { display: inline-flex; align-items: center; justify-content: center; min-width: 3rem; }
 .topLogo img { width: 2rem; height: auto; filter: brightness(0) invert(1); }
@@ -67,20 +67,20 @@
   border-radius: 50%;
   color: #fff;
   background: #18181b;
-  font-size: .78rem;
+  font-size: .9rem;
   font-weight: 800;
 }
 
 .profileCopy { min-width: 0; line-height: 1.1; }
-.profileName { display: block; overflow: hidden; max-width: 9rem; text-overflow: ellipsis; white-space: nowrap; font-size: .76rem; font-weight: 800; }
-.profileRole { display: block; margin-top: .18rem; color: #a1a1aa; font-size: .58rem; letter-spacing: .08em; }
+.profileName { display: block; overflow: hidden; max-width: 9rem; text-overflow: ellipsis; white-space: nowrap; font-size: .9rem; font-weight: 800; }
+.profileRole { display: block; margin-top: .18rem; color: #a1a1aa; font-size: .72rem; letter-spacing: .08em; }
 
 .beta {
   border: 1px solid #3f3f46;
   border-radius: 999px;
   padding: .4rem .7rem;
   color: #d4d4d8;
-  font-size: .62rem;
+  font-size: .75rem;
   font-weight: 800;
   letter-spacing: .08em;
 }
@@ -98,7 +98,7 @@
   background: #18181b;
   transition: border-color 160ms ease;
 }
-.searchForm:focus-within { border-color: #7331e0; }
+.searchForm:focus-within { border-color: #6B3DFF; }
 .searchIcon { width: .95rem; height: .95rem; flex: 0 0 auto; color: #a1a1aa; }
 .searchForm input {
   min-width: 0;
@@ -106,28 +106,29 @@
   border: 0;
   background: none;
   color: #fff;
-  font-size: .74rem;
+  font-size: .875rem;
   font-weight: 600;
   outline: none;
-  caret-color: #9a64f5;
+  caret-color: #8B63FF;
 }
 .searchForm input::placeholder { color: #71717a; }
 .searchForm input::-webkit-search-cancel-button { display: none; }
 
 .menuButton { display: none; width: 2.75rem; height: 2.75rem; align-items: center; justify-content: center; color: #fff; }
-.body { min-height: calc(100vh - 3.35rem); }
+.body { min-height: calc(100vh - 4rem); }
 
 .sidebar {
-  --workspace-violet: #7331e0;
+  --workspace-violet: #6B3DFF;
   position: fixed;
-  inset: 3.35rem auto 0 0;
+  inset: 4rem auto 0 0;
   z-index: 60;
   display: flex;
-  width: 13.25rem;
+  width: 14.5rem;
   flex-direction: column;
   overflow-y: auto;
-  background: #fbfaf8;
-  border-right: 1px solid #d9d5d0;
+  /* 킷 문법: 블랙 사이드바 + 보라 활성 필 */
+  background: #0B0B0D;
+  border-right: 1px solid #1F1F23;
 }
 
 .brandBlock {
@@ -135,38 +136,38 @@
   min-height: 6.6rem;
   place-items: center;
   color: #fff;
-  background: #070708;
-  border-bottom: 1px solid #27272a;
+  border-bottom: 1px solid #1F1F23;
 }
 
 .brandBlock > span { text-align: center; }
 .brandBlock img { width: 3.15rem; filter: brightness(0) invert(1); }
-.brandBlock span span { display: block; margin-top: .35rem; font-size: .57rem; letter-spacing: .18em; }
+.brandBlock span span { display: block; margin-top: .35rem; font-size: .66rem; letter-spacing: .18em; }
 
 .nav { display: grid; gap: .3rem; padding: 1.2rem .65rem; }
 .navLink {
   display: flex;
-  min-height: 2.7rem;
+  min-height: 2.9rem;
   align-items: center;
   gap: .75rem;
   border-radius: .65rem;
-  padding: 0 .8rem;
-  color: #49464c;
-  font-size: .79rem;
+  padding: 0 .85rem;
+  color: #A1A1AA;
+  font-size: .9rem;
   font-weight: 750;
   transition: color 180ms ease, background-color 180ms ease, transform 180ms ease;
 }
-.navLink:hover { color: var(--workspace-violet); background: #f0e8ff; transform: translateX(2px); }
-.navLink:focus-visible { outline: 2px solid var(--workspace-violet); outline-offset: 2px; }
-.navLinkActive { color: var(--workspace-violet); background: #eee5ff; }
+.navLink:hover { color: #fff; background: #1A1A1F; transform: translateX(2px); }
+.navLink:focus-visible { outline: 2px solid #8B63FF; outline-offset: 2px; }
+.navLinkActive { color: #fff; background: var(--workspace-violet); }
 .navIcon { width: 1rem; height: 1rem; }
 
 .sidebarFoot { margin-top: auto; padding: 1rem; }
-.statusCard { padding: .9rem; color: #3d2a5f; background: #f2ebff; border: 1px solid #dfcffb; border-radius: .75rem; }
-.statusCard strong { display: block; color: var(--workspace-violet); font-size: .7rem; }
-.statusCard p { margin-top: .35rem; font-size: .68rem; line-height: 1.45; }
-.logout { display: flex; width: 100%; min-height: 2.75rem; align-items: center; gap: .65rem; margin-top: .75rem; color: #5c5860; font-size: .76rem; font-weight: 750; }
-.content { min-width: 0; margin-left: 13.25rem; padding: clamp(1.5rem, 3vw, 3rem); }
+.statusCard { padding: .95rem; color: #D8CCFF; background: #141418; border: 1px solid #2A2A31; border-radius: .75rem; }
+.statusCard strong { display: block; color: #B9A3FF; font-size: .82rem; }
+.statusCard p { margin-top: .35rem; font-size: .8rem; line-height: 1.45; }
+.logout { display: flex; width: 100%; min-height: 2.75rem; align-items: center; gap: .65rem; margin-top: .75rem; color: #A1A1AA; font-size: .9rem; font-weight: 750; transition: color 160ms ease; }
+.logout:hover { color: #fff; }
+.content { min-width: 0; margin-left: 14.5rem; padding: clamp(1.5rem, 3vw, 3rem); }
 .backdrop { display: none; }
 
 @media (max-width: 900px) {
@@ -177,7 +178,21 @@
   .sidebar { visibility: hidden; pointer-events: none; transform: translateX(-105%); transition: transform 260ms cubic-bezier(.16, 1, .3, 1), visibility 0s linear 260ms; box-shadow: 14px 0 34px rgba(10, 9, 11, .16); }
   .sidebarOpen { visibility: visible; pointer-events: auto; transform: translateX(0); transition-delay: 0s; }
   .content { margin-left: 0; padding: 1.25rem; }
-  .backdrop { position: fixed; inset: 3.35rem 0 0; z-index: 55; display: block; background: rgba(9, 9, 11, .48); }
+  .backdrop { position: fixed; inset: 4rem 0 0; z-index: 55; display: block; background: rgba(9, 9, 11, .48); }
+}
+
+/* 대형 화면 — 킷 12컬럼 그리드(1440+) 기준으로 셸 확장. 작게 보이는 문제 해소 */
+@media (min-width: 1680px) {
+  .topbar { min-height: 4.5rem; padding: 0 2rem; }
+  .body { min-height: calc(100vh - 4.5rem); }
+  .sidebar { inset: 4.5rem auto 0 0; width: 16rem; }
+  .navLink { min-height: 3.15rem; font-size: 1rem; }
+  .navIcon { width: 1.15rem; height: 1.15rem; }
+  .content { margin-left: 16rem; padding: 3rem 4rem; }
+  .searchForm { min-width: 17rem; min-height: 2.7rem; }
+  .searchForm input { font-size: .95rem; }
+  .roleName, .profileName { font-size: 1rem; }
+  .brandBlock img { width: 3.6rem; }
 }
 
 @media (prefers-reduced-motion: reduce) {

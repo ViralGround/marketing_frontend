@@ -10,7 +10,29 @@ import { useLang } from "@/lib/i18n";
 import AlertModal from "@/components/ui/AlertModal";
 import type { Member, UserRole } from "@/types";
 
-export default function LoginForm() {
+type LoginRole = Extract<UserRole, "CREATOR" | "COMPANY">;
+
+const DEMO_ALIAS_ENABLED = process.env.NODE_ENV !== "production";
+
+export function resolveLoginCredentials(
+  expectedRole: LoginRole,
+  loginId: string,
+  password: string,
+  demoAliasEnabled = DEMO_ALIAS_ENABLED,
+) {
+  if (demoAliasEnabled && loginId.trim() === "1" && password === "1") {
+    return {
+      email:
+        expectedRole === "CREATOR"
+          ? "creator.demo@viralground.local"
+          : "company.demo@viralground.local",
+      password: "DemoLogin!2026",
+    };
+  }
+  return { email: loginId.trim(), password };
+}
+
+export default function LoginForm({ expectedRole }: { expectedRole: LoginRole }) {
   const { t } = useLang();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -29,10 +51,8 @@ export default function LoginForm() {
     setLoading(true);
 
     try {
-      await api.post("/auth/login", {
-        email,
-        password,
-      });
+      const credentials = resolveLoginCredentials(expectedRole, email, password);
+      await api.post("/auth/login", credentials);
       await api.get("/auth/csrf");
       const { data: member } = await api.get<Member>("/auth/me");
       const role = member.role;
@@ -43,7 +63,7 @@ export default function LoginForm() {
       const homeByRole: Record<UserRole, string> = {
         ADMIN: "/admin/members",
         COMPANY: "/company/dashboard",
-        CREATOR: "/creator/home",
+        CREATOR: "/creator/dashboard",
       };
       const allowedPrefix: Record<UserRole, string> = {
         ADMIN: "/admin",
@@ -105,14 +125,14 @@ export default function LoginForm() {
       )}
       <div>
         <label htmlFor="email" className="block text-sm font-medium text-content-soft">
-          {t("이메일", "Email")}
+          {DEMO_ALIAS_ENABLED ? t("아이디 또는 이메일", "ID or email") : t("이메일", "Email")}
         </label>
         <input
           id="email"
-          type="email"
+          type={DEMO_ALIAS_ENABLED ? "text" : "email"}
           required
-          autoComplete="email"
-          placeholder="example@email.com"
+          autoComplete="username"
+          placeholder={DEMO_ALIAS_ENABLED ? "1" : "example@email.com"}
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           className="mt-1 block min-h-12 w-full rounded-lg border border-line-strong bg-surface px-3 py-2 text-foreground placeholder-faint focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
@@ -149,6 +169,12 @@ export default function LoginForm() {
       >
         {loading ? t("로그인 중...", "Logging in...") : t("로그인", "Log in")}
       </button>
+
+      {DEMO_ALIAS_ENABLED && (
+        <p className="rounded-lg border border-primary/20 bg-primary/5 px-3 py-2 text-center text-xs font-medium text-primary">
+          {t("테스트 로그인 · 아이디 1 / 비밀번호 1", "Test login · ID 1 / Password 1")}
+        </p>
+      )}
 
       <AlertModal
         open={!!warning}

@@ -12,7 +12,7 @@ export default function CompanyLoginPage() {
   return (
     <AuthSurface title={t("브랜드 로그인", "Brand log in")} description={t("캠페인과 크리에이터 협업을 이어가세요.", "Continue your campaigns and creator work.")}>
         <Suspense fallback={<div className="h-40" />}>
-          <LoginForm />
+          <LoginForm expectedRole="COMPANY" />
         </Suspense>
 
         <div className="space-y-2 text-center text-sm text-muted">

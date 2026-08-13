@@ -1,5 +1,6 @@
 import axios from "axios";
 import Cookies from "js-cookie";
+import { isProtectedAppPath } from "@/lib/protectedPaths";
 
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080",
@@ -34,10 +35,14 @@ api.interceptors.response.use(
       } catch {
         // Refresh cookie is invalid or expired. Fall through to the login redirect.
       }
-      if (typeof window !== "undefined") {
-        // Axios interceptors run outside React, so a Next router hook is unavailable here.
-        // eslint-disable-next-line @next/next/no-location-assign-relative-destination
-        window.location.href = "/login";
+      if (
+        typeof window !== "undefined" &&
+        isProtectedAppPath(window.location.pathname)
+      ) {
+        const returnPath = `${window.location.pathname}${window.location.search}`;
+        // Public landing/auth pages also probe /auth/me. Never reload those pages when a
+        // stale local refresh cookie is rejected; only protected app routes need redirecting.
+        window.location.replace(`/login?redirect=${encodeURIComponent(returnPath)}`);
       }
     }
     return Promise.reject(error);

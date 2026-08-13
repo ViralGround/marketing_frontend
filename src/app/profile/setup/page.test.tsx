@@ -80,7 +80,7 @@ describe("ProfileSetupPage", () => {
         publicProfileOptIn: true,
       }),
     );
-    expect(mocks.push).toHaveBeenCalledWith("/creator/home");
+    expect(mocks.push).toHaveBeenCalledWith("/creator/dashboard");
   });
 
   it("defaults public exposure to false without blocking profile save or campaign participation", async () => {

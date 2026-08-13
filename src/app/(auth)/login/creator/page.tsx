@@ -12,7 +12,7 @@ export default function CreatorLoginPage() {
   return (
     <AuthSurface title={t("크리에이터 로그인", "Creator log in")} description={t("캠페인과 작업 상태를 확인하세요.", "Open your campaigns and work status.")}>
         <Suspense fallback={<div className="h-40" />}>
-          <LoginForm />
+          <LoginForm expectedRole="CREATOR" />
         </Suspense>
 
         <div className="space-y-2 text-center text-sm text-muted">

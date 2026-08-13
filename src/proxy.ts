@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { isProtectedAppPath } from "@/lib/protectedPaths";
 
 type Role = "CREATOR" | "COMPANY" | "ADMIN";
 
@@ -27,14 +28,11 @@ function parseToken(token: string): TokenClaims {
 }
 
 const HOME_BY_ROLE: Record<Role, string> = {
-  CREATOR: "/creator/home",
+  CREATOR: "/creator/dashboard",
   COMPANY: "/company/dashboard",
   ADMIN: "/admin/members",
 };
 
-// /creator(랜딩)·/creators(공개 크리에이터 풀)는 공개.
-// 보호 대상은 크리에이터 앱 하위 경로(/creator/home 등)와 company/admin 전체.
-const PROTECTED_PREFIXES = ["/company", "/admin"];
 const AUTH_PAGES = ["/login", "/signup"];
 
 function matchesPrefix(pathname: string, prefix: string) {
@@ -55,9 +53,7 @@ export async function proxy(request: NextRequest) {
 
   const claims: TokenClaims = token ? parseToken(token) : { role: null, valid: false };
 
-  const isProtected =
-    PROTECTED_PREFIXES.some((p) => matchesPrefix(pathname, p)) ||
-    pathname.startsWith("/creator/"); // "/creator" 자체는 공개 랜딩
+  const isProtected = isProtectedAppPath(pathname);
   const isAuthPage = AUTH_PAGES.some((p) => matchesPrefix(pathname, p));
 
   if (!claims.valid) {

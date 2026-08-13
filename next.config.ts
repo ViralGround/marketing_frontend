@@ -106,7 +106,7 @@ const nextConfig: NextConfig = {
       `connect-src 'self' ${apiOrigin} ${storageOrigins} https://*.google-analytics.com https://*.analytics.google.com https://*.sentry.io`,
       "font-src 'self' data: https://assets.calendly.com",
       "style-src 'self' 'unsafe-inline' https://assets.calendly.com",
-      "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://assets.calendly.com",
+      `script-src 'self' 'unsafe-inline'${isProduction ? "" : " 'unsafe-eval'"} https://www.googletagmanager.com https://assets.calendly.com`,
       "frame-src https://calendly.com https://*.calendly.com",
       isProduction ? "upgrade-insecure-requests" : "",
     ].filter(Boolean).join("; ");

@@ -116,7 +116,7 @@ export default function ProfileSetupPage() {
         instagramId: instagramId.trim() || null,
         publicProfileOptIn,
       });
-      router.push("/creator/home");
+      router.push("/creator/dashboard");
     } catch {
       setError(
         t(

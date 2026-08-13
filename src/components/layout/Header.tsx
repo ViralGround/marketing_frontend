@@ -9,6 +9,7 @@ import { removeTokens } from "@/lib/auth";
 import ThemeToggle from "@/components/ui/ThemeToggle";
 import LanguageToggle from "@/components/landing/LanguageToggle";
 import { isLandingPath } from "@/lib/landingPaths";
+import { isRoleWorkspacePath } from "@/lib/protectedPaths";
 import { useLang } from "@/lib/i18n";
 import { clearGaUser, trackEvent } from "@/lib/gtag";
 import type { UserRole } from "@/types";
@@ -22,7 +23,7 @@ import type { UserRole } from "@/types";
 const ROLE_HOME: Record<UserRole, string> = {
   ADMIN: "/admin/members",
   COMPANY: "/company/dashboard",
-  CREATOR: "/creator/home",
+  CREATOR: "/creator/dashboard",
 };
 
 const ROLE_MYPAGE: Record<UserRole, { href: string; ko: string; en: string }> = {
@@ -51,7 +52,7 @@ export default function Header() {
   const logoHref = isAuthenticated && user ? ROLE_HOME[user.role] : "/";
 
   // 공개 페이지는 시안4 GroundTopbar 가 chrome 을 담당한다.
-  if (isLandingPath(pathname)) return null;
+  if (isLandingPath(pathname) || isRoleWorkspacePath(pathname)) return null;
 
   return (
     <header className="sticky top-0 z-50 border-b border-line bg-surface/90 shadow-sm backdrop-blur-md">

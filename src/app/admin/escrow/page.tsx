@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import api from "@/lib/api";
 import Badge from "@/components/ui/Badge";
-import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import { useLang } from "@/lib/i18n";
 
@@ -26,58 +25,63 @@ export default function AdminEscrowPage() {
   const { t } = useLang();
   const [items, setItems] = useState<PendingCampaign[]>([]);
   const [loading, setLoading] = useState(true);
-  const [actingId, setActingId] = useState<number | null>(null);
-  const [toast, setToast] = useState("");
-
-  const load = () => {
-    setLoading(true);
-    api
-      .get<{ campaigns: PendingCampaign[] }>("/admin/escrow/pending")
-      .then((res) => setItems(res.data.campaigns))
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  };
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    load();
-  }, []);
+    const controller = new AbortController();
+    let active = true;
 
-  const act = async (id: number, kind: "confirm" | "reject") => {
-    setActingId(id);
-    try {
-      await api.post(`/admin/campaigns/${id}/escrow/${kind}`);
-      setToast(
-        kind === "confirm"
-          ? t("입금이 확인되었습니다", "Deposit confirmed")
-          : t("반려되었습니다", "Rejected"),
-      );
-      load();
-    } catch {
-      setToast(t("처리에 실패했습니다", "Failed to process"));
-    } finally {
-      setActingId(null);
-      setTimeout(() => setToast(""), 2500);
-    }
-  };
+    api
+      .get<{ campaigns: PendingCampaign[] }>("/admin/escrow/pending", {
+        signal: controller.signal,
+      })
+      .then((res) => {
+        if (!active) return;
+        setItems(res.data.campaigns);
+        setError("");
+      })
+      .catch(() => {
+        if (!active) return;
+        setError(t("예치 상태를 불러오지 못했습니다.", "Failed to load escrow status."));
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+
+    return () => {
+      active = false;
+      controller.abort();
+    };
+  }, [t]);
 
   return (
     <div>
-      <h1 className="text-3xl font-bold tracking-tight text-foreground">{t("예치금 입금 확인", "Confirm deposit")}</h1>
+      <h1 className="text-3xl font-bold tracking-tight text-foreground">
+        {t("예치 상태 조회", "Escrow status")}
+      </h1>
       <p className="mt-2 text-sm text-muted">
         {t(
-          "브랜드가 입금을 신청한 캠페인을 검토하고, 아직 입금 신청 전인 캠페인의 현황도 함께 확인할 수 있습니다.",
-          "Review campaigns where brands have requested a deposit, and check the status of campaigns that haven't requested one yet.",
+          "캠페인별 예치 요청 상태를 조회합니다.",
+          "Review the escrow request status for each campaign.",
         )}
       </p>
 
-      {toast && (
-        <div className="mt-5 rounded-xl border border-info/30 bg-info/5 p-3 text-sm text-info">
-          {toast}
-        </div>
-      )}
+      <Card className="mt-6 border-warning/40 bg-warning/5">
+        <p className="font-semibold text-foreground">
+          {t("매니지드 베타 · 결제 기능 비활성", "Managed beta · payments disabled")}
+        </p>
+        <p className="mt-2 text-sm leading-relaxed text-content-soft">
+          {t(
+            "현재 바이럴그라운드는 이 화면에서 송금하거나 입금을 수동 확정하지 않습니다. PG사·환불·정산 정책과 운영 승인이 확정된 뒤 검증된 결제 흐름만 별도로 활성화합니다.",
+            "Viral Ground does not transfer funds or manually confirm deposits from this screen. A verified payment flow will be enabled only after the payment provider, refund and settlement policies, and operational approval are finalized.",
+          )}
+        </p>
+      </Card>
 
       {loading ? (
         <p className="mt-8 text-muted">{t("불러오는 중...", "Loading...")}</p>
+      ) : error ? (
+        <p className="mt-8 text-error" role="alert">{error}</p>
       ) : items.length === 0 ? (
         <Card className="mt-8 border-dashed bg-surface-muted py-12 text-center text-muted">
           {t("예치 대기 중인 캠페인이 없습니다.", "No campaigns awaiting deposit.")}
@@ -93,7 +97,7 @@ export default function AdminEscrowPage() {
                   <th className="px-5 py-3 font-medium">{t("예치 금액", "Deposit amount")}</th>
                   <th className="px-5 py-3 font-medium">{t("상태", "Status")}</th>
                   <th className="px-5 py-3 font-medium">{t("요청 시각", "Requested")}</th>
-                  <th className="px-5 py-3 font-medium">{t("작업", "Action")}</th>
+                  <th className="px-5 py-3 font-medium">{t("운영 정책", "Operational policy")}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-line">
@@ -123,27 +127,11 @@ export default function AdminEscrowPage() {
                         : "-"}
                     </td>
                     <td className="px-5 py-3">
-                      {c.escrowStatus === "DEPOSIT_CONFIRMING" ? (
-                        <div className="flex gap-2">
-                          <Button
-                            size="sm"
-                            disabled={actingId === c.id}
-                            onClick={() => act(c.id, "confirm")}
-                          >
-                            {t("확인", "Confirm")}
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="secondary"
-                            disabled={actingId === c.id}
-                            onClick={() => act(c.id, "reject")}
-                          >
-                            {t("반려", "Reject")}
-                          </Button>
-                        </div>
-                      ) : (
-                        <span className="text-xs text-faint">{t("브랜드의 계좌이체 완료 대기 중", "Awaiting brand's bank transfer")}</span>
-                      )}
+                      <span className="text-xs text-faint">
+                        {c.escrowStatus === "DEPOSIT_CONFIRMING"
+                          ? t("조회 전용 · 수동 처리 안 함", "Read only · no manual action")
+                          : t("결제 기능 비활성", "Payments disabled")}
+                      </span>
                     </td>
                   </tr>
                 ))}

@@ -1,9 +1,11 @@
+import { LEGAL_CONSENT_VERSIONS } from "@/lib/legalVersions";
+
 /**
  * 마케팅 정보 수신 동의서 (선택).
  * ⚠️ 운영 전 법적 검토 필요. 정통망법상 사전 동의 + 언제든 철회 가능.
  */
 export const MARKETING_TITLE = "마케팅 정보 수신 동의 (선택)";
-export const MARKETING_VERSION = "v1.0 (초안)";
+export const MARKETING_VERSION = LEGAL_CONSENT_VERSIONS.marketingVersion;
 export const MARKETING_EFFECTIVE_DATE = "2026-05-01";
 
 export const MARKETING_BODY = `Viral Ground(이하 "회사")는 회원에게 더 나은 서비스를 제공하기 위해 아래와 같이 마케팅 정보를 발송합니다. 본 동의는 선택 사항이며, 동의하지 않아도 회원 가입 및 일반 서비스 이용에 제한이 없습니다.
@@ -24,7 +26,7 @@ export const MARKETING_BODY = `Viral Ground(이하 "회사")는 회원에게 더
 - 동의 철회 시 또는 회원 탈퇴 시까지
 
 5. 철회 방법
-- 마이페이지 설정에서 언제든 철회 가능 (추후 제공)
+- 크리에이터 마이페이지 또는 기업 회사 정보 화면의 "마케팅 정보 수신" 설정에서 언제든 철회 가능
 - 또는 발송 메일 하단의 "수신 거부" 링크 클릭
 
 본 동의를 거부하더라도 회원 가입 및 필수 서비스 이용은 가능합니다.

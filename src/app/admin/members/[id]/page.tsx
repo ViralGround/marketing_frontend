@@ -9,7 +9,7 @@ import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import { useLang } from "@/lib/i18n";
 
-type MemberStatus = "PENDING" | "APPROVED" | "REJECTED";
+type MemberStatus = "PENDING" | "APPROVED" | "REJECTED" | "WITHDRAWN";
 
 interface MemberDetail {
   id: number;
@@ -49,16 +49,18 @@ const GENDER_LABEL: Record<string, { ko: string; en: string }> = {
   OTHER: { ko: "기타", en: "Other" },
 };
 
-const STATUS_TONE: Record<MemberStatus, "warning" | "success" | "error"> = {
+const STATUS_TONE: Record<MemberStatus, "warning" | "success" | "error" | "neutral"> = {
   PENDING: "warning",
   APPROVED: "success",
   REJECTED: "error",
+  WITHDRAWN: "neutral",
 };
 
 const STATUS_LABEL: Record<MemberStatus, { ko: string; en: string }> = {
   PENDING: { ko: "승인 대기", en: "Pending approval" },
   APPROVED: { ko: "승인", en: "Approved" },
   REJECTED: { ko: "거절", en: "Rejected" },
+  WITHDRAWN: { ko: "탈퇴", en: "Withdrawn" },
 };
 
 export default function AdminMemberDetailPage() {
@@ -103,24 +105,6 @@ export default function AdminMemberDetailPage() {
     }
   };
 
-  const handleDelete = async () => {
-    if (
-      !confirm(
-        t(
-          `"${member?.name}" 회원을 삭제하시겠습니까? 관련된 모든 데이터가 삭제됩니다.`,
-          `Delete member "${member?.name}"? All related data will be deleted.`,
-        ),
-      )
-    )
-      return;
-    try {
-      await api.delete(`/admin/members/${id}`);
-      router.push("/admin/members");
-    } catch {
-      setErrorMessage(t("삭제에 실패했습니다", "Failed to delete"));
-    }
-  };
-
   if (loading || !member) {
     return <p className="text-muted">{t("불러오는 중...", "Loading...")}</p>;
   }
@@ -141,9 +125,12 @@ export default function AdminMemberDetailPage() {
             {t(STATUS_LABEL[member.status].ko, STATUS_LABEL[member.status].en)}
           </Badge>
         </div>
-        <Button variant="secondary" size="sm" onClick={handleDelete}>
-          {t("회원 삭제", "Delete member")}
-        </Button>
+        <p className="max-w-md text-right text-xs leading-relaxed text-muted">
+          {t(
+            "법적 동의·거래 증적 보호를 위해 관리자 영구삭제는 비활성화되어 있습니다.",
+            "Administrator hard deletion is disabled to preserve legal consent and transaction evidence.",
+          )}
+        </p>
       </div>
 
       {/* 기본 정보 */}

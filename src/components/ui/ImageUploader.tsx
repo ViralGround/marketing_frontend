@@ -94,6 +94,7 @@ export default function ImageUploader({ previewUrl, onChange, disabled, aspect }
         sizeBytes: payload.size,
       });
       await putWithProgress(data.uploadUrl, payload);
+      await api.post("/files/complete-upload", { fileKey: data.fileKey });
 
       if (localPreview) URL.revokeObjectURL(localPreview);
       setLocalPreview(previewObjectUrl);

@@ -6,6 +6,8 @@ import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import Input from "@/components/ui/Input";
 import ImageUploader from "@/components/ui/ImageUploader";
+import CompanyAccountDeletion from "@/components/company/CompanyAccountDeletion";
+import MarketingConsentSettings from "@/components/account/MarketingConsentSettings";
 import { useLang } from "@/lib/i18n";
 
 interface ProfileData {
@@ -164,6 +166,9 @@ export default function CompanyProfilePage() {
           {saving ? t("저장 중...", "Saving...") : t("저장", "Save")}
         </Button>
       </form>
+
+      <MarketingConsentSettings />
+      <CompanyAccountDeletion />
     </div>
   );
 }

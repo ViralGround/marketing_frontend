@@ -2,18 +2,14 @@
 
 import CompanySignupForm from "@/components/auth/CompanySignupForm";
 import { useLang } from "@/lib/i18n";
+import AuthSurface from "@/components/auth/AuthSurface";
 
 export default function CompanySignupPage() {
   const { t } = useLang();
 
   return (
-    <div className="flex min-h-[calc(100vh-65px)] items-center justify-center py-12">
-      <div className="w-full max-w-md space-y-6 rounded border border-line bg-surface p-8">
-        <h1 className="text-center text-2xl font-bold text-foreground">
-          {t("브랜드 회원가입", "Brand sign up")}
-        </h1>
+    <AuthSurface wide title={t("브랜드 베타 신청", "Brand beta application")} description={t("계정과 사업자 정보를 확인한 뒤 운영팀이 베타 참여 결과를 안내합니다.", "Our team reviews your account and business details before confirming beta access.")}>
         <CompanySignupForm />
-      </div>
-    </div>
+    </AuthSurface>
   );
 }

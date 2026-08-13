@@ -25,6 +25,7 @@ type EscrowStatus =
 
 type AppStatus =
   | "PENDING"
+  | "WITHDRAWN"
   | "APPROVED"
   | "REJECTED"
   | "SUBMITTED"
@@ -36,14 +37,14 @@ interface ApplicationItem {
   status: AppStatus;
   message: string | null;
   submissionUrl: string | null;
-  videoFileKey: string | null;
+  videoUrl: string | null;
   resubmissionCount: number | null;
   reviewComment: string | null;
   rewardPaidAmount: number | null;
   appliedAt: string;
   submittedAt: string | null;
   settledAt: string | null;
-  creator: { id: number; name: string; email: string };
+  creator: { id: number; name: string };
   submissions: SubmissionHistoryItem[];
 }
 
@@ -78,11 +79,11 @@ type Tone = "primary" | "success" | "warning" | "error" | "info" | "neutral";
 
 const ESCROW_LABEL: Record<EscrowStatus, { ko: string; en: string }> = {
   NONE: { ko: "-", en: "-" },
-  PENDING_DEPOSIT: { ko: "입금 대기", en: "Awaiting deposit" },
-  DEPOSIT_CONFIRMING: { ko: "입금 확인중", en: "Confirming deposit" },
-  FUNDED: { ko: "예치 완료", en: "Deposit funded" },
-  PARTIALLY_RELEASED: { ko: "지급 진행중", en: "Payout in progress" },
-  REFUNDED: { ko: "환불됨", en: "Refunded" },
+  PENDING_DEPOSIT: { ko: "결제 미활성", en: "Payment unavailable" },
+  DEPOSIT_CONFIRMING: { ko: "기존 입금 확인 상태", en: "Legacy deposit review" },
+  FUNDED: { ko: "기존 예치 완료 상태", en: "Legacy funded status" },
+  PARTIALLY_RELEASED: { ko: "기존 지급 진행 상태", en: "Legacy payout status" },
+  REFUNDED: { ko: "기존 환불 상태", en: "Legacy refund status" },
 };
 
 const ESCROW_TONE: Record<EscrowStatus, Tone> = {
@@ -102,6 +103,7 @@ const CAMPAIGN_STATUS_LABEL: Record<CampaignStatus, { ko: string; en: string }> 
 
 const APP_LABEL: Record<AppStatus, { ko: string; en: string }> = {
   PENDING: { ko: "지원 접수", en: "Application received" },
+  WITHDRAWN: { ko: "지원자 탈퇴", en: "Creator withdrawn" },
   APPROVED: { ko: "선정 / 제작 대기", en: "Selected / awaiting content" },
   REJECTED: { ko: "탈락", en: "Rejected" },
   SUBMITTED: { ko: "제출 완료", en: "Submitted" },
@@ -111,6 +113,7 @@ const APP_LABEL: Record<AppStatus, { ko: string; en: string }> = {
 
 const APP_TONE: Record<AppStatus, Tone> = {
   PENDING: "warning",
+  WITHDRAWN: "neutral",
   APPROVED: "success",
   REJECTED: "error",
   SUBMITTED: "info",
@@ -143,9 +146,29 @@ export default function CompanyCampaignDetailPage() {
   };
 
   useEffect(() => {
-    if (id) load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id]);
+    if (!id) return;
+    let active = true;
+    const controller = new AbortController();
+
+    api
+      .get<Detail>(`/company/campaigns/${id}`, { signal: controller.signal })
+      .then((res) => {
+        if (active) setData(res.data);
+      })
+      .catch(() => {
+        if (active) {
+          setError(t("캠페인 정보를 불러오지 못했습니다", "Failed to load campaign details"));
+        }
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+
+    return () => {
+      active = false;
+      controller.abort();
+    };
+  }, [id, t]);
 
   const callAction = async (fn: () => Promise<{ message: string }>) => {
     setActing(true);
@@ -166,22 +189,13 @@ export default function CompanyCampaignDetailPage() {
     }
   };
 
-  const requestDeposit = () =>
-    callAction(async () => {
-      if (!data) return { message: "" };
-      const { data: res } = await api.post<{ message: string }>(
-        `/company/campaigns/${data.id}/deposit-request`,
-      );
-      return res;
-    });
-
   const cancelCampaign = () => {
     if (!data) return;
     if (
       !confirm(
         t(
-          "캠페인을 취소하시겠어요? 예치금은 환불 처리됩니다.",
-          "Cancel this campaign? The deposit will be refunded.",
+          "캠페인을 취소하시겠어요? 결제·정산 관련 후속 처리는 운영 계약과 관리자 확인에 따라 별도로 안내됩니다.",
+          "Cancel this campaign? Any payment or settlement follow-up will be handled separately under your operating agreement and administrator review.",
         ),
       )
     )
@@ -223,7 +237,7 @@ export default function CompanyCampaignDetailPage() {
 
   const reviewApplication = async (
     appId: number,
-    action: "APPROVE" | "REJECT" | "APPROVE_VIDEO" | "REQUEST_CHANGES" | "REJECT_VIDEO",
+    action: "APPROVE" | "REJECT" | "REQUEST_CHANGES" | "REJECT_VIDEO",
     opts?: { rewardPaidAmount?: number; reviewComment?: string },
   ) => {
     setRowActingId(appId);
@@ -336,7 +350,7 @@ export default function CompanyCampaignDetailPage() {
 
       <Card>
         <h2 className="text-sm font-semibold uppercase tracking-wider text-muted">
-          {t("예치금", "Deposit")}
+          {t("예산 및 결제 상태", "Budget and payment status")}
         </h2>
         <div className="mt-4 grid grid-cols-3 gap-4">
           <div>
@@ -363,66 +377,59 @@ export default function CompanyCampaignDetailPage() {
         </div>
 
         {data.escrowStatus === "PENDING_DEPOSIT" && (
-          <div className="mt-6 rounded-xl border border-warning/30 bg-warning/5 p-5 text-sm text-warning">
-            <p className="font-semibold">
-              {t("예치금 입금을 기다리고 있습니다.", "Waiting for the deposit.")}
-            </p>
-            <p className="mt-2">
-              {t("아래 계좌로 ", "Transfer ")}
-              <span className="font-bold">
-                {data.totalBudget.toLocaleString()}
-                {t("원", " KRW")}
-              </span>
+          <div className="mt-6 rounded-xl bg-warning/10 p-5 text-sm leading-relaxed text-foreground">
+            <p className="font-bold text-warning">
               {t(
-                "을 입금한 뒤 \"계좌이체 완료\" 버튼을 눌러주세요. 관리자 확인 후 캠페인이 공개됩니다.",
-                " to the account below, then press the \"Transfer complete\" button. The campaign goes live after admin confirmation.",
+                "현재 관리 베타에서는 결제·정산 기능이 비활성화되어 있습니다.",
+                "Payment and settlement are currently disabled in the managed beta.",
               )}
             </p>
-            <p className="mt-2 text-xs">
+            <p className="mt-3 font-semibold">
               {t(
-                "예치 계좌: 국민은행 000-00-0000-000 (주)바이럴그라운드",
-                "Deposit account: KB Bank 000-00-0000-000 Viral Ground Inc.",
+                "화면에 표시된 예산을 어떤 계좌로도 송금하지 마세요.",
+                "Do not transfer the displayed budget to any bank account.",
               )}
             </p>
-            <Button size="sm" onClick={requestDeposit} disabled={acting} className="mt-4">
-              {acting
-                ? t("요청 중...", "Submitting...")
-                : t(
-                    "계좌이체 완료 (관리자에게 확인 요청)",
-                    "Transfer complete (request admin confirmation)",
-                  )}
-            </Button>
+            <p className="mt-2 text-content-soft">
+              {t(
+                "운영 계약이 체결되고 PG 결제가 활성화된 뒤, 검증된 결제 절차를 별도로 안내합니다.",
+                "A verified payment process will be provided separately after an operating agreement is in place and PG payments are activated.",
+              )}
+            </p>
           </div>
         )}
 
         {data.escrowStatus === "DEPOSIT_CONFIRMING" && (
-          <div className="mt-6 rounded-xl border border-info/30 bg-info/5 p-4 text-sm text-info">
+          <div className="mt-6 rounded-xl bg-info/10 p-4 text-sm leading-relaxed text-content-soft">
             {t(
-              "관리자가 입금을 확인하고 있습니다. 확인이 완료되면 메일로 알려드립니다.",
-              "The admin is confirming your deposit. We'll email you once it's confirmed.",
+              "기존 운영 기록상 입금 확인 단계입니다. 현재 셀프서비스 결제·정산은 비활성화되어 있으며, 이 상태만으로 실제 송금이나 확인 완료를 보장하지 않습니다. 후속 처리는 운영 계약과 관리자 기록을 기준으로 확인해주세요.",
+              "This is a deposit-review state from legacy operations. Self-service payment and settlement are currently disabled, and this status alone does not confirm a transfer or completed review. Check the operating agreement and administrator records for any follow-up.",
             )}
           </div>
         )}
 
         {data.escrowStatus === "FUNDED" && (
-          <div className="mt-6 rounded-xl border border-success/30 bg-success/5 p-4 text-sm text-success">
+          <div className="mt-6 rounded-xl bg-success/10 p-4 text-sm leading-relaxed text-content-soft">
             {t(
-              "예치금 입금이 확인되어 캠페인이 공개되었습니다.",
-              "Your deposit has been confirmed and the campaign is now live.",
+              "기존 운영 기록상 예치 완료 상태입니다. 이 표시는 결제·정산 보증이나 현재 PG 처리 완료를 의미하지 않습니다. 실제 운영 조건은 계약과 관리자 기록을 확인해주세요.",
+              "This is a funded state from legacy operations. It is not a payment or settlement guarantee and does not indicate current PG completion. Check the agreement and administrator records for the applicable terms.",
             )}
           </div>
         )}
 
         {data.escrowStatus === "REFUNDED" && (
           <div className="mt-6 rounded-xl bg-surface-chip p-4 text-sm text-content-soft">
-            {t("환불 처리된 캠페인입니다.", "This campaign has been refunded.")}
+            {t(
+              "기존 운영 기록상 환불 상태입니다. 실제 처리 내역은 운영 계약과 관리자 기록을 확인해주세요.",
+              "This is a refund state from legacy operations. Check the operating agreement and administrator records for the actual processing details.",
+            )}
           </div>
         )}
 
         {data.escrowTransactions.length > 0 && (
           <div className="mt-6">
             <h3 className="text-xs font-semibold uppercase tracking-wider text-muted">
-              {t("예치금 이력", "Deposit history")}
+              {t("결제·정산 관리 이력", "Payment and settlement admin history")}
             </h3>
             <ul className="mt-3 divide-y divide-line overflow-hidden rounded-xl border border-line">
               {data.escrowTransactions.map((tx) => (
@@ -481,30 +488,30 @@ export default function CompanyCampaignDetailPage() {
                 <div className="flex flex-wrap items-start justify-between gap-4">
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      <Link
-                        href={`/creators/${a.creator.id}`}
-                        className="font-medium text-foreground hover:text-primary"
-                      >
+                      <span className="font-medium text-foreground">
                         {a.creator.name}
-                      </Link>
+                      </span>
                       <Badge tone={APP_TONE[a.status]}>
                         {t(APP_LABEL[a.status].ko, APP_LABEL[a.status].en)}
                       </Badge>
-                      <Link
-                        href={`/creators/${a.creator.id}`}
-                        className="text-xs font-medium text-primary underline-offset-2 hover:underline"
-                      >
-                        {t("상세 프로필 →", "View profile →")}
-                      </Link>
                     </div>
-                    <p className="mt-1 text-xs text-muted">{a.creator.email}</p>
                     {a.message && (
                       <p className="mt-2 whitespace-pre-wrap text-xs text-muted">
                         {t("지원 메시지: ", "Application message: ")}
                         {a.message}
                       </p>
                     )}
-                    {!a.videoFileKey &&
+                    {a.videoUrl && (
+                      <a
+                        href={a.videoUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-2 inline-flex min-h-11 items-center text-xs font-bold text-primary underline underline-offset-4"
+                      >
+                        {t("제출 영상 검토 →", "Review submitted video →")}
+                      </a>
+                    )}
+                    {!a.videoUrl &&
                       a.submissionUrl &&
                       isSafeExternalLink(a.submissionUrl) && (
                         <a
@@ -568,13 +575,6 @@ export default function CompanyCampaignDetailPage() {
                     {a.status === "SUBMITTED" && (
                       <>
                         <Button
-                          size="sm"
-                          disabled={rowActingId === a.id}
-                          onClick={() => reviewApplication(a.id, "APPROVE_VIDEO")}
-                        >
-                          {t("승인 · 정산", "Approve · settle")}
-                        </Button>
-                        <Button
                           variant="secondary"
                           size="sm"
                           disabled={rowActingId === a.id}
@@ -604,6 +604,12 @@ export default function CompanyCampaignDetailPage() {
                         >
                           {t("거절", "Reject")}
                         </Button>
+                        <p className="basis-full text-xs leading-relaxed text-warning">
+                          {t(
+                            "승인·정산은 상용 PG 활성화 후 제공됩니다. 영상을 먼저 검토하고 필요하면 수정 요청 또는 거절을 기록하세요.",
+                            "Approval and settlement become available after commercial PG activation. Review the video first, then record a change request or rejection if needed.",
+                          )}
+                        </p>
                       </>
                     )}
                     {a.status === "CHANGES_REQUESTED" && (

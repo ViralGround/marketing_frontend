@@ -2,18 +2,14 @@
 
 import CreatorSignupForm from "@/components/auth/CreatorSignupForm";
 import { useLang } from "@/lib/i18n";
+import AuthSurface from "@/components/auth/AuthSurface";
 
 export default function CreatorSignupPage() {
   const { t } = useLang();
 
   return (
-    <div className="flex min-h-[calc(100vh-65px)] items-center justify-center py-12">
-      <div className="w-full max-w-md space-y-6 rounded border border-line bg-surface p-8">
-        <h1 className="text-center text-2xl font-bold text-foreground">
-          {t("크리에이터 가입 신청", "Creator sign-up application")}
-        </h1>
+    <AuthSurface wide title={t("크리에이터 베타 지원", "Creator beta application")} description={t("약 5분이 걸립니다. 계정 정보, 제작 경험, 공개 범위를 순서대로 입력해 주세요.", "Allow about five minutes. Complete account details, creation experience, and consent in order.")}>
         <CreatorSignupForm />
-      </div>
-    </div>
+    </AuthSurface>
   );
 }

@@ -16,8 +16,8 @@ export default function AdminLayout({
   const { logout } = useAuthStore();
   const router = useRouter();
 
-  const handleLogout = () => {
-    removeTokens();
+  const handleLogout = async () => {
+    await removeTokens();
     logout();
     router.push("/login");
   };

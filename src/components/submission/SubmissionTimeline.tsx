@@ -11,7 +11,8 @@ export type SubmissionReviewStatus =
 
 export interface SubmissionHistoryItem {
   id: number;
-  videoFileKey: string | null;
+  videoFileKey?: string | null;
+  videoUrl?: string | null;
   videoContentType: string | null;
   videoSizeBytes: number | null;
   submissionUrl: string | null;
@@ -59,13 +60,23 @@ export default function SubmissionTimeline({
               </span>
               <Badge tone={cfg.tone}>{t(cfg.label, cfg.labelEn)}</Badge>
             </div>
-            {s.videoFileKey && (
+            {s.videoUrl ? (
+              <a
+                href={s.videoUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex min-h-11 items-center text-xs font-bold text-primary underline underline-offset-4"
+              >
+                {t("제출 영상 검토", "Review submitted video")}
+                {s.videoSizeBytes != null && ` · ${formatSize(s.videoSizeBytes)}`}
+              </a>
+            ) : s.videoFileKey ? (
               <p className="text-xs text-muted">
-                {t("파일", "File")}: <span className="font-mono">{s.videoFileKey}</span>
+                {t("업로드 파일 제출됨", "Uploaded file submitted")}
                 {s.videoSizeBytes != null && ` · ${formatSize(s.videoSizeBytes)}`}
               </p>
-            )}
-            {!s.videoFileKey && s.submissionUrl && (
+            ) : null}
+            {!s.videoUrl && !s.videoFileKey && s.submissionUrl && (
               <p className="text-xs text-muted">{t("외부 URL 제출 (레거시)", "External URL submission (legacy)")}</p>
             )}
             {s.reviewComment && (

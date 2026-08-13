@@ -36,14 +36,29 @@ export default function CampaignPerformancePage() {
 
   useEffect(() => {
     if (!id) return;
-    setLoading(true);
+    const controller = new AbortController();
+    let active = true;
+
     api
-      .get<Performance>(`/company/campaigns/${id}/performance`)
-      .then((res) => setData(res.data))
-      .catch(() => setError(t("성과 정보를 불러오지 못했습니다", "Failed to load performance data")))
-      .finally(() => setLoading(false));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id]);
+      .get<Performance>(`/company/campaigns/${id}/performance`, { signal: controller.signal })
+      .then((res) => {
+        if (!active) return;
+        setData(res.data);
+        setError("");
+      })
+      .catch(() => {
+        if (!active) return;
+        setError(t("성과 정보를 불러오지 못했습니다", "Failed to load performance data"));
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+
+    return () => {
+      active = false;
+      controller.abort();
+    };
+  }, [id, t]);
 
   if (loading)
     return (

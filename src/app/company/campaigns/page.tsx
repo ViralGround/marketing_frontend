@@ -38,11 +38,11 @@ type Label = { ko: string; en: string };
 
 const ESCROW_LABEL: Record<EscrowStatus, Label> = {
   NONE: { ko: "-", en: "-" },
-  PENDING_DEPOSIT: { ko: "입금 대기", en: "Pending deposit" },
-  DEPOSIT_CONFIRMING: { ko: "입금 확인중", en: "Confirming deposit" },
-  FUNDED: { ko: "예치 완료", en: "Deposited" },
-  PARTIALLY_RELEASED: { ko: "지급 진행중", en: "Payment in progress" },
-  REFUNDED: { ko: "환불됨", en: "Refunded" },
+  PENDING_DEPOSIT: { ko: "결제 미활성", en: "Payment unavailable" },
+  DEPOSIT_CONFIRMING: { ko: "기존 확인 기록", en: "Legacy review" },
+  FUNDED: { ko: "기존 예치 기록", en: "Legacy funded" },
+  PARTIALLY_RELEASED: { ko: "기존 지급 기록", en: "Legacy payout" },
+  REFUNDED: { ko: "기존 환불 기록", en: "Legacy refund" },
 };
 
 const ESCROW_TONE: Record<EscrowStatus, Tone> = {
@@ -86,7 +86,7 @@ export default function CompanyCampaignsPage() {
           <h1 className="text-3xl font-bold tracking-tight text-foreground md:text-4xl">
             {t("내 캠페인", "My campaigns")}
           </h1>
-          <p className="mt-2 text-sm text-muted">{t("등록한 캠페인과 예치금 상태를 확인하세요.", "Check your campaigns and deposits.")}</p>
+          <p className="mt-2 text-sm text-muted">{t("등록한 캠페인과 관리 베타 결제 기록을 확인하세요.", "Check your campaigns and managed-beta payment records.")}</p>
         </div>
         <Link href="/company/campaigns/new">
           <Button>{t("새 캠페인 등록", "Create campaign")}</Button>
@@ -108,7 +108,7 @@ export default function CompanyCampaignsPage() {
                   <th className="px-5 py-3 font-medium">{t("제목", "Title")}</th>
                   <th className="px-5 py-3 font-medium">{t("보상 × 모집", "Reward × Slots")}</th>
                   <th className="px-5 py-3 font-medium">{t("총 예산", "Total budget")}</th>
-                  <th className="px-5 py-3 font-medium">{t("예치 상태", "Deposit status")}</th>
+                  <th className="px-5 py-3 font-medium">{t("결제 기록", "Payment record")}</th>
                   <th className="px-5 py-3 font-medium">{t("캠페인", "Campaign")}</th>
                   <th className="px-5 py-3 font-medium">{t("지원", "Applications")}</th>
                 </tr>

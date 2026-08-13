@@ -31,15 +31,15 @@ export default function CompanyDashboardPage() {
   return (
     <div className="mx-auto max-w-5xl">
       <h1 className="text-3xl font-bold tracking-tight text-foreground md:text-4xl">{t("대시보드", "Dashboard")}</h1>
-      <p className="mt-2 text-sm text-muted">{t("캠페인 현황과 예치금 상태를 확인하세요.", "Check your campaign status and deposits.")}</p>
+      <p className="mt-2 text-sm text-muted">{t("캠페인 현황과 관리 베타 결제 기록을 확인하세요.", "Check campaign status and managed-beta payment records.")}</p>
 
       {loading ? (
         <p className="mt-8 text-muted">{t("불러오는 중...", "Loading...")}</p>
       ) : summary ? (
         <div className="mt-8 grid grid-cols-2 gap-4 md:grid-cols-5">
           <SummaryCard label={t("전체 캠페인", "Total campaigns")} value={summary.totalCampaigns} />
-          <SummaryCard label={t("입금 대기", "Pending deposit")} value={summary.pendingDeposit} />
-          <SummaryCard label={t("입금 확인중", "Confirming deposit")} value={summary.depositConfirming} />
+          <SummaryCard label={t("결제 미활성", "Payment unavailable")} value={summary.pendingDeposit} />
+          <SummaryCard label={t("기존 확인 기록", "Legacy review")} value={summary.depositConfirming} />
           <SummaryCard label={t("모집중", "Recruiting")} value={summary.funded} />
           <SummaryCard label={t("종료", "Closed")} value={summary.closed} />
         </div>

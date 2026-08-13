@@ -1,16 +1,8 @@
 import { useEffect } from "react";
 import { useAuthStore } from "@/store/useAuthStore";
-import { decodeJwtPayload, getAccessToken, removeTokens } from "@/lib/auth";
+import api from "@/lib/api";
 import { setGaUser } from "@/lib/gtag";
 import type { UserRole } from "@/types";
-
-interface JwtPayload {
-  sub: string;
-  email: string;
-  name?: string;
-  role: UserRole;
-  exp?: number;
-}
 
 export function useAuthInit() {
   const { isAuthenticated, setUser } = useAuthStore();
@@ -18,26 +10,17 @@ export function useAuthInit() {
   useEffect(() => {
     if (isAuthenticated) return;
 
-    const token = getAccessToken();
-    if (!token) return;
-
-    const payload = decodeJwtPayload<JwtPayload>(token);
-    if (!payload || !payload.sub || !payload.role) {
-      removeTokens();
-      return;
-    }
-    if (!payload.exp || Date.now() / 1000 > payload.exp) {
-      removeTokens();
-      return;
-    }
-
-    const id = Number(payload.sub);
-    setUser({
-      id,
-      email: payload.email,
-      name: payload.name ?? payload.email,
-      role: payload.role,
-    });
-    setGaUser(id, payload.role);
+    let active = true;
+    api.get("/auth/csrf")
+      .then(() => api.get<{ id: number; email: string; name: string; role: UserRole }>("/auth/me"))
+      .then(({ data }) => {
+        if (!active) return;
+        setUser(data);
+        setGaUser(data.id, data.role);
+      })
+      .catch(() => undefined);
+    return () => {
+      active = false;
+    };
   }, [isAuthenticated, setUser]);
 }

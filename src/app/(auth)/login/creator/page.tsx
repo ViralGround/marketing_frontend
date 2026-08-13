@@ -4,17 +4,13 @@ import { Suspense } from "react";
 import Link from "next/link";
 import LoginForm from "@/components/auth/LoginForm";
 import { useLang } from "@/lib/i18n";
+import AuthSurface from "@/components/auth/AuthSurface";
 
 export default function CreatorLoginPage() {
   const { t } = useLang();
 
   return (
-    <div className="flex min-h-[calc(100vh-65px)] items-center justify-center px-4">
-      <div className="w-full max-w-md space-y-6 rounded-2xl border border-line bg-surface p-8">
-        <h1 className="text-center text-2xl font-bold text-foreground">
-          {t("크리에이터 로그인", "Creator log in")}
-        </h1>
-
+    <AuthSurface title={t("크리에이터 로그인", "Creator log in")} description={t("캠페인과 작업 상태를 확인하세요.", "Open your campaigns and work status.")}>
         <Suspense fallback={<div className="h-40" />}>
           <LoginForm />
         </Suspense>
@@ -35,7 +31,6 @@ export default function CreatorLoginPage() {
             </Link>
           </p>
         </div>
-      </div>
-    </div>
+    </AuthSurface>
   );
 }

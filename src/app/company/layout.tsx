@@ -16,8 +16,8 @@ export default function CompanyLayout({
   const router = useRouter();
   const { t } = useLang();
 
-  const handleLogout = () => {
-    removeTokens();
+  const handleLogout = async () => {
+    await removeTokens();
     logout();
     router.push("/login");
   };

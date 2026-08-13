@@ -32,7 +32,9 @@ const HOME_BY_ROLE: Record<Role, string> = {
   ADMIN: "/admin/members",
 };
 
-const PROTECTED_PREFIXES = ["/creator", "/company", "/admin", "/creators"];
+// /creator(랜딩)·/creators(공개 크리에이터 풀)는 공개.
+// 보호 대상은 크리에이터 앱 하위 경로(/creator/home 등)와 company/admin 전체.
+const PROTECTED_PREFIXES = ["/company", "/admin"];
 const AUTH_PAGES = ["/login", "/signup"];
 
 function matchesPrefix(pathname: string, prefix: string) {
@@ -49,13 +51,19 @@ function withNoStore(res: NextResponse): NextResponse {
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const token = request.cookies.get("access_token")?.value;
+  const hasRefreshCookie = Boolean(request.cookies.get("refresh_token")?.value);
 
   const claims: TokenClaims = token ? parseToken(token) : { role: null, valid: false };
 
-  const isProtected = PROTECTED_PREFIXES.some((p) => matchesPrefix(pathname, p));
+  const isProtected =
+    PROTECTED_PREFIXES.some((p) => matchesPrefix(pathname, p)) ||
+    pathname.startsWith("/creator/"); // "/creator" 자체는 공개 랜딩
   const isAuthPage = AUTH_PAGES.some((p) => matchesPrefix(pathname, p));
 
   if (!claims.valid) {
+    // 만료된 access token은 클라이언트가 HttpOnly refresh cookie로 회전한다.
+    // 실제 권한은 API가 매 요청 DB 상태와 서명을 재검증하므로 여기서는 페이지 부트만 허용한다.
+    if (isProtected && hasRefreshCookie) return withNoStore(NextResponse.next());
     if (isProtected) {
       const url = request.nextUrl.clone();
       url.pathname = "/login";
@@ -71,6 +79,15 @@ export async function proxy(request: NextRequest) {
   }
 
   if (isProtected) {
+    const requiredRole: Role = pathname.startsWith("/admin")
+      ? "ADMIN"
+      : pathname.startsWith("/company")
+        ? "COMPANY"
+        : "CREATOR";
+    if (claims.role !== requiredRole) {
+      const home = claims.role ? HOME_BY_ROLE[claims.role] : "/login";
+      return withNoStore(NextResponse.redirect(new URL(home, request.url)));
+    }
     return withNoStore(NextResponse.next());
   }
 
@@ -87,6 +104,5 @@ export const config = {
     "/creator/:path*",
     "/company/:path*",
     "/admin/:path*",
-    "/creators/:path*",
   ],
 };

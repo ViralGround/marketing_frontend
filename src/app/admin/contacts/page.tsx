@@ -10,6 +10,8 @@ interface ContactItem {
   email: string;
   brandName: string;
   contactName: string | null;
+  privacyConsentVersion: string | null;
+  privacyConsentedAt: string | null;
   createdAt: string;
 }
 
@@ -20,14 +22,29 @@ export default function AdminContactsPage() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    setLoading(true);
+    const controller = new AbortController();
+    let active = true;
+
     api
-      .get<{ contacts: ContactItem[] }>("/admin/contacts")
-      .then((res) => setContacts(res.data.contacts))
-      .catch(() => setError(t("상담 신청 목록을 불러오지 못했습니다.", "Failed to load consultation requests.")))
-      .finally(() => setLoading(false));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+      .get<{ contacts: ContactItem[] }>("/admin/contacts", { signal: controller.signal })
+      .then((res) => {
+        if (!active) return;
+        setContacts(res.data.contacts);
+        setError("");
+      })
+      .catch(() => {
+        if (!active) return;
+        setError(t("상담 신청 목록을 불러오지 못했습니다.", "Failed to load consultation requests."));
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+
+    return () => {
+      active = false;
+      controller.abort();
+    };
+  }, [t]);
 
   return (
     <div className="mx-auto max-w-5xl">
@@ -71,13 +88,20 @@ export default function AdminContactsPage() {
                 {contacts.map((c) => (
                   <tr key={c.id} className="transition-colors hover:bg-surface-muted">
                     <td className="px-5 py-3 whitespace-nowrap text-muted">
-                      {new Date(c.createdAt).toLocaleString("ko-KR", {
-                        year: "numeric",
-                        month: "2-digit",
-                        day: "2-digit",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
+                      <span className="block">
+                        {new Date(c.createdAt).toLocaleString("ko-KR", {
+                          year: "numeric",
+                          month: "2-digit",
+                          day: "2-digit",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </span>
+                      <span className="mt-1 block font-mono text-[11px] text-faint">
+                        {c.privacyConsentVersion
+                          ? `${t("동의", "Consent")}: ${c.privacyConsentVersion}`
+                          : t("레거시 · 동의 버전 미상", "Legacy · consent version unknown")}
+                      </span>
                     </td>
                     <td className="px-5 py-3 font-medium text-foreground">{c.brandName}</td>
                     <td className="px-5 py-3 text-content-soft">

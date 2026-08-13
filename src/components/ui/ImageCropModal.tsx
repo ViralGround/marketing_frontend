@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import {
   clampOffset,
   coverBaseScale,
@@ -10,6 +10,7 @@ import {
   viewportToCropRect,
 } from "@/lib/image";
 import { useLang } from "@/lib/i18n";
+import { useDialogA11y } from "@/hooks/useDialogA11y";
 
 const MIN_SOURCE_WIDTH = 800;
 const MAX_ZOOM = 3;
@@ -29,6 +30,9 @@ interface Props {
  */
 export default function ImageCropModal({ src, aspect, onApply, onCancel }: Props) {
   const { t } = useLang();
+  const titleId = useId();
+  const descriptionId = useId();
+  const dialogRef = useDialogA11y<HTMLDivElement>(true, onCancel);
   const frameRef = useRef<HTMLDivElement>(null);
   const imgRef = useRef<HTMLImageElement>(null);
   const drag = useRef<{ startX: number; startY: number; ox: number; oy: number } | null>(null);
@@ -52,14 +56,6 @@ export default function ImageCropModal({ src, aspect, onApply, onCancel }: Props
     window.addEventListener("resize", measure);
     return () => window.removeEventListener("resize", measure);
   }, [aspect]);
-
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onCancel();
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [onCancel]);
 
   const base = nat && frame.w ? coverBaseScale(nat.w, nat.h, frame.w, frame.h) : 0;
   const scale = base * zoom;
@@ -120,15 +116,21 @@ export default function ImageCropModal({ src, aspect, onApply, onCancel }: Props
 
   return (
     <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby={titleId}
+      aria-describedby={descriptionId}
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
       onClick={onCancel}
     >
       <div
+        ref={dialogRef}
+        tabIndex={-1}
         className="w-full max-w-md rounded-xl bg-surface p-5 shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <h3 className="mb-1 text-base font-semibold text-foreground">{t("표시 영역 선택", "Select display area")}</h3>
-        <p className="mb-3 text-xs text-muted">
+        <h3 id={titleId} className="mb-1 text-base font-semibold text-foreground">{t("표시 영역 선택", "Select display area")}</h3>
+        <p id={descriptionId} className="mb-3 text-xs text-muted">
           {t(
             "드래그로 위치를 옮기고, 슬라이더로 확대해 노출할 영역을 맞춰주세요.",
             "Drag to reposition and use the slider to zoom in on the area to show.",
@@ -160,6 +162,7 @@ export default function ImageCropModal({ src, aspect, onApply, onCancel }: Props
         <div className="mt-3 flex items-center gap-2">
           <span className="text-xs text-muted">{t("확대", "Zoom")}</span>
           <input
+            aria-label={t("이미지 확대 비율", "Image zoom level")}
             type="range"
             min={1}
             max={MAX_ZOOM}
@@ -181,14 +184,14 @@ export default function ImageCropModal({ src, aspect, onApply, onCancel }: Props
             {t(" 이상 이미지를 권장합니다.", " wide.")}
           </p>
         )}
-        {err && <p className="mt-2 text-xs text-red-600">{err}</p>}
+        {err && <p role="alert" className="mt-2 text-xs text-error">{err}</p>}
 
         <div className="mt-4 flex justify-end gap-2">
           <button
             type="button"
             onClick={onCancel}
             disabled={busy}
-            className="rounded px-4 py-2 text-sm text-content-soft hover:bg-surface-muted disabled:opacity-50"
+            className="min-h-11 rounded-full px-4 py-2 text-sm text-content-soft hover:bg-surface-muted disabled:opacity-50"
           >
             {t("취소", "Cancel")}
           </button>
@@ -196,7 +199,7 @@ export default function ImageCropModal({ src, aspect, onApply, onCancel }: Props
             type="button"
             onClick={apply}
             disabled={busy || !nat}
-            className="rounded bg-gray-900 px-4 py-2 text-sm text-white hover:bg-gray-700 disabled:opacity-50"
+            className="min-h-11 rounded-full bg-primary px-5 py-2 text-sm font-semibold text-white hover:bg-primary-dark disabled:opacity-50"
           >
             {busy ? t("처리 중…", "Processing…") : t("적용", "Apply")}
           </button>

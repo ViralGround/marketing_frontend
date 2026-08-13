@@ -70,8 +70,8 @@ export default function NewCampaignPage() {
       </h1>
       <p className="mt-2 text-sm text-muted">
         {t(
-          "등록 후 예치금을 입금하면 크리에이터에게 공개됩니다.",
-          "Once you create it and make the deposit, it becomes visible to creators.",
+          "캠페인은 초안으로 저장됩니다. 관리 베타의 결제·모집 절차는 운영 계약 확정 후 별도로 안내됩니다.",
+          "The campaign is saved as a draft. Payment and recruiting steps for the managed beta are provided after the operating agreement is finalized.",
         )}
       </p>
 
@@ -181,16 +181,16 @@ export default function NewCampaignPage() {
             </div>
           </div>
           <Card className="bg-surface-muted p-5">
-            <p className="text-xs font-medium text-muted">{t("예치 필요 금액 (총 예산)", "Required deposit (total budget)")}</p>
+            <p className="text-xs font-medium text-muted">{t("예상 총 예산", "Estimated total budget")}</p>
             <p className="mt-1 text-2xl font-bold tracking-tight text-foreground">
               {t(`${totalBudget.toLocaleString()}원`, `₩${totalBudget.toLocaleString()}`)}
             </p>
             <p className="mt-2 text-xs text-muted">
               {t("등록 직후 캠페인은 ", "Right after creation, the campaign is ")}
-              <span className="font-semibold text-warning">{t("입금 대기", "Pending deposit")}</span>{" "}
+              <span className="font-semibold text-warning">{t("결제 비활성", "Payment unavailable")}</span>{" "}
               {t(
-                "상태가 되며, 예치금 입금 확인 후 모집이 시작됩니다.",
-                ", and recruiting begins once the deposit is confirmed.",
+                "상태로 저장됩니다. 현재 어떤 계좌로도 송금하지 마세요. 결제·모집은 PG 활성화와 계약 확인 후 진행합니다.",
+                ". Do not transfer money to any account. Payment and recruiting begin only after PG activation and contract confirmation.",
               )}
             </p>
           </Card>

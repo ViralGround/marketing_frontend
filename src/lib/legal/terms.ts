@@ -1,9 +1,11 @@
+import { LEGAL_CONSENT_VERSIONS } from "@/lib/legalVersions";
+
 /**
  * 서비스 이용약관 초안.
  * ⚠️ 운영 전 반드시 법적 검토(특히 분쟁 해결, 책임 제한, 정산/환불, 캠페인 가이드라인) 필요.
  */
 export const TERMS_TITLE = "Viral Ground 서비스 이용약관";
-export const TERMS_VERSION = "v1.0 (초안)";
+export const TERMS_VERSION = LEGAL_CONSENT_VERSIONS.termsVersion;
 export const TERMS_EFFECTIVE_DATE = "2026-05-01";
 
 export const TERMS_BODY = `제1조 (목적)

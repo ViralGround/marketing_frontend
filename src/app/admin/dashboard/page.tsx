@@ -25,14 +25,29 @@ export default function AdminDashboardPage() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    setLoading(true);
+    const controller = new AbortController();
+    let active = true;
+
     api
-      .get<Kpi>("/admin/dashboard/kpi")
-      .then((res) => setKpi(res.data))
-      .catch(() => setError(t("KPI 를 불러오지 못했습니다", "Failed to load KPIs")))
-      .finally(() => setLoading(false));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+      .get<Kpi>("/admin/dashboard/kpi", { signal: controller.signal })
+      .then((res) => {
+        if (!active) return;
+        setKpi(res.data);
+        setError("");
+      })
+      .catch(() => {
+        if (!active) return;
+        setError(t("KPI 를 불러오지 못했습니다", "Failed to load KPIs"));
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+
+    return () => {
+      active = false;
+      controller.abort();
+    };
+  }, [t]);
 
   if (loading)
     return (

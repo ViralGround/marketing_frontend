@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { Link2, Loader2, TriangleAlert, Unlink } from "lucide-react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { CheckCircle2, Link2, Loader2, TriangleAlert, Unlink } from "lucide-react";
 import api from "@/lib/api";
 import { useLang } from "@/lib/i18n";
 import Card from "@/components/ui/Card";
@@ -20,121 +21,59 @@ interface Connection {
   lastError: string | null;
 }
 
-interface ConnectTokenResponse {
-  token: string;
-  userId: string;
-  environment: string;
+interface AuthorizeResponse {
+  authorizationUrl: string;
+  expiresAt: string;
 }
 
-/** Phyllo Connect SDK 핸들. 사용하는 메서드/이벤트만 최소로 선언. */
-interface PhylloConnectInstance {
-  on(
-    event: "accountConnected",
-    cb: (accountId: string, workplatformId: string, userId: string) => void,
-  ): void;
-  on(
-    event: "accountDisconnected",
-    cb: (accountId: string, workplatformId: string, userId: string) => void,
-  ): void;
-  on(event: "tokenExpired", cb: (userId: string) => void): void;
-  on(event: "exit", cb: (reason: string, userId: string) => void): void;
-  on(
-    event: "connectionFailure",
-    cb: (reason: string, workplatformId: string, userId: string) => void,
-  ): void;
-  open(): void;
-}
+const FAILURE_REASONS: Record<string, { ko: string; en: string }> = {
+  invalid_state: {
+    ko: "연결 세션이 만료되었거나 일치하지 않습니다. 다시 연결해 주세요.",
+    en: "The connection session expired or didn't match. Please try again.",
+  },
+  account_mismatch: {
+    ko: "프로필에 등록한 인스타그램 계정과 로그인한 계정이 다릅니다.",
+    en: "The Instagram account you signed in with doesn't match your profile.",
+  },
+  profile_required: {
+    ko: "먼저 프로필에 인스타그램 아이디를 입력해 주세요.",
+    en: "Add your Instagram handle to your profile first.",
+  },
+  provider_rejected: {
+    ko: "Instagram에서 연결을 승인하지 않았습니다. 권한을 확인하고 다시 시도해 주세요.",
+    en: "Instagram didn't approve the connection. Review the permissions and try again.",
+  },
+  temporary_failure: {
+    ko: "Instagram 연결 서비스가 일시적으로 불안정합니다. 잠시 후 다시 시도해 주세요.",
+    en: "Instagram connection is temporarily unavailable. Please try again shortly.",
+  },
+};
 
-interface PhylloConnectStatic {
-  initialize(config: {
-    clientDisplayName: string;
-    environment: string;
-    userId: string;
-    token: string;
-  }): PhylloConnectInstance;
-}
-
-declare global {
-  interface Window {
-    PhylloConnect?: PhylloConnectStatic;
-  }
-}
-
-const PHYLLO_SDK_SRC = "https://cdn.getphyllo.com/connect/v2/phyllo-connect.js";
-
-/**
- * Phyllo Connect SDK 스크립트를 온디맨드로 주입하고 window.PhylloConnect 를 반환한다.
- * 이미 로드돼 있으면 재사용하고, 로딩 중이면 같은 로드 Promise 를 공유한다.
- */
-let phylloSdkPromise: Promise<PhylloConnectStatic> | null = null;
-function loadPhylloSdk(): Promise<PhylloConnectStatic> {
-  if (typeof window !== "undefined" && window.PhylloConnect) {
-    return Promise.resolve(window.PhylloConnect);
-  }
-  if (phylloSdkPromise) {
-    return phylloSdkPromise;
-  }
-  phylloSdkPromise = new Promise<PhylloConnectStatic>((resolve, reject) => {
-    const existing = document.querySelector<HTMLScriptElement>(
-      `script[src="${PHYLLO_SDK_SRC}"]`,
-    );
-    const onReady = () => {
-      if (window.PhylloConnect) {
-        resolve(window.PhylloConnect);
-      } else {
-        reject(new Error("PhylloConnect not available after load"));
-      }
-    };
-    if (existing) {
-      existing.addEventListener("load", onReady);
-      existing.addEventListener("error", () => reject(new Error("Phyllo SDK load failed")));
-      if (window.PhylloConnect) onReady();
-      return;
-    }
-    const script = document.createElement("script");
-    script.src = PHYLLO_SDK_SRC;
-    script.async = true;
-    script.onload = onReady;
-    script.onerror = () => {
-      phylloSdkPromise = null; // 실패 시 다음 시도에서 재주입 허용
-      reject(new Error("Phyllo SDK load failed"));
-    };
-    document.body.appendChild(script);
-  });
-  return phylloSdkPromise;
-}
-
-/**
- * 크리에이터 마이페이지의 인스타그램 연결 카드.
- *
- * - 마운트 시 GET /creator/instagram/connection 으로 상태 조회.
- *   set-state-in-effect 룰 회피를 위해 동기 setState 없이 비동기/이벤트 콜백에서만 갱신.
- * - 연결 버튼 → POST /creator/instagram/connect-token 으로 {token,userId,environment} 발급.
- *   - environment==="mock": mock-complete 로 즉시 연결 처리 후 재조회(키 발급 전·데모).
- *   - 그 외(sandbox/staging/production): Phyllo Connect SDK 를 온디맨드 주입해 동의 화면을 띄우고,
- *     accountConnected 콜백에서 connect-callback 으로 연결을 확정한다.
- */
 export default function InstagramConnectCard() {
   const { t } = useLang();
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [conn, setConn] = useState<Connection | null>(null);
   const [loadError, setLoadError] = useState("");
   const [working, setWorking] = useState(false);
   const [actionError, setActionError] = useState("");
+  const [notice, setNotice] = useState("");
 
-  // 연동은 프로필에 등록된 인스타 아이디로만 가능 — 비어 있으면 게이트로 막는다.
   const profileHandle = conn?.profileInstagramId?.trim() ?? "";
   const hasProfileHandle = profileHandle.length > 0;
 
   const fetchConnection = useCallback(() => {
     return api
       .get<Connection>("/creator/instagram/connection")
-      .then((res) => {
-        setConn(res.data);
+      .then((response) => {
+        setConn(response.data);
         setLoadError("");
       })
       .catch(() =>
         setLoadError(t("연동 상태를 불러오지 못했습니다", "Failed to load connection status")),
       );
+    // t is language-dependent but stable enough; language changes remount the surrounding page.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -142,93 +81,54 @@ export default function InstagramConnectCard() {
     fetchConnection();
   }, [fetchConnection]);
 
-  const failGeneric = () =>
-    setActionError(t("연동에 실패했습니다. 다시 시도해 주세요", "Connection failed. Please try again"));
+  useEffect(() => {
+    const result = searchParams.get("instagram");
+    if (!result) return;
 
-  const openPhylloConnect = (data: ConnectTokenResponse) => {
-    loadPhylloSdk()
-      .then((PhylloConnect) => {
-        const connect = PhylloConnect.initialize({
-          clientDisplayName: "Viral Ground",
-          environment: data.environment,
-          userId: data.userId,
-          token: data.token,
-        });
+    const timer = window.setTimeout(() => {
+      if (result === "connected") {
+        setNotice(t("인스타그램 계정이 연결되었습니다.", "Your Instagram account is connected."));
+        setActionError("");
+        fetchConnection();
+      } else if (result === "cancelled") {
+        setNotice(t("Instagram 연결을 취소했습니다.", "Instagram connection was cancelled."));
+      } else if (result === "error") {
+        const reason = searchParams.get("reason") ?? "temporary_failure";
+        const copy = FAILURE_REASONS[reason] ?? FAILURE_REASONS.temporary_failure;
+        setActionError(t(copy.ko, copy.en));
+        setNotice("");
+      }
 
-        connect.on("accountConnected", (accountId, workplatformId) => {
-          api
-            .post("/creator/instagram/connect-callback", { accountId, workplatformId })
-            .then(() => fetchConnection())
-            .catch(() => failGeneric())
-            .finally(() => setWorking(false));
-        });
-
-        connect.on("tokenExpired", () => {
-          setActionError(
-            t(
-              "연결 세션이 만료되었습니다. 다시 시도해 주세요.",
-              "The connection session expired. Please try again.",
-            ),
-          );
-          setWorking(false);
-        });
-
-        connect.on("connectionFailure", () => {
-          setActionError(
-            t(
-              "인스타그램 연결에 실패했습니다. 다시 시도해 주세요.",
-              "Failed to connect Instagram. Please try again.",
-            ),
-          );
-          setWorking(false);
-        });
-
-        connect.on("exit", () => {
-          // 사용자가 동의 화면을 닫음(연결 미완료). 에러는 표시하지 않고 작업 상태만 해제.
-          setWorking(false);
-        });
-
-        connect.open();
-      })
-      .catch(() => {
-        setActionError(
-          t(
-            "연동 모듈을 불러오지 못했습니다. 광고 차단·보안 확장 프로그램이 막았을 수 있어요 — 시크릿 창에서 시도하거나 차단을 해제해 주세요.",
-            "Couldn't load the connection module. An ad/privacy blocker may be blocking it — try an incognito window or allow cdn.getphyllo.com.",
-          ),
-        );
-        setWorking(false);
-      });
-  };
+      const cleanParams = new URLSearchParams(searchParams.toString());
+      cleanParams.delete("instagram");
+      cleanParams.delete("reason");
+      const query = cleanParams.toString();
+      router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, [fetchConnection, pathname, router, searchParams, t]);
 
   const handleConnect = () => {
     if (!hasProfileHandle) {
       setActionError(
         t(
-          "프로필관리에서 인스타그램 아이디를 먼저 입력해 주세요. 입력한 계정으로만 연동할 수 있어요.",
-          "Please add your Instagram handle in profile settings first. You can only connect that account.",
+          "프로필관리에서 인스타그램 아이디를 먼저 입력해 주세요. 입력한 계정으로만 연결할 수 있습니다.",
+          "Add your Instagram handle in profile settings first. You can only connect that account.",
         ),
       );
       return;
     }
     setWorking(true);
     setActionError("");
+    setNotice("");
     api
-      .post<ConnectTokenResponse>("/creator/instagram/connect-token")
-      .then((res) => {
-        const data = res.data;
-        if (data.environment === "mock") {
-          // mock 환경: 동의 화면이 없으므로 즉시 연결 완료 처리.
-          return api
-            .post("/creator/instagram/mock-complete", {})
-            .then(() => fetchConnection())
-            .finally(() => setWorking(false));
-        }
-        // 실연동: Connect SDK 를 열고, 이후 처리는 SDK 이벤트 콜백에서 working 을 해제한다.
-        openPhylloConnect(data);
+      .post<AuthorizeResponse>("/creator/instagram/authorize")
+      .then(({ data }) => {
+        if (!data.authorizationUrl) throw new Error("Missing authorizationUrl");
+        window.location.assign(data.authorizationUrl);
       })
       .catch(() => {
-        failGeneric();
+        setActionError(t("Instagram 연결을 시작하지 못했습니다. 다시 시도해 주세요.", "Couldn't start Instagram connection. Please try again."));
         setWorking(false);
       });
   };
@@ -236,12 +136,14 @@ export default function InstagramConnectCard() {
   const handleDisconnect = () => {
     setWorking(true);
     setActionError("");
+    setNotice("");
     api
       .delete("/creator/instagram/connection")
-      .then(() => fetchConnection())
-      .catch(() =>
-        setActionError(t("연동 해제에 실패했습니다", "Failed to disconnect")),
-      )
+      .then(() => {
+        setNotice(t("인스타그램 연결을 해제했습니다.", "Instagram was disconnected."));
+        return fetchConnection();
+      })
+      .catch(() => setActionError(t("연동 해제에 실패했습니다", "Failed to disconnect")))
       .finally(() => setWorking(false));
   };
 
@@ -253,115 +155,80 @@ export default function InstagramConnectCard() {
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0">
           <div className="flex items-center gap-2">
-            <h2 className="text-lg font-semibold text-foreground">
-              {t("인스타그램 연동", "Instagram connection")}
-            </h2>
+            <h2 className="text-lg font-semibold text-foreground">{t("인스타그램 연동", "Instagram connection")}</h2>
             <StatusBadge status={conn?.status ?? "NONE"} loading={!conn && !loadError} />
           </div>
           <p className="mt-1.5 text-sm text-muted">
             {t(
-              "계정을 연동하면 릴스 성과(조회·좋아요·댓글·공유)가 자동으로 집계됩니다.",
-              "Connect your account to automatically sync reel performance (views, likes, comments, shares).",
+              "Meta의 공식 동의 화면을 통해 계정을 연결하면 릴스 성과를 동기화할 수 있습니다.",
+              "Connect through Meta's official consent screen to sync reel performance.",
             )}
           </p>
 
-          {conn &&
-            !isConnected &&
-            (hasProfileHandle ? (
-              <p className="mt-2.5 inline-flex items-center gap-1.5 rounded-lg bg-surface-chip px-2.5 py-1.5 text-xs text-content-soft">
-                <Link2 className="h-3.5 w-3.5 shrink-0" />
-                {t(
-                  `프로필에 등록된 @${profileHandle} 계정으로 로그인해 연결해 주세요.`,
-                  `Sign in with @${profileHandle} (registered in your profile) to connect.`,
-                )}
-              </p>
-            ) : (
-              <p className="mt-2.5 inline-flex items-start gap-1.5 rounded-lg border border-warning/30 bg-warning/5 px-2.5 py-1.5 text-xs text-warning">
-                <TriangleAlert className="mt-px h-3.5 w-3.5 shrink-0" />
-                <span>
-                  {t(
-                    "연동하려면 프로필에 인스타그램 아이디가 필요합니다. ",
-                    "Connecting requires an Instagram handle in your profile. ",
-                  )}
-                  <Link
-                    href="/profile/setup"
-                    className="font-medium underline underline-offset-2 hover:text-foreground"
-                  >
-                    {t("프로필관리에서 입력하기", "Add it in profile settings")}
-                  </Link>
-                </span>
-              </p>
-            ))}
+          {conn && !isConnected && (hasProfileHandle ? (
+            <p className="mt-2.5 inline-flex items-center gap-1.5 rounded-lg bg-surface-chip px-2.5 py-1.5 text-xs text-content-soft">
+              <Link2 className="h-3.5 w-3.5 shrink-0" />
+              {t(`프로필에 등록된 @${profileHandle} 계정으로 로그인해 주세요.`, `Sign in with @${profileHandle}, the account registered in your profile.`)}
+            </p>
+          ) : (
+            <p className="mt-2.5 inline-flex items-start gap-1.5 rounded-lg border border-warning/30 bg-warning/5 px-2.5 py-1.5 text-xs text-warning">
+              <TriangleAlert className="mt-px h-3.5 w-3.5 shrink-0" />
+              <span>
+                {t("연결하려면 프로필에 인스타그램 아이디가 필요합니다. ", "An Instagram handle is required. ")}
+                <Link href="/profile/setup" className="font-medium underline underline-offset-2 hover:text-foreground">
+                  {t("프로필관리에서 입력하기", "Add it in profile settings")}
+                </Link>
+              </span>
+            </p>
+          ))}
 
           {isConnected && (
             <div className="mt-3 space-y-1 text-sm">
-              <p className="font-medium text-foreground">
-                {t("연결됨", "Connected")}
-                {conn?.igUsername ? ` · @${conn.igUsername}` : ""}
-              </p>
-              {conn?.lastSyncedAt && (
-                <p className="text-xs text-faint">
-                  {t("마지막 동기화", "Last synced")}: {formatDateTime(conn.lastSyncedAt)}
-                </p>
-              )}
+              <p className="font-medium text-foreground">{t("연결됨", "Connected")}{conn?.igUsername ? ` · @${conn.igUsername}` : ""}</p>
+              {conn?.lastSyncedAt && <p className="text-xs text-muted">{t("마지막 동기화", "Last synced")}: {formatDateTime(conn.lastSyncedAt)}</p>}
             </div>
           )}
 
           {isError && (
             <p className="mt-3 inline-flex items-start gap-1.5 rounded-xl border border-error/30 bg-error/5 px-3 py-2 text-xs text-error">
               <TriangleAlert className="mt-px h-3.5 w-3.5 shrink-0" />
-              <span>
-                {t("연동 중 오류가 발생했습니다. 다시 연결해 주세요.", "Something went wrong with the connection. Please reconnect.")}
-                {conn?.lastError ? ` (${conn.lastError})` : ""}
-              </span>
+              <span>{t("이전 연결에서 오류가 발생했습니다. 다시 연결해 주세요.", "The previous connection failed. Please reconnect.")}</span>
             </p>
           )}
         </div>
 
         <div className="shrink-0">
           {isConnected ? (
-            <button
-              type="button"
-              onClick={handleDisconnect}
-              disabled={working}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-line px-3 py-2 text-sm font-medium text-content-soft transition-colors hover:bg-surface-muted hover:text-foreground disabled:opacity-60"
-            >
-              {working ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Unlink className="h-4 w-4" />
-              )}
+            <button type="button" onClick={handleDisconnect} disabled={working} className="inline-flex min-h-11 items-center gap-1.5 rounded-full border border-line px-4 py-2 text-sm font-medium text-content-soft transition-colors hover:bg-surface-muted hover:text-foreground disabled:opacity-60">
+              {working ? <Loader2 className="h-4 w-4 animate-spin" /> : <Unlink className="h-4 w-4" />}
               {t("연결 해제", "Disconnect")}
             </button>
           ) : (
-            <button
-              type="button"
-              onClick={handleConnect}
-              disabled={working}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3.5 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-dark disabled:opacity-60"
-            >
-              {working ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Link2 className="h-4 w-4" />
-              )}
-              {isError ? t("다시 연결", "Reconnect") : t("인스타그램 연결", "Connect Instagram")}
+            <button type="button" onClick={handleConnect} disabled={working} className="inline-flex min-h-11 items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-dark disabled:opacity-60">
+              {working ? <Loader2 className="h-4 w-4 animate-spin" /> : <Link2 className="h-4 w-4" />}
+              {isError ? t("다시 연결", "Reconnect") : t("Instagram 연결", "Connect Instagram")}
             </button>
           )}
         </div>
       </div>
 
-      {actionError && <p className="mt-3 text-sm text-error">{actionError}</p>}
-      {loadError && <p className="mt-3 text-sm text-error">{loadError}</p>}
+      {notice && <p role="status" className="mt-3 inline-flex items-center gap-1.5 text-sm text-success"><CheckCircle2 className="h-4 w-4" />{notice}</p>}
+      {actionError && <p role="alert" className="mt-3 text-sm text-error">{actionError}</p>}
+      {loadError && (
+        <div role="alert" className="mt-3 flex flex-wrap items-center gap-3 text-sm text-error">
+          <span>{loadError}</span>
+          <button type="button" onClick={() => fetchConnection()} className="min-h-11 rounded-full border border-error/30 px-4 font-semibold">
+            {t("다시 시도", "Try again")}
+          </button>
+        </div>
+      )}
     </Card>
   );
 }
 
 function StatusBadge({ status, loading }: { status: ConnectionStatus; loading: boolean }) {
   const { t } = useLang();
-  if (loading) {
-    return <Badge tone="neutral">{t("확인 중", "Checking")}</Badge>;
-  }
+  if (loading) return <Badge tone="neutral">{t("확인 중", "Checking")}</Badge>;
   switch (status) {
     case "CONNECTED":
       return <Badge tone="success">{t("연결됨", "Connected")}</Badge>;
@@ -375,9 +242,9 @@ function StatusBadge({ status, loading }: { status: ConnectionStatus; loading: b
 }
 
 function formatDateTime(iso: string): string {
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return iso;
-  return d.toLocaleString("ko-KR", {
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return iso;
+  return date.toLocaleString("ko-KR", {
     year: "numeric",
     month: "2-digit",
     day: "2-digit",

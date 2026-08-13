@@ -21,5 +21,5 @@ export interface SignupRequest {
 
 export interface TokenResponse {
   accessToken: string;
-  refreshToken: string;
+  refreshToken?: string | null;
 }

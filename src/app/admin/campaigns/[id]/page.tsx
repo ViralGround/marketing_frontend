@@ -16,6 +16,7 @@ import { useLang } from "@/lib/i18n";
 type CampaignStatus = "OPEN" | "CLOSED";
 type AppStatus =
   | "PENDING"
+  | "WITHDRAWN"
   | "APPROVED"
   | "REJECTED"
   | "SUBMITTED"
@@ -84,7 +85,7 @@ interface Application {
   status: AppStatus;
   message: string | null;
   submissionUrl: string | null;
-  videoFileKey: string | null;
+  videoUrl: string | null;
   resubmissionCount: number | null;
   reviewComment: string | null;
   rewardPaidAmount: number | null;
@@ -152,30 +153,6 @@ export default function AdminCampaignDetailPage() {
     }
   };
 
-  const handleForceCompleteEscrow = async () => {
-    if (
-      !confirm(
-        t(
-          "이 캠페인을 예치금 완료 상태로 전환할까요? 크리에이터에게 즉시 노출됩니다.",
-          "Mark this campaign's deposit as complete? It becomes visible to creators immediately.",
-        ),
-      )
-    )
-      return;
-    try {
-      await api.post(`/admin/campaigns/${id}/escrow/force-complete`);
-      load();
-    } catch (err: unknown) {
-      const msg =
-        typeof err === "object" &&
-        err !== null &&
-        "response" in err &&
-        (err as { response?: { data?: { message?: string } } }).response?.data
-          ?.message;
-      setErrorMessage(msg || t("예치금 완료 처리에 실패했습니다", "Failed to mark deposit as complete"));
-    }
-  };
-
   const handleDelete = async () => {
     if (
       !confirm(
@@ -234,26 +211,11 @@ export default function AdminCampaignDetailPage() {
 
   const handleApplicationAction = async (
     appId: number,
-    status: "APPROVED" | "REJECTED" | "SETTLED" | "CHANGES_REQUESTED",
+    status: "APPROVED" | "REJECTED" | "CHANGES_REQUESTED",
     appCreatorName: string,
   ) => {
     const payload: { status: string; rewardPaidAmount?: number; reviewComment?: string } = { status };
-    if (status === "SETTLED") {
-      const input = prompt(
-        t(
-          `"${appCreatorName}" 에게 지급할 금액을 입력하세요 (원)`,
-          `Enter the amount to pay "${appCreatorName}" (₩)`,
-        ),
-        String(campaign?.rewardAmount ?? 0),
-      );
-      if (input === null) return;
-      const amount = Number(input);
-      if (!Number.isInteger(amount) || amount < 0) {
-        setErrorMessage(t("금액이 올바르지 않습니다", "Invalid amount"));
-        return;
-      }
-      payload.rewardPaidAmount = amount;
-    } else if (status === "CHANGES_REQUESTED") {
+    if (status === "CHANGES_REQUESTED") {
       const comment = prompt(
         t(
           `"${appCreatorName}" 에게 수정 요청 사유를 입력하세요`,
@@ -397,13 +359,10 @@ export default function AdminCampaignDetailPage() {
         )}
         {FORCE_COMPLETE_STATES.includes(campaign.escrowStatus) ? (
           <div>
-            <Button size="sm" onClick={handleForceCompleteEscrow}>
-              {t("예치금 입금완료 처리", "Mark deposit as paid")}
-            </Button>
-            <p className="mt-2 text-xs text-muted">
+            <p className="text-xs leading-relaxed text-warning">
               {t(
-                "관리자가 임의로 예치금 완료 처리합니다. 캠페인이 DRAFT 상태라면 모집중으로 전환되어 크리에이터에게 노출됩니다.",
-                "The admin manually marks the deposit as complete. If the campaign is in DRAFT, it switches to recruiting and becomes visible to creators.",
+                "상용 PG가 활성화되기 전에는 관리자도 예치 완료를 만들 수 없습니다. 어떤 계좌로도 송금을 안내하지 말고 운영 계약과 결제 공급자 설정을 먼저 완료하세요.",
+                "Administrators cannot mark deposits complete before a commercial PG is active. Do not provide transfer instructions; complete the operating agreement and payment provider setup first.",
               )}
             </p>
           </div>
@@ -522,7 +481,18 @@ export default function AdminCampaignDetailPage() {
                   </div>
                 )}
 
-                {!app.videoFileKey && app.submissionUrl && (
+                {app.videoUrl && (
+                  <a
+                    href={app.videoUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mb-3 inline-flex min-h-11 items-center text-sm font-bold text-primary underline underline-offset-4"
+                  >
+                    {t("현재 제출 영상 검토 →", "Review current submission →")}
+                  </a>
+                )}
+
+                {!app.videoUrl && app.submissionUrl && (
                   <div className="mb-3 text-sm">
                     <span className="text-muted">{t("제출 URL (레거시): ", "Submission URL (legacy): ")}</span>
                     {isSafeExternalLink(app.submissionUrl) ? (
@@ -592,14 +562,6 @@ export default function AdminCampaignDetailPage() {
                   {app.status === "SUBMITTED" && (
                     <>
                       <Button
-                        size="sm"
-                        onClick={() =>
-                          handleApplicationAction(app.id, "SETTLED", app.creator.name)
-                        }
-                      >
-                        {t("승인·정산", "Approve & pay")}
-                      </Button>
-                      <Button
                         variant="secondary"
                         size="sm"
                         onClick={() =>
@@ -612,6 +574,9 @@ export default function AdminCampaignDetailPage() {
                       >
                         {t("수정 요청", "Request changes")}
                       </Button>
+                      <span className="self-center text-xs text-warning">
+                        {t("승인·정산은 PG 활성화 후 제공", "Approval and payout require an active PG")}
+                      </span>
                       <Button
                         variant="ghost"
                         size="sm"

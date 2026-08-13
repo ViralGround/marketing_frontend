@@ -89,6 +89,9 @@ export default function VideoUploader({ applicationId, onUploaded, onCancel }: P
       const { fileKey, uploadUrl } = presignRes.data;
 
       await putWithProgress(uploadUrl, file);
+      // S3/R2 직접 PUT은 백엔드를 통과하지 않으므로 HEAD 검증과 소유권 상태 전이를
+      // 명시적으로 완료한다. 로컬 업로드에서는 이미 완료된 상태를 멱등 재확인한다.
+      await api.post("/files/complete-upload", { fileKey });
 
       await api.post(`/me/applications/${applicationId}/submit`, {
         videoFileKey: fileKey,

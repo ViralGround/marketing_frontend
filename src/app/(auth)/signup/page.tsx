@@ -2,24 +2,17 @@
 
 import Link from "next/link";
 import { useLang } from "@/lib/i18n";
+import AuthSurface from "@/components/auth/AuthSurface";
 
 export default function SignupPage() {
   const { t } = useLang();
 
   return (
-    <div className="flex min-h-[calc(100vh-65px)] items-center justify-center py-12">
-      <div className="w-full max-w-md space-y-6 rounded border border-line bg-surface p-8">
-        <div className="space-y-2 text-center">
-          <h1 className="text-2xl font-bold text-foreground">{t("회원가입", "Sign up")}</h1>
-          <p className="text-sm text-muted">
-            {t("가입 유형을 선택해주세요", "Please choose a signup type")}
-          </p>
-        </div>
-
+    <AuthSurface title={t("베타 참여", "Join the beta")} description={t("브랜드와 크리에이터 중 참여할 역할을 선택하세요.", "Choose whether you're joining as a brand or creator.")}>
         <div className="space-y-3">
           <Link
             href="/signup/creator"
-            className="flex flex-col gap-1 rounded-lg border border-line-strong px-5 py-4 hover:border-gray-900"
+            className="flex min-h-20 flex-col justify-center gap-1 border-y-2 border-ink px-2 py-4 transition-[padding] hover:pl-5 hover:text-violet"
           >
             <span className="text-base font-semibold text-foreground">
               {t("크리에이터로 가입", "Sign up as a Creator")}
@@ -30,7 +23,7 @@ export default function SignupPage() {
           </Link>
           <Link
             href="/signup/company"
-            className="flex flex-col gap-1 rounded-lg border border-line-strong px-5 py-4 hover:border-gray-900"
+            className="flex min-h-20 flex-col justify-center gap-1 border-b-2 border-ink px-2 py-4 transition-[padding] hover:pl-5 hover:text-violet"
           >
             <span className="text-base font-semibold text-foreground">
               {t("브랜드로 가입", "Sign up as a Brand")}
@@ -41,13 +34,12 @@ export default function SignupPage() {
           </Link>
         </div>
 
-        <p className="text-center text-xs text-muted">
+        <p className="mt-7 text-center text-xs text-muted">
           {t("이미 계정이 있으신가요?", "Already have an account?")}{" "}
           <Link href="/login" className="text-foreground underline">
             {t("로그인", "Log in")}
           </Link>
         </p>
-      </div>
-    </div>
+    </AuthSurface>
   );
 }

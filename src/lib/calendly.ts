@@ -3,17 +3,16 @@
  *
  * - 최초 호출 시 위젯 스크립트/CSS 를 1회 주입하고, 이후 팝업을 띄운다.
  *   (랜딩에서만 호출되므로 대시보드 등 다른 페이지엔 스크립트가 실리지 않는다.)
- * - 이벤트 URL 은 `NEXT_PUBLIC_CALENDLY_URL` 로 덮어쓸 수 있고, 미설정 시 코드의 기본 URL 을 쓴다.
+ * - 이벤트 URL은 회사 소유 `NEXT_PUBLIC_CALENDLY_URL`만 사용한다. 운영 빌드는 미설정을 거부한다.
  * - 스크립트 차단/실패 시 새 탭으로 폴백한다.
  */
 
 const SCRIPT_SRC = "https://assets.calendly.com/assets/external/widget.js";
 const CSS_HREF = "https://assets.calendly.com/assets/external/widget.css";
 
-// 실제 Calendly 이벤트 URL. .env(NEXT_PUBLIC_CALENDLY_URL)로 덮어쓸 수 있으나,
-// 배포 환경에서 환경변수 누락 시에도 동작하도록 공개 URL 을 기본값으로 둔다.
-export const CALENDLY_URL =
-  process.env.NEXT_PUBLIC_CALENDLY_URL ?? "https://calendly.com/aqua4595/30min";
+// 개인 계정 URL을 소스에 고정하지 않는다. 운영자가 회사 소유 이벤트 URL을 명시해야만
+// 외부 위젯을 로드한다.
+export const CALENDLY_URL = process.env.NEXT_PUBLIC_CALENDLY_URL?.trim() ?? "";
 
 declare global {
   interface Window {
@@ -57,6 +56,7 @@ function ensureWidget(): Promise<void> {
 
 /** Calendly 예약 팝업을 띄운다. 실패 시 새 탭으로 폴백. */
 export async function openCalendly(url: string = CALENDLY_URL): Promise<void> {
+  if (!url) return;
   try {
     await ensureWidget();
     window.Calendly?.initPopupWidget({ url });

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Menu, X } from "lucide-react";
@@ -8,18 +8,15 @@ import { useAuthStore } from "@/store/useAuthStore";
 import { removeTokens } from "@/lib/auth";
 import ThemeToggle from "@/components/ui/ThemeToggle";
 import LanguageToggle from "@/components/landing/LanguageToggle";
-import BookACallButton from "@/components/landing/BookACallButton";
 import { isLandingPath } from "@/lib/landingPaths";
 import { useLang } from "@/lib/i18n";
 import { clearGaUser, trackEvent } from "@/lib/gtag";
 import type { UserRole } from "@/types";
 
 /**
- * 사이트 전역 단일 헤더 (SSOT).
- * - 데스크탑(lg+): 좌측 로고+토글, 우측 인라인 nav.
- * - 모바일(<lg): 로고 + 테마 + 햄버거. 햄버거 메뉴에 토글·섹션 바로가기·인증 메뉴.
- * - 한국어/영어 토글은 모든 페이지에 노출(기본 한국어, 선택은 쿠키로 유지).
- * - Book a Call(Calendly)은 크리에이터 랜딩 한정.
+ * 앱 내부(로그인 영역·인증·법적 고지) 전용 헤더.
+ * 공개 페이지(/,/business,/creator,/creators,/campaigns)는 시안4 공용
+ * GroundTopbar 를 스스로 그리므로 여기서는 렌더하지 않는다.
  */
 
 const ROLE_HOME: Record<UserRole, string> = {
@@ -34,144 +31,48 @@ const ROLE_MYPAGE: Record<UserRole, { href: string; ko: string; en: string }> = 
   CREATOR: { href: "/creator/mypage", ko: "마이페이지", en: "My Page" },
 };
 
-function RoleToggle({
-  isBusiness,
-  onNavigate,
-}: {
-  isBusiness: boolean;
-  onNavigate?: () => void;
-}) {
-  // 라벨은 영어 모드에서만 For Brands/For Creators 로 표기(기본 한국어).
-  const { t } = useLang();
-  const baseTab = "rounded-full px-4 py-1.5 text-sm font-medium transition-colors";
-  const activeTab = "bg-surface text-foreground shadow-sm";
-  const inactiveTab = "text-muted hover:text-foreground";
-
-  return (
-    <div className="flex items-center rounded-full bg-surface-chip p-1">
-      <Link
-        href="/business"
-        onClick={onNavigate}
-        className={`${baseTab} ${isBusiness ? activeTab : inactiveTab}`}
-      >
-        {t("브랜드", "For Brands")}
-      </Link>
-      <Link
-        href="/"
-        onClick={onNavigate}
-        className={`${baseTab} ${!isBusiness ? activeTab : inactiveTab}`}
-      >
-        {t("크리에이터", "For Creators")}
-      </Link>
-    </div>
-  );
-}
-
 export default function Header() {
   const { user, isAuthenticated, logout } = useAuthStore();
   const router = useRouter();
   const pathname = usePathname();
-  const onLanding = isLandingPath(pathname);
-  const isBusiness = pathname?.startsWith("/business") ?? false;
-  const isCreatorLanding = onLanding && !isBusiness;
-  const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
   const { t } = useLang();
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     trackEvent("logout", { role: user?.role ?? null });
     clearGaUser();
-    removeTokens();
+    await removeTokens();
     logout();
     setMenuOpen(false);
     router.push("/login");
   };
 
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
   const logoHref = isAuthenticated && user ? ROLE_HOME[user.role] : "/";
-  const signupHref = isBusiness ? "/signup/company" : "/signup/creator";
 
-  // 랜딩 섹션 바로가기 — 클릭 시 해당 섹션으로 부드럽게 스크롤. (각 섹션 id 는 page.tsx 에서 부여)
-  const sectionLinks = isBusiness
-    ? [
-        { href: "#performance", label: t("성과", "Performance") },
-        { href: "#features", label: t("기능", "Features") },
-        { href: "#cases", label: t("사례", "Cases") },
-      ]
-    : [
-        { href: "#results", label: t("성과", "Results") },
-        { href: "#earnings", label: t("수익 계산", "Earnings") },
-        { href: "#faq", label: t("FAQ", "FAQ") },
-      ];
-
-  const scrollToSection = (href: string) => {
-    // 모바일: 메뉴를 먼저 닫고, 리렌더로 패널이 사라져 레이아웃이 정리된 다음 스크롤해야
-    // 스크롤이 중간에 끊기지 않는다. (메뉴가 없는 데스크탑에도 무해)
-    setMenuOpen(false);
-    requestAnimationFrame(() =>
-      requestAnimationFrame(() => {
-        document.querySelector(href)?.scrollIntoView({ behavior: "smooth" });
-      }),
-    );
-  };
+  // 공개 페이지는 시안4 GroundTopbar 가 chrome 을 담당한다.
+  if (isLandingPath(pathname)) return null;
 
   return (
-    <header
-      className={`sticky top-0 z-50 transition-all duration-300 ${
-        scrolled || !onLanding || menuOpen
-          ? "border-b border-line bg-surface/90 shadow-sm backdrop-blur-md"
-          : "bg-transparent"
-      }`}
-    >
+    <header className="sticky top-0 z-50 border-b border-line bg-surface/90 shadow-sm backdrop-blur-md">
       <div className="flex items-center justify-between px-6 py-4 md:px-10">
-        {/* 좌측: 로고 + (랜딩·데스크탑) 토글 */}
-        <div className="flex items-center gap-4">
-          <Link href={logoHref} aria-label="Viral Ground" className="inline-flex items-center gap-2.5">
-            {/* 다크모드: 다크 마크를 흰색 실루엣으로 반전(brightness-0→invert). 이름은 텍스트로 병기.
-                alt 빈값+aria-hidden: 옆 텍스트와 Link aria-label 이 이미 이름을 제공(중복 낭독 방지). */}
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/viral-ground-mark.png"
-              alt=""
-              aria-hidden="true"
-              className="h-7 w-auto md:h-8 dark:brightness-0 dark:invert"
-            />
-            <span className="text-xl font-extrabold tracking-tight text-foreground md:text-2xl">
-              Viral Ground
-            </span>
-          </Link>
-          {onLanding && (
-            <div className="hidden lg:block">
-              <RoleToggle isBusiness={isBusiness} />
-            </div>
-          )}
-        </div>
+        {/* 좌측: 로고 */}
+        <Link href={logoHref} aria-label="Viral Ground" className="inline-flex items-center gap-2.5">
+          {/* 다크모드: 다크 마크를 흰색 실루엣으로 반전(brightness-0→invert). 이름은 텍스트로 병기. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/viral-ground-mark.png"
+            alt=""
+            aria-hidden="true"
+            className="h-7 w-auto md:h-8 dark:brightness-0 dark:invert"
+          />
+          <span className="text-xl font-extrabold tracking-tight text-foreground md:text-2xl">
+            Viral Ground
+          </span>
+        </Link>
 
         {/* 데스크탑 우측 nav */}
         <nav className="hidden items-center gap-3 lg:flex">
-          {onLanding && !isAuthenticated && (
-            <div className="mr-1 flex items-center gap-0.5">
-              {sectionLinks.map((s) => (
-                <a
-                  key={s.href}
-                  href={s.href}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    scrollToSection(s.href);
-                  }}
-                  className="rounded-lg px-3 py-2 text-sm text-muted transition-colors hover:text-primary"
-                >
-                  {s.label}
-                </a>
-              ))}
-            </div>
-          )}
           {isAuthenticated && user ? (
             <>
               <Link
@@ -187,41 +88,18 @@ export default function Header() {
               >
                 {t("로그아웃", "Log out")}
               </button>
-              <LanguageToggle />
-              <ThemeToggle />
             </>
           ) : (
-            <>
-              <Link
-                href="/login"
-                onClick={() => trackEvent("cta_click", { location: "header", target: "login" })}
-                className="rounded-lg px-4 py-2 text-sm font-medium text-foreground transition-colors hover:text-primary"
-              >
-                {t("로그인", "Log in")}
-              </Link>
-              {isCreatorLanding && (
-                <BookACallButton
-                  location="header"
-                  className="rounded-lg bg-primary px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-dark"
-                >
-                  {t("무료 상담 예약", "Book a Call")}
-                </BookACallButton>
-              )}
-              {onLanding && isBusiness && (
-                <Link
-                  href={signupHref}
-                  onClick={() =>
-                    trackEvent("cta_click", { location: "header", target: "signup_company" })
-                  }
-                  className="rounded-lg bg-primary px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-dark"
-                >
-                  {t("브랜드 가입", "Sign up")}
-                </Link>
-              )}
-              <LanguageToggle />
-              <ThemeToggle />
-            </>
+            <Link
+              href="/login"
+              onClick={() => trackEvent("cta_click", { location: "header", target: "login" })}
+              className="rounded-lg px-4 py-2 text-sm font-medium text-foreground transition-colors hover:text-primary"
+            >
+              {t("로그인", "Log in")}
+            </Link>
           )}
+          <LanguageToggle />
+          <ThemeToggle />
         </nav>
 
         {/* 모바일: 테마 + 햄버거 */}
@@ -246,32 +124,11 @@ export default function Header() {
       {/* 모바일 메뉴 패널 */}
       {menuOpen && (
         <div className="border-t border-line bg-surface px-6 py-4 lg:hidden">
-          <div className="mb-4 flex items-center justify-between gap-2">
-            {onLanding && (
-              <RoleToggle isBusiness={isBusiness} onNavigate={() => setMenuOpen(false)} />
-            )}
-            <LanguageToggle className="ml-auto" />
+          <div className="mb-4 flex items-center justify-end">
+            <LanguageToggle />
           </div>
 
-          {onLanding && !isAuthenticated && (
-            <div className="flex flex-col">
-              {sectionLinks.map((s) => (
-                <a
-                  key={s.href}
-                  href={s.href}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    scrollToSection(s.href);
-                  }}
-                  className="rounded-lg px-2 py-2.5 text-sm font-medium text-content-soft transition-colors hover:bg-surface-muted hover:text-primary"
-                >
-                  {s.label}
-                </a>
-              ))}
-            </div>
-          )}
-
-          <div className="mt-3 flex flex-col gap-2 border-t border-line pt-4">
+          <div className="flex flex-col gap-2 border-t border-line pt-4">
             {isAuthenticated && user ? (
               <>
                 <Link
@@ -289,42 +146,16 @@ export default function Header() {
                 </button>
               </>
             ) : (
-              <>
-                <Link
-                  href="/login"
-                  onClick={() => {
-                    trackEvent("cta_click", { location: "header_mobile", target: "login" });
-                    setMenuOpen(false);
-                  }}
-                  className="rounded-lg px-2 py-2.5 text-sm font-medium text-content-soft hover:bg-surface-muted hover:text-primary"
-                >
-                  {t("로그인", "Log in")}
-                </Link>
-                {isCreatorLanding && (
-                  <BookACallButton
-                    location="header_mobile"
-                    onClick={() => setMenuOpen(false)}
-                    className="rounded-lg bg-primary px-4 py-2.5 text-center text-sm font-medium text-white hover:bg-primary-dark"
-                  >
-                    {t("무료 상담 예약", "Book a Call")}
-                  </BookACallButton>
-                )}
-                {onLanding && isBusiness && (
-                  <Link
-                    href={signupHref}
-                    onClick={() => {
-                      trackEvent("cta_click", {
-                        location: "header_mobile",
-                        target: "signup_company",
-                      });
-                      setMenuOpen(false);
-                    }}
-                    className="rounded-lg bg-primary px-4 py-2.5 text-center text-sm font-medium text-white hover:bg-primary-dark"
-                  >
-                    {t("브랜드 가입", "Sign up")}
-                  </Link>
-                )}
-              </>
+              <Link
+                href="/login"
+                onClick={() => {
+                  trackEvent("cta_click", { location: "header_mobile", target: "login" });
+                  setMenuOpen(false);
+                }}
+                className="rounded-lg px-2 py-2.5 text-sm font-medium text-content-soft hover:bg-surface-muted hover:text-primary"
+              >
+                {t("로그인", "Log in")}
+              </Link>
             )}
           </div>
         </div>

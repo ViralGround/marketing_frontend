@@ -1,12 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useId, useState } from "react";
+import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import { useLang } from "@/lib/i18n";
 import { TERMS_BODY, TERMS_TITLE } from "@/lib/legal/terms";
 import { PRIVACY_BODY, PRIVACY_TITLE } from "@/lib/legal/privacy";
 import { THIRD_PARTY_BODY, THIRD_PARTY_TITLE } from "@/lib/legal/thirdParty";
 import { MARKETING_BODY, MARKETING_TITLE } from "@/lib/legal/marketing";
+import { useDialogA11y } from "@/hooks/useDialogA11y";
 
 export interface AgreementValue {
   age14: boolean;
@@ -125,36 +127,40 @@ export default function AgreementSection({ role, value, onChange }: Props) {
 
 function LegalModal({ title, body, onClose }: { title: string; body: string; onClose: () => void }) {
   const { t } = useLang();
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [onClose]);
+  const titleId = useId();
+  const bodyId = useId();
+  const dialogRef = useDialogA11y<HTMLDivElement>(true, onClose);
 
-  return (
+  if (typeof document === "undefined") return null;
+
+  return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/55 p-4"
       onClick={onClose}
     >
       <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        aria-describedby={bodyId}
+        tabIndex={-1}
         className="flex max-h-[80vh] w-full max-w-2xl flex-col rounded-xl bg-surface shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between border-b border-line px-6 py-4">
-          <h3 className="text-base font-semibold text-foreground">{title}</h3>
+          <h3 id={titleId} className="text-base font-semibold text-foreground">{title}</h3>
           <button
             type="button"
             onClick={onClose}
-            className="text-muted hover:text-foreground transition-colors"
+            className="inline-flex min-h-11 min-w-11 items-center justify-center text-muted transition-colors hover:text-foreground"
             aria-label={t("닫기", "Close")}
           >
             <X className="h-5 w-5" />
           </button>
         </div>
         <div className="flex-1 overflow-y-auto px-6 py-4">
-          <pre className="whitespace-pre-wrap break-words text-xs leading-6 text-content-soft">
+          <pre id={bodyId} className="whitespace-pre-wrap break-words text-xs leading-6 text-content-soft">
             {body}
           </pre>
         </div>
@@ -162,12 +168,13 @@ function LegalModal({ title, body, onClose }: { title: string; body: string; onC
           <button
             type="button"
             onClick={onClose}
-            className="rounded bg-gray-900 px-4 py-2 text-sm text-white hover:bg-gray-700"
+            className="min-h-11 rounded-full bg-gray-900 px-5 py-2 text-sm text-white hover:bg-gray-700"
           >
             {t("확인", "Confirm")}
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

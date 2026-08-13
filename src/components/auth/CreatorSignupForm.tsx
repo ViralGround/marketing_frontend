@@ -1,16 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 import { trackEvent } from "@/lib/gtag";
 import { useLang } from "@/lib/i18n";
 import AlertModal from "@/components/ui/AlertModal";
 import EmailVerificationField from "@/components/auth/EmailVerificationField";
+import SignupProgress from "@/components/auth/SignupProgress";
 import AgreementSection, {
   EMPTY_AGREEMENT,
   type AgreementValue,
 } from "@/components/auth/AgreementSection";
+import { legalConsentPayload } from "@/lib/legalVersions";
 
 type Gender = "MALE" | "FEMALE";
 type EditingTool =
@@ -46,10 +49,14 @@ export default function CreatorSignupForm() {
   const [validationModal, setValidationModal] = useState("");
   const [pendingModalOpen, setPendingModalOpen] = useState(false);
   const [agreement, setAgreement] = useState<AgreementValue>(EMPTY_AGREEMENT);
+  const [step, setStep] = useState<1 | 2 | 3>(1);
+  const formRef = useRef<HTMLFormElement>(null);
+  const hasNavigatedRef = useRef(false);
 
   // 기본 정보
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [passwordVisible, setPasswordVisible] = useState(false);
   const [name, setName] = useState("");
   const [verifiedToken, setVerifiedToken] = useState<string | null>(null);
 
@@ -61,6 +68,64 @@ export default function CreatorSignupForm() {
   const [instagramId, setInstagramId] = useState("");
   const [tiktokId, setTiktokId] = useState("");
   const [youtubeId, setYoutubeId] = useState("");
+
+  useEffect(() => {
+    if (!hasNavigatedRef.current) return;
+    formRef.current
+      ?.querySelector<HTMLElement>(`[data-step-heading="${step}"]`)
+      ?.focus();
+  }, [step]);
+
+  const goToStep = (nextStep: 1 | 2 | 3) => {
+    hasNavigatedRef.current = true;
+    setStep(nextStep);
+  };
+
+  const continueFromAccount = () => {
+    if (!name.trim()) {
+      setValidationModal(t("활동명을 입력해주세요", "Please enter your display name"));
+      return;
+    }
+    if (!verifiedToken) {
+      setValidationModal(
+        t("이메일 인증을 완료해주세요", "Please complete email verification"),
+      );
+      return;
+    }
+    if (password.length < 12) {
+      setValidationModal(
+        t("비밀번호는 12자 이상 입력해주세요", "Enter a password with at least 12 characters"),
+      );
+      return;
+    }
+    goToStep(2);
+  };
+
+  const continueFromProfile = () => {
+    if (!gender) {
+      setValidationModal(t("성별을 선택해주세요", "Please select your gender"));
+      return;
+    }
+    if (!birthYear) {
+      setValidationModal(
+        t("출생연도를 선택해주세요", "Please select your birth year"),
+      );
+      return;
+    }
+    if (!faceExposure) {
+      setValidationModal(
+        t("얼굴 공개 여부를 선택해주세요", "Please select whether you can show your face"),
+      );
+      return;
+    }
+    if (!editingTool) {
+      setValidationModal(
+        t("주로 사용하는 편집 툴을 선택해주세요", "Please select your main editing tool"),
+      );
+      return;
+    }
+    goToStep(3);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -111,23 +176,33 @@ export default function CreatorSignupForm() {
         agreedAge14: agreement.age14,
         agreedThirdParty: agreement.thirdParty,
         marketingOptIn: agreement.marketing,
+        ...legalConsentPayload("CREATOR", agreement.marketing),
       });
       trackEvent("signup_success", { role: "CREATOR" });
       setPendingModalOpen(true);
     } catch (err: unknown) {
-      const status =
-        typeof err === "object" &&
-        err !== null &&
-        "response" in err &&
-        typeof (err as { response?: { status?: number } }).response?.status === "number"
-          ? (err as { response: { status: number } }).response.status
-          : 0;
-      if (status === 409) {
+      const response =
+        typeof err === "object" && err !== null && "response" in err
+          ? (err as {
+              response?: {
+                status?: number;
+                data?: { message?: string; code?: string };
+              };
+            }).response
+          : undefined;
+      const status = response?.status ?? 0;
+      if (response?.data?.code === "LEGAL_DOCUMENT_VERSION_MISMATCH") {
+        goToStep(3);
+        setError(
+          t(
+            "동의 문서가 변경되었습니다. 최신 내용을 확인한 뒤 다시 동의해주세요.",
+            "The consent documents changed. Review the latest versions and agree again.",
+          ),
+        );
+      } else if (status === 409) {
         setError(t("이미 등록된 이메일입니다", "This email is already registered"));
       } else if (status === 400) {
-        const msg =
-          (err as { response?: { data?: { message?: string } } }).response?.data
-            ?.message ?? t("입력값을 확인해주세요", "Please check your input");
+        const msg = response?.data?.message ?? t("입력값을 확인해주세요", "Please check your input");
         setError(msg);
       } else {
         setError(
@@ -144,14 +219,22 @@ export default function CreatorSignupForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
+      <SignupProgress
+        current={step}
+        labels={[
+          t("계정", "Account"),
+          t("제작 경험", "Experience"),
+          t("동의", "Consent"),
+        ]}
+      />
       {error && (
-        <div className="rounded bg-red-50 p-3 text-sm text-red-600">{error}</div>
+        <div role="alert" className="border border-red-300 bg-red-50 p-3 text-sm text-red-700">{error}</div>
       )}
 
       {/* 기본 정보 */}
-      <section className="space-y-4">
-        <h2 className="text-sm font-semibold text-muted">{t("기본 정보", "Basic information")}</h2>
+      <section className="space-y-4" hidden={step !== 1}>
+        <h2 data-step-heading="1" tabIndex={-1} className="text-sm font-semibold text-muted outline-none">{t("기본 정보", "Basic information")}</h2>
         <div>
           <label htmlFor="name" className="block text-sm font-medium text-content-soft">
             {t("활동명 (닉네임)", "Display name (nickname)")}
@@ -173,23 +256,41 @@ export default function CreatorSignupForm() {
         />
         <div>
           <label htmlFor="password" className="block text-sm font-medium text-content-soft">
-            {t("비밀번호 (8자 이상)", "Password (8+ characters)")}
+            {t("비밀번호 (12자 이상)", "Password (12+ characters)")}
           </label>
-          <input
-            id="password"
-            type="password"
-            required
-            minLength={8}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="mt-1 block w-full rounded border border-line-strong px-3 py-2 text-foreground placeholder-faint focus:border-gray-500 focus:outline-none"
-          />
+          <div className="relative mt-1">
+            <input
+              id="password"
+              type={passwordVisible ? "text" : "password"}
+              required
+              minLength={12}
+              autoComplete="new-password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="block min-h-12 w-full rounded-lg border border-line-strong px-3 py-2 pr-12 text-foreground placeholder-faint focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            />
+            <button
+              type="button"
+              onClick={() => setPasswordVisible((visible) => !visible)}
+              aria-label={passwordVisible ? t("비밀번호 숨기기", "Hide password") : t("비밀번호 보기", "Show password")}
+              className="absolute inset-y-0 right-0 inline-flex min-w-11 items-center justify-center text-muted hover:text-foreground"
+            >
+              {passwordVisible ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+            </button>
+          </div>
         </div>
+        <button
+          type="button"
+          onClick={continueFromAccount}
+          className="min-h-12 w-full border-2 border-ink bg-ink px-5 py-2.5 font-bold text-white transition-transform hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet"
+        >
+          {t("제작 경험 입력하기", "Continue to experience")}
+        </button>
       </section>
 
       {/* 설문 */}
-      <section className="space-y-4 border-t border-line pt-6">
-        <h2 className="text-sm font-semibold text-muted">{t("가입 설문", "Sign-up survey")}</h2>
+      <section className="space-y-4" hidden={step !== 2}>
+        <h2 data-step-heading="2" tabIndex={-1} className="text-sm font-semibold text-muted outline-none">{t("제작 경험", "Creation experience")}</h2>
 
         <div>
           <p className="mb-2 block text-sm font-medium text-content-soft">{t("성별", "Gender")}</p>
@@ -334,26 +435,54 @@ export default function CreatorSignupForm() {
             />
           </div>
         </div>
+        <div className="grid grid-cols-2 gap-3 pt-2">
+          <button
+            type="button"
+            onClick={() => goToStep(1)}
+            className="min-h-12 border-2 border-ink bg-white px-4 py-2.5 font-bold text-ink hover:bg-paper"
+          >
+            {t("이전", "Back")}
+          </button>
+          <button
+            type="button"
+            onClick={continueFromProfile}
+            className="min-h-12 border-2 border-violet bg-violet px-4 py-2.5 font-bold text-white hover:bg-violet/90"
+          >
+            {t("동의 단계로", "Continue to consent")}
+          </button>
+        </div>
       </section>
 
-      <AgreementSection role="CREATOR" value={agreement} onChange={setAgreement} />
+      <section className="space-y-6" hidden={step !== 3}>
+        <h2 data-step-heading="3" tabIndex={-1} className="sr-only outline-none">{t("약관 동의", "Consent")}</h2>
+        <AgreementSection role="CREATOR" value={agreement} onChange={setAgreement} />
 
-      <p className="text-xs text-muted">
-        {t(
-          "가입 신청 후 관리자가 검토하며, 승인까지 영업일 기준 일주일 이상 걸릴 수 있어요. 승인 결과는 이메일로 알려드리며, 승인 전에는 로그인할 수 없습니다.",
-          "After you apply, an administrator reviews your application, which can take more than a week in business days. We'll email you the result, and you can't log in until you're approved.",
-        )}
-      </p>
+        <p className="border-y border-ink/25 bg-violet-soft/55 px-4 py-3 text-xs leading-relaxed text-ink/70">
+          {t(
+            "가입 신청 후 관리자가 검토하며, 승인까지 영업일 기준 일주일 이상 걸릴 수 있어요. 승인 결과는 이메일로 알려드리며, 승인 전에는 로그인할 수 없습니다.",
+            "After you apply, an administrator reviews your application, which can take more than a week in business days. We'll email you the result, and you can't log in until you're approved.",
+          )}
+        </p>
 
-      <button
-        type="submit"
-        disabled={loading || !verifiedToken}
-        className="w-full rounded-lg bg-primary py-2.5 text-white font-medium hover:bg-primary-dark disabled:opacity-50 transition-colors"
-      >
-        {loading
-          ? t("가입 신청 중...", "Submitting application...")
-          : t("가입 신청하기", "Apply to sign up")}
-      </button>
+        <div className="grid grid-cols-2 gap-3">
+          <button
+            type="button"
+            onClick={() => goToStep(2)}
+            className="min-h-12 border-2 border-ink bg-white px-4 py-2.5 font-bold text-ink hover:bg-paper"
+          >
+            {t("이전", "Back")}
+          </button>
+          <button
+            type="submit"
+            disabled={loading}
+            className="min-h-12 border-2 border-violet bg-violet px-4 py-2.5 font-bold text-white transition-colors hover:bg-violet/90 disabled:opacity-50"
+          >
+            {loading
+              ? t("가입 신청 중...", "Submitting application...")
+              : t("가입 신청", "Submit application")}
+          </button>
+        </div>
+      </section>
 
       <AlertModal
         open={!!validationModal}

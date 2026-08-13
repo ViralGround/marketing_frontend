@@ -10,7 +10,7 @@ import Card from "@/components/ui/Card";
 import Input from "@/components/ui/Input";
 import { useLang } from "@/lib/i18n";
 
-type MemberStatus = "PENDING" | "APPROVED" | "REJECTED";
+type MemberStatus = "PENDING" | "APPROVED" | "REJECTED" | "WITHDRAWN";
 
 interface MemberItem {
   id: number;
@@ -26,23 +26,39 @@ interface Stats {
   pendingCount: number;
   approvedCount: number;
   rejectedCount: number;
+  withdrawnCount: number;
   todayCount: number;
   weekCount: number;
 }
 
-type StatusFilter = "ALL" | "PENDING" | "APPROVED" | "REJECTED";
+interface MembersResponse {
+  members: MemberItem[];
+  stats: Stats;
+}
 
-const STATUS_TONE: Record<MemberStatus, "warning" | "success" | "error"> = {
+type StatusFilter = "ALL" | "PENDING" | "APPROVED" | "REJECTED" | "WITHDRAWN";
+
+const STATUS_TONE: Record<MemberStatus, "warning" | "success" | "error" | "neutral"> = {
   PENDING: "warning",
   APPROVED: "success",
   REJECTED: "error",
+  WITHDRAWN: "neutral",
 };
 
 const STATUS_LABEL: Record<MemberStatus, { ko: string; en: string }> = {
   PENDING: { ko: "대기", en: "Pending" },
   APPROVED: { ko: "승인", en: "Approved" },
   REJECTED: { ko: "거절", en: "Rejected" },
+  WITHDRAWN: { ko: "탈퇴", en: "Withdrawn" },
 };
+
+function requestMembers(statusFilter: StatusFilter, search: string, signal?: AbortSignal) {
+  const params = new URLSearchParams();
+  if (statusFilter !== "ALL") params.set("status", statusFilter);
+  if (search) params.set("search", search);
+
+  return api.get<MembersResponse>(`/admin/members?${params.toString()}`, { signal });
+}
 
 export default function AdminMembersPage() {
   const { t } = useLang();
@@ -54,48 +70,49 @@ export default function AdminMembersPage() {
   const [searchInput, setSearchInput] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
 
-  const fetchMembers = () => {
+  const refreshMembers = async () => {
     setLoading(true);
-    const params = new URLSearchParams();
-    if (statusFilter !== "ALL") params.set("status", statusFilter);
-    if (search) params.set("search", search);
-
-    api
-      .get(`/admin/members?${params.toString()}`)
-      .then((res) => {
-        setMembers(res.data.members);
-        setStats(res.data.stats);
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false));
+    try {
+      const response = await requestMembers(statusFilter, search);
+      setMembers(response.data.members);
+      setStats(response.data.stats);
+    } catch {
+      setErrorMessage(t("회원 목록을 불러오지 못했습니다.", "Failed to load members."));
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
-    fetchMembers();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [statusFilter, search]);
+    const controller = new AbortController();
+    let active = true;
+
+    requestMembers(statusFilter, search, controller.signal)
+      .then((response) => {
+        if (!active) return;
+        setMembers(response.data.members);
+        setStats(response.data.stats);
+      })
+      .catch(() => {
+        if (!active) return;
+        setErrorMessage(t("회원 목록을 불러오지 못했습니다.", "Failed to load members."));
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+
+    return () => {
+      active = false;
+      controller.abort();
+    };
+  }, [search, statusFilter, t]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    setSearch(searchInput);
-  };
-
-  const handleDelete = async (id: number, name: string) => {
-    if (
-      !confirm(
-        t(
-          `"${name}" 회원을 삭제하시겠습니까? 관련된 모든 데이터가 함께 삭제됩니다.`,
-          `Delete member "${name}"? All related data will be deleted as well.`,
-        ),
-      )
-    )
-      return;
-    try {
-      await api.delete(`/admin/members/${id}`);
-      fetchMembers();
-    } catch {
-      setErrorMessage(t("삭제에 실패했습니다", "Failed to delete"));
-    }
+    const nextSearch = searchInput.trim();
+    if (nextSearch === search) return;
+    setLoading(true);
+    setSearch(nextSearch);
   };
 
   const handleStatus = async (id: number, status: "APPROVED" | "REJECTED", name: string) => {
@@ -106,7 +123,7 @@ export default function AdminMembersPage() {
       return;
     try {
       await api.patch(`/admin/members/${id}/status`, { status });
-      fetchMembers();
+      await refreshMembers();
     } catch {
       setErrorMessage(t(`${label}에 실패했습니다`, `Failed to ${label}`));
     }
@@ -119,7 +136,7 @@ export default function AdminMembersPage() {
       </h1>
 
       {stats && (
-        <div className="mb-8 grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6">
+        <div className="mb-8 grid grid-cols-2 gap-3 md:grid-cols-4 lg:grid-cols-7">
           <Card className="p-4 md:p-5">
             <p className="text-xs font-medium text-muted">{t("전체", "All")}</p>
             <p className="mt-1 text-2xl font-bold tracking-tight text-foreground">
@@ -149,6 +166,13 @@ export default function AdminMembersPage() {
             </p>
           </Card>
           <Card className="p-4 md:p-5">
+            <p className="text-xs font-medium text-muted">{t("탈퇴", "Withdrawn")}</p>
+            <p className="mt-1 text-2xl font-bold tracking-tight text-foreground">
+              {stats.withdrawnCount}
+              {t("명", "")}
+            </p>
+          </Card>
+          <Card className="p-4 md:p-5">
             <p className="text-xs font-medium text-muted">{t("오늘 가입", "Joined today")}</p>
             <p className="mt-1 text-2xl font-bold tracking-tight text-foreground">
               {stats.todayCount}
@@ -167,7 +191,7 @@ export default function AdminMembersPage() {
 
       <div className="mb-6 flex flex-wrap items-center gap-3">
         <div className="flex gap-1.5">
-          {(["ALL", "PENDING", "APPROVED", "REJECTED"] as StatusFilter[]).map((s) => {
+          {(["ALL", "PENDING", "APPROVED", "REJECTED", "WITHDRAWN"] as StatusFilter[]).map((s) => {
             const active = statusFilter === s;
             const label =
               s === "ALL"
@@ -176,11 +200,17 @@ export default function AdminMembersPage() {
                   ? `${t("대기", "Pending")}${stats ? ` (${stats.pendingCount})` : ""}`
                   : s === "APPROVED"
                     ? t("승인", "Approved")
-                    : t("거절", "Rejected");
+                    : s === "REJECTED"
+                      ? t("거절", "Rejected")
+                      : t("탈퇴", "Withdrawn");
             return (
               <button
                 key={s}
-                onClick={() => setStatusFilter(s)}
+                onClick={() => {
+                  if (s === statusFilter) return;
+                  setLoading(true);
+                  setStatusFilter(s);
+                }}
                 className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
                   active
                     ? "bg-primary text-white"
@@ -276,12 +306,6 @@ export default function AdminMembersPage() {
                         >
                           {t("상세", "Details")}
                         </Link>
-                        <button
-                          onClick={() => handleDelete(m.id, m.name)}
-                          className="text-xs font-medium text-error/80 hover:text-error hover:underline"
-                        >
-                          {t("삭제", "Delete")}
-                        </button>
                       </div>
                     </td>
                   </tr>

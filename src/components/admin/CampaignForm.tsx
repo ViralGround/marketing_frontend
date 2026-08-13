@@ -72,7 +72,6 @@ export default function CampaignForm({
   const [maxParticipants, setMaxParticipants] = useState(
     initial?.maxParticipants?.toString() ?? "10",
   );
-  const [immediatelyOpen, setImmediatelyOpen] = useState(true);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -84,8 +83,8 @@ export default function CampaignForm({
     if (!brandName.trim()) return setWarning(t("브랜드명을 입력해주세요", "Please enter a brand name"));
     if (!title.trim()) return setWarning(t("캠페인 제목을 입력해주세요", "Please enter a campaign title"));
     if (!description.trim()) return setWarning(t("설명을 입력해주세요", "Please enter a description"));
-    if (!Number.isInteger(reward) || reward < 0) {
-      return setWarning(t("보상 금액은 0 이상의 정수여야 합니다", "Reward amount must be an integer of 0 or more"));
+    if (!Number.isInteger(reward) || reward < 1) {
+      return setWarning(t("보상 금액은 1원 이상의 정수여야 합니다", "Reward amount must be a positive integer"));
     }
     if (!Number.isInteger(maxP) || maxP < 1) {
       return setWarning(t("최대 참여자 수는 1 이상의 정수여야 합니다", "Max participants must be an integer of 1 or more"));
@@ -118,7 +117,8 @@ export default function CampaignForm({
 
     try {
       if (mode === "create") {
-        payload.immediatelyOpen = immediatelyOpen;
+        // 상용 결제 공급자가 연결되기 전에는 관리자가 원장 없이 FUNDED/OPEN을 만들 수 없다.
+        payload.immediatelyOpen = false;
         const { data } = await api.post("/admin/campaigns", payload);
         router.push(`/admin/campaigns/${data.id}`);
       } else if (initial?.id) {
@@ -335,26 +335,15 @@ export default function CampaignForm({
 
         {mode === "create" && (
           <div className="rounded-2xl border border-line bg-surface-muted p-4">
-            <label className="flex items-start gap-2.5 text-sm text-content-soft">
-              <input
-                type="checkbox"
-                checked={immediatelyOpen}
-                onChange={(e) => setImmediatelyOpen(e.target.checked)}
-                className="mt-0.5 accent-primary"
-              />
-              <span>
-                <span className="font-medium text-foreground">{t("바로 모집 시작", "Start recruiting now")}</span>
-                <span className="text-muted">{t(" (예치금 완료 상태로 생성)", " (created with deposit completed)")}</span>
-              </span>
-            </label>
-            {!immediatelyOpen && (
-              <p className="mt-2 pl-6 text-xs text-warning">
-                {t(
-                  "예치금 대기 상태로 생성됩니다. 이후 상세 페이지에서 \"예치금 입금완료 처리\"를 눌러야 크리에이터에게 노출됩니다.",
-                  "Created in a deposit-pending state. You'll need to click \"Mark deposit as paid\" on the detail page before it's shown to creators.",
-                )}
-              </p>
-            )}
+            <p className="text-sm font-medium text-foreground">
+              {t("관리 베타 · 결제 비활성", "Managed beta · payments unavailable")}
+            </p>
+            <p className="mt-2 text-xs leading-relaxed text-warning">
+              {t(
+                "캠페인은 초안·결제 대기 상태로만 생성됩니다. 상용 PG와 운영 계약이 활성화되기 전에는 모집 시작이나 임의 입금 완료 처리를 할 수 없습니다.",
+                "Campaigns are created only as drafts awaiting payment. Recruiting and manual payment completion remain unavailable until a commercial PG and operating agreement are active.",
+              )}
+            </p>
           </div>
         )}
       </Card>

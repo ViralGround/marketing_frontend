@@ -1,12 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
+import { createPortal } from "react-dom";
 import api from "@/lib/api";
 import { trackEvent } from "@/lib/gtag";
 import { useLang } from "@/lib/i18n";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import { Check, X } from "lucide-react";
+import { useDialogA11y } from "@/hooks/useDialogA11y";
+import { PRIVACY_VERSION } from "@/lib/legal/privacy";
 
 interface Props {
   open: boolean;
@@ -27,6 +31,8 @@ export default function ConsultationModal({ open, onClose }: Props) {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
+  const [privacyAgreed, setPrivacyAgreed] = useState(false);
+  const dialogRef = useDialogA11y<HTMLDivElement>(open, onClose);
 
   useEffect(() => {
     if (!open) {
@@ -35,29 +41,18 @@ export default function ConsultationModal({ open, onClose }: Props) {
         setForm(INITIAL);
         setSubmitted(false);
         setError("");
+        setPrivacyAgreed(false);
       }, 200);
       return () => clearTimeout(t);
     }
   }, [open]);
 
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", onKey);
-    document.body.style.overflow = "hidden";
-    return () => {
-      window.removeEventListener("keydown", onKey);
-      document.body.style.overflow = "";
-    };
-  }, [open, onClose]);
-
-  if (!open) return null;
+  if (!open || typeof document === "undefined") return null;
 
   const valid =
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim()) &&
-    form.brandName.trim().length > 0;
+    form.brandName.trim().length > 0 &&
+    privacyAgreed;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -70,6 +65,9 @@ export default function ConsultationModal({ open, onClose }: Props) {
         email: form.email.trim(),
         brandName: form.brandName.trim(),
         contactName: form.contactName.trim() || null,
+        privacyConsent: privacyAgreed,
+        privacyVersion: PRIVACY_VERSION,
+        website: "",
       });
       trackEvent("contact_success", {});
       setSubmitted(true);
@@ -89,15 +87,17 @@ export default function ConsultationModal({ open, onClose }: Props) {
     }
   };
 
-  return (
+  return createPortal(
     <div
       role="dialog"
       aria-modal="true"
       aria-labelledby="consultation-title"
-      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 p-4"
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/55 p-4"
       onClick={onClose}
     >
       <div
+        ref={dialogRef}
+        tabIndex={-1}
         className="w-full max-w-md rounded-2xl bg-surface p-7 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
@@ -109,7 +109,7 @@ export default function ConsultationModal({ open, onClose }: Props) {
             type="button"
             onClick={onClose}
             aria-label={t("닫기", "Close")}
-            className="text-muted hover:text-foreground transition-colors"
+            className="inline-flex min-h-11 min-w-11 items-center justify-center text-muted transition-colors hover:text-foreground"
           >
             <X className="h-5 w-5" />
           </button>
@@ -177,13 +177,29 @@ export default function ConsultationModal({ open, onClose }: Props) {
               />
             </div>
 
-            {error && <p className="text-sm text-error">{error}</p>}
+            <label className="flex cursor-pointer items-start gap-2.5 text-xs leading-relaxed text-content-soft">
+              <input
+                type="checkbox"
+                checked={privacyAgreed}
+                onChange={(event) => setPrivacyAgreed(event.target.checked)}
+                className="mt-0.5 h-4 w-4 rounded border-line-strong accent-primary"
+                required
+              />
+              <span>
+                {t("상담 회신을 위한 개인정보 수집·이용에 동의합니다. ", "I agree to the collection and use of my information for this consultation. ")}
+                <Link href="/privacy" target="_blank" className="font-semibold text-primary underline underline-offset-2">
+                  {t("개인정보처리방침", "Privacy policy")}
+                </Link>
+              </span>
+            </label>
+
+            {error && <p role="alert" className="text-sm text-error">{error}</p>}
 
             <Button type="submit" disabled={!valid || submitting} fullWidth>
               {submitting ? t("전송 중...", "Sending...") : t("상담 신청하기", "Request consultation")}
             </Button>
 
-            <p className="text-center text-xs text-faint">
+            <p className="text-center text-xs text-muted">
               {t(
                 "제출된 정보는 상담 회신 목적으로만 사용됩니다.",
                 "The information you submit is used only to reply to your Consultation.",
@@ -192,6 +208,7 @@ export default function ConsultationModal({ open, onClose }: Props) {
           </form>
         )}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

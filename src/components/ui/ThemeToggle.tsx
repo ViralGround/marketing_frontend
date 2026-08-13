@@ -1,18 +1,25 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 import { useThemeStore } from "@/store/useThemeStore";
 import { useLang } from "@/lib/i18n";
 
+const subscribeToHydration = () => () => {};
+const getClientSnapshot = () => true;
+const getServerSnapshot = () => false;
+
 export default function ThemeToggle() {
   const { theme, toggle, syncFromDocument } = useThemeStore();
-  const [mounted, setMounted] = useState(false);
+  const mounted = useSyncExternalStore(
+    subscribeToHydration,
+    getClientSnapshot,
+    getServerSnapshot,
+  );
   const { t } = useLang();
 
   useEffect(() => {
     // pre-hydration 스크립트가 이미 <html.dark> 를 세팅했으니 store 도 거기에 맞춘다.
     syncFromDocument();
-    setMounted(true);
   }, [syncFromDocument]);
 
   // SSR 단계에서는 아이콘 미스매치를 피하려고 비워둔다.

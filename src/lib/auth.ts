@@ -1,27 +1,23 @@
-import Cookies from "js-cookie";
-
-const ACCESS_TOKEN_KEY = "access_token";
-
-let accessToken: string | null = null;
-
-export function getAccessToken(): string | null {
-  if (accessToken) return accessToken;
-  return Cookies.get(ACCESS_TOKEN_KEY) || null;
+/**
+ * Session tokens are server-issued HttpOnly cookies. JavaScript intentionally cannot read or
+ * persist them. These compatibility functions remain while screens migrate to `/auth/me`.
+ */
+export function getAccessToken(): null {
+  return null;
 }
 
-export function setTokens(access: string) {
-  accessToken = access;
-  Cookies.set(ACCESS_TOKEN_KEY, access, {
-    path: "/",
-    sameSite: "strict",
-    secure: typeof window !== "undefined" && window.location.protocol === "https:",
-  });
+export function setTokens(access?: string) {
+  void access;
+  // No-op by design: the backend owns the HttpOnly session cookie.
 }
 
-export function removeTokens() {
-  accessToken = null;
-  Cookies.remove(ACCESS_TOKEN_KEY, { path: "/" });
-  Cookies.remove("refresh_token", { path: "/" });
+export async function removeTokens() {
+  try {
+    const { default: api } = await import("./api");
+    await api.post("/auth/logout");
+  } catch {
+    // Navigation still proceeds; server-side expiry remains authoritative.
+  }
 }
 
 export function decodeJwtPayload<T = Record<string, unknown>>(token: string): T | null {

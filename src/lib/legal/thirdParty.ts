@@ -1,9 +1,12 @@
+import { LEGAL_CONSENT_VERSIONS } from "@/lib/legalVersions";
+
 /**
  * 개인정보 제3자 제공 동의서 — 크리에이터 → 기업 노출 전용.
  * ⚠️ 운영 전 법적 검토 필요.
  */
 export const THIRD_PARTY_TITLE = "개인정보 제3자 제공 동의 (크리에이터)";
-export const THIRD_PARTY_VERSION = "v1.0 (초안)";
+export const THIRD_PARTY_VERSION =
+  LEGAL_CONSENT_VERSIONS.creatorThirdPartyVersion;
 export const THIRD_PARTY_EFFECTIVE_DATE = "2026-05-01";
 
 export const THIRD_PARTY_BODY = `Viral Ground(이하 "회사")는 캠페인 매칭을 위해 크리에이터 회원의 개인정보를 아래와 같이 제3자(캠페인을 등록한 기업 회원)에게 제공합니다.
@@ -23,7 +26,7 @@ export const THIRD_PARTY_BODY = `Viral Ground(이하 "회사")는 캠페인 매�
 
 4. 보유·이용 기간
 - 매칭 종료(캠페인 정산 완료 또는 거절) 시까지 기업이 열람 가능하며, 이후 회사 정책에 따라 열람 권한이 회수됩니다.
-- 정산 완료된 캠페인의 활동 기록은 회원 탈퇴 시까지 보관 후 파기됩니다.
+- 정산 완료된 활동 기록은 관계 법령과 회사가 확정한 보존 정책의 범위에서 접근을 제한해 보관하고, 보존기간 종료 후 지체 없이 파기합니다.
 
 5. 동의 거부 권리 및 거부 시 불이익
 - 회원은 본 동의를 거부할 권리가 있습니다.

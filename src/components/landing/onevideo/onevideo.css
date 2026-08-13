@@ -1,0 +1,1801 @@
+/*
+ * 시안4 — 원 비디오 그라운드 (확정 디자인) 랜딩 전용 스타일.
+ * 모든 셀렉터는 .vg4 아래로 네임스페이스해 앱 다른 페이지로 새지 않게 한다.
+ * 원본: 시안/시안4-원비디오그라운드.html (개발용 시안 패널·녹화 UI는 제거).
+ */
+
+.vg4 {
+  /* 필름(폰) 위치·형태 — JS 스크롤 루프가 매 프레임 갱신 */
+  --film-x: 50;
+  --film-y: 51;
+  --film-w: 18;
+  --film-h: 48;
+  --film-radius: 10%;
+  --film-rotate: 0deg;
+  --film-saturation: 1;
+  --film-overlay: 0.08;
+  --page-progress: 0;
+  --dock: 0;
+
+  color: var(--ink);
+  background: var(--paper);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  font-weight: 450;
+  line-height: 1.45;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+
+.vg4 a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.vg4 button {
+  padding: 0;
+  color: inherit;
+  background: none;
+  border: 0;
+  font: inherit;
+  cursor: pointer;
+}
+
+.vg4 img,
+.vg4 video {
+  display: block;
+  max-width: 100%;
+}
+
+.vg4 ::selection {
+  color: #fff;
+  background: var(--violet);
+}
+
+.vg4 :focus-visible {
+  outline: 3px solid var(--violet);
+  outline-offset: 5px;
+}
+
+/* ─────────────────────────────
+   Intro
+───────────────────────────── */
+.vg4 .intro {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  align-content: space-between;
+  padding: clamp(20px, 2vw, 36px);
+  color: #fff;
+  background: var(--violet);
+  pointer-events: none;
+  transition:
+    transform 0.48s var(--ease-expo),
+    visibility 0.48s;
+}
+
+.vg4.is-ready .intro {
+  visibility: hidden;
+  transform: translateY(-101%);
+}
+
+.vg4 .intro-top {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  font-weight: 650;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.vg4 .intro-word {
+  font-family: var(--display);
+  font-size: clamp(52px, 9vw, 144px);
+  line-height: 0.78;
+  letter-spacing: -0.04em;
+  text-transform: uppercase;
+}
+
+.vg4 .intro-word > span {
+  display: block;
+  animation: vg4-intro-line-in 0.3s var(--ease-expo) both;
+}
+
+.vg4 .intro-word > span:last-child {
+  margin-left: 10vw;
+  animation-delay: 0.04s;
+}
+
+.vg4 .intro-word em {
+  color: var(--ink);
+  font-style: normal;
+}
+
+@keyframes vg4-intro-line-in {
+  from {
+    opacity: 0;
+    clip-path: inset(0 100% 0 0);
+    transform: translateY(0.22em);
+  }
+
+  to {
+    opacity: 1;
+    clip-path: inset(0);
+    transform: translateY(0);
+  }
+}
+
+.vg4 .intro-track {
+  height: 5px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.vg4 .intro-track i {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: #fff;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.42s var(--ease-expo);
+}
+
+.vg4 .intro-track.is-counting i {
+  transform: scaleX(1);
+}
+
+/* ─────────────────────────────
+   Global chrome — 상단바는 공용 GroundTopbar(groundchrome.css)가 담당
+───────────────────────────── */
+.vg4 .page-rail {
+  position: fixed;
+  top: 50%;
+  right: 12px;
+  z-index: 80;
+  width: 3px;
+  height: min(28vh, 280px);
+  overflow: hidden;
+  background: rgba(10, 9, 11, 0.16);
+  border-radius: 999px;
+  transform: translateY(-50%);
+}
+
+.vg4 .page-rail i {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--violet);
+  transform: scaleY(var(--page-progress));
+  transform-origin: top;
+}
+
+.vg4 .film-controls {
+  position: fixed;
+  bottom: 22px;
+  left: 22px;
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  transition: color 0.35s ease;
+}
+
+.vg4 .film-controls button {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 12px;
+  background: rgba(246, 245, 241, 0.8);
+  border: 1px solid rgba(10, 9, 11, 0.2);
+  border-radius: 999px;
+  box-shadow: 0 6px 30px rgba(10, 9, 11, 0.08);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  /* 인터랙티브 라벨 최소 12px (undersized-ui-text) */
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.vg4 .film-controls button::before {
+  width: 6px;
+  height: 6px;
+  margin-right: 7px;
+  content: "";
+  background: var(--violet);
+  border-radius: 50%;
+  box-shadow: 0 0 0 3px rgba(115, 49, 224, 0.16);
+}
+
+.vg4 .mobile-sticky-actions {
+  display: none;
+}
+
+/* ─────────────────────────────
+   One persistent film
+───────────────────────────── */
+.vg4 .film-shell {
+  position: fixed;
+  top: calc(var(--film-y) * 1vh);
+  left: calc(var(--film-x) * 1vw);
+  z-index: 18;
+  width: calc(var(--film-w) * 1vw);
+  height: calc(var(--film-h) * 1vh);
+  padding: clamp(7px, 0.55vw, 13px);
+  overflow: visible;
+  pointer-events: none;
+  isolation: isolate;
+  background:
+    linear-gradient(
+      100deg,
+      #09090a 0%,
+      #4d4d52 1.1%,
+      #151517 3.6%,
+      #050506 48%,
+      #1b1b1e 96.4%,
+      #5e5e64 98.9%,
+      #0a0a0b 100%
+    );
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: var(--film-radius);
+  box-shadow:
+    0 28px 100px rgba(10, 9, 11, 0.24),
+    0 0 0 2px rgba(0, 0, 0, 0.72) inset,
+    0 0 0 3px rgba(255, 255, 255, 0.08) inset;
+  transform: translate3d(-50%, -50%, 0) rotate(var(--film-rotate));
+  transform-origin: center;
+  will-change: top, left, width, height, border-radius, transform;
+}
+
+.vg4 .film-shell::before {
+  position: absolute;
+  inset: -4px;
+  z-index: -1;
+  content: "";
+  background:
+    linear-gradient(
+      110deg,
+      #0b0b0c 0%,
+      #8b8b91 9%,
+      #29292d 21%,
+      #070708 50%,
+      #535359 82%,
+      #111113 100%
+    );
+  border: 1px solid rgba(255, 255, 255, 0.38);
+  border-radius: calc(var(--film-radius) + 4px);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.55) inset,
+    0 -1px 0 rgba(0, 0, 0, 0.82) inset,
+    0 34px 110px rgba(10, 9, 11, 0.28);
+}
+
+.vg4 .film-shell::after {
+  position: absolute;
+  inset: 2px;
+  z-index: 4;
+  content: "";
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: calc(var(--film-radius) - 2px);
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.64),
+    0 0 0 2px rgba(255, 255, 255, 0.05) inset;
+  pointer-events: none;
+}
+
+.vg4 .phone-screen {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #050506;
+  border-radius: calc(var(--film-radius) - 6px);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.09),
+    0 0 0 3px rgba(0, 0, 0, 0.88);
+}
+
+.vg4 .phone-screen::before {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  content: "";
+  opacity: var(--film-overlay);
+  background:
+    linear-gradient(90deg, rgba(115, 49, 224, 0.5), transparent 4%, transparent 96%, rgba(115, 49, 224, 0.5)),
+    linear-gradient(180deg, transparent 62%, rgba(9, 5, 14, 0.46));
+  pointer-events: none;
+}
+
+.vg4 .phone-screen::after {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  content: "";
+  opacity: 0.16;
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      rgba(255, 255, 255, 0.18) 0,
+      rgba(255, 255, 255, 0.18) 1px,
+      transparent 1px,
+      transparent 4px
+    );
+  mix-blend-mode: soft-light;
+  pointer-events: none;
+}
+
+.vg4 .phone-screen video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter:
+    saturate(var(--film-saturation))
+    contrast(1.04);
+  transition: opacity 0.26s ease;
+}
+
+.vg4 .phone-screen.is-swapping video {
+  opacity: 0;
+}
+
+.vg4 .dynamic-island {
+  position: absolute;
+  top: clamp(7px, 1.6%, 15px);
+  left: 50%;
+  z-index: 7;
+  width: clamp(70px, 24%, 146px);
+  height: clamp(18px, 3.7%, 31px);
+  background: #020203;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.06) inset,
+    0 5px 12px rgba(0, 0, 0, 0.32);
+  transform: translateX(-50%);
+}
+
+.vg4 .dynamic-island::before {
+  position: absolute;
+  top: 50%;
+  right: 9%;
+  width: clamp(5px, 7%, 9px);
+  aspect-ratio: 1;
+  content: "";
+  background:
+    radial-gradient(circle at 40% 35%, #4338ca 0 12%, #13162b 30%, #020203 70%);
+  border-radius: 50%;
+  transform: translateY(-50%);
+}
+
+.vg4 .dynamic-island::after {
+  position: absolute;
+  top: 50%;
+  left: 15%;
+  width: 39%;
+  height: 2px;
+  content: "";
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 99px;
+  transform: translateY(-50%);
+}
+
+.vg4 .phone-button {
+  position: absolute;
+  z-index: 6;
+  width: clamp(4px, 0.42vw, 7px);
+  background: linear-gradient(90deg, #09090a, #66666c 52%, #121214);
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.28) inset,
+    0 4px 10px rgba(0, 0, 0, 0.34);
+}
+
+.vg4 .phone-button.action {
+  top: 19%;
+  left: clamp(-5px, -0.32vw, -3px);
+  height: 7%;
+  border-radius: 4px 0 0 4px;
+}
+
+.vg4 .phone-button.volume-up {
+  top: 31%;
+  left: clamp(-5px, -0.32vw, -3px);
+  height: 11%;
+  border-radius: 4px 0 0 4px;
+}
+
+.vg4 .phone-button.volume-down {
+  top: 45%;
+  left: clamp(-5px, -0.32vw, -3px);
+  height: 11%;
+  border-radius: 4px 0 0 4px;
+}
+
+.vg4 .phone-button.power {
+  top: 33%;
+  right: clamp(-5px, -0.32vw, -3px);
+  height: 18%;
+  border-radius: 0 4px 4px 0;
+}
+
+.vg4 .antenna-band {
+  position: absolute;
+  z-index: 7;
+  width: clamp(5px, 0.48vw, 9px);
+  height: 2px;
+  background: #050506;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.16);
+  pointer-events: none;
+}
+
+.vg4 .antenna-band.left {
+  left: -4px;
+}
+
+.vg4 .antenna-band.right {
+  right: -4px;
+}
+
+.vg4 .antenna-band.top {
+  top: 13%;
+}
+
+.vg4 .antenna-band.bottom {
+  bottom: 13%;
+}
+
+.vg4 .home-indicator {
+  position: absolute;
+  bottom: clamp(5px, 1.2%, 12px);
+  left: 50%;
+  z-index: 7;
+  width: clamp(72px, 34%, 150px);
+  height: clamp(3px, 0.55%, 5px);
+  background: rgba(255, 255, 255, 0.82);
+  border-radius: 999px;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.35);
+  transform: translateX(-50%);
+}
+
+.vg4 .film-stamp {
+  position: absolute;
+  right: 14px;
+  bottom: clamp(14px, 3%, 28px);
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: #fff;
+  font-family: var(--display);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  opacity: 0.9;
+}
+
+.vg4 .film-stamp img {
+  width: clamp(22px, 11%, 34px);
+  height: auto;
+}
+
+.vg4 .film-stamp::before {
+  width: 7px;
+  height: 7px;
+  content: "";
+  background: var(--violet-bright);
+  border-radius: 50%;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.38);
+  animation: vg4-pulse 1.5s ease-in-out infinite alternate;
+}
+
+@keyframes vg4-pulse {
+  to {
+    opacity: 0.35;
+    transform: scale(0.72);
+  }
+}
+
+/* ─────────────────────────────
+   Shared scene language
+───────────────────────────── */
+.vg4 #top {
+  position: relative;
+}
+
+.vg4 .scene {
+  position: relative;
+  min-height: 140vh;
+}
+
+.vg4 .scene-sticky {
+  position: sticky;
+  top: 0;
+  width: 100%;
+  height: 100svh;
+  overflow: hidden;
+}
+
+.vg4 .ghost-type {
+  position: absolute;
+  z-index: 6;
+  color: rgba(10, 9, 11, 0.13);
+  font-family: var(--display);
+  line-height: 0.78;
+  letter-spacing: -0.04em;
+  text-transform: uppercase;
+  pointer-events: none;
+  user-select: none;
+}
+
+.vg4 .front-copy {
+  position: relative;
+  z-index: 30;
+}
+
+/* ─────────────────────────────
+   01 Hero
+───────────────────────────── */
+.vg4 .hero {
+  min-height: 115vh;
+  background: var(--paper);
+}
+
+.vg4 .hero .scene-sticky {
+  min-height: 720px;
+}
+
+.vg4 .hero-title {
+  position: absolute;
+  top: 21%;
+  left: clamp(20px, 3.3vw, 58px);
+  z-index: 7;
+  margin: 0;
+  font-family: var(--display);
+  font-size: clamp(70px, 9.1vw, 150px);
+  line-height: 0.78;
+  letter-spacing: -0.04em;
+  text-transform: uppercase;
+}
+
+.vg4 .hero-title span {
+  display: block;
+}
+
+.vg4 .hero-title span:nth-child(2) {
+  margin-left: 0.38em;
+}
+
+.vg4 .hero-word-logo {
+  display: block;
+  width: clamp(245px, 23vw, 410px);
+  height: auto;
+  margin-top: 0.18em;
+  margin-left: 0.08em;
+}
+
+.vg4 .hero-sticker {
+  position: absolute;
+  top: -0.16em;
+  right: -0.48em;
+  z-index: 2;
+  display: grid;
+  gap: 0.08em;
+  min-width: 7.2em;
+  padding: 0.58em 0.72em 0.54em;
+  color: #fff;
+  background: var(--violet);
+  border: 1px solid rgba(10, 9, 11, 0.7);
+  box-shadow: 0 16px 34px rgba(10, 9, 11, 0.18);
+  font-family: var(--font-sans);
+  font-size: 0.105em;
+  font-weight: 850;
+  line-height: 0.86;
+  letter-spacing: -0.035em;
+  text-align: center;
+  text-transform: uppercase;
+  transform: rotate(-7deg);
+  animation: vg4-sticker-in 0.75s 1.3s var(--ease-expo) both;
+}
+
+.vg4 .hero-sticker::after {
+  position: absolute;
+  inset: 5px -7px -7px 7px;
+  z-index: -1;
+  content: "";
+  border: 1px solid var(--violet);
+  transform: rotate(4deg);
+}
+
+@keyframes vg4-sticker-in {
+  from {
+    opacity: 0;
+    transform: translateY(18px) rotate(-11deg) scale(0.88);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) rotate(-7deg) scale(1);
+  }
+}
+
+.vg4 .hero-copy {
+  position: absolute;
+  top: 47%;
+  right: clamp(30px, 5vw, 90px);
+  z-index: 28;
+  width: min(28vw, 520px);
+  margin: 0;
+  font-size: clamp(20px, 2vw, 34px);
+  font-weight: 620;
+  line-height: 1.28;
+  letter-spacing: -0.025em;
+  text-align: right;
+}
+
+.vg4 .hero-actions {
+  position: absolute;
+  top: calc(47% + 128px);
+  right: clamp(30px, 5vw, 90px);
+  z-index: 31;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.vg4 .hero-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 20px;
+  color: var(--ink);
+  background: rgba(246, 245, 241, 0.92);
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  font-size: 15px;
+  font-weight: 800;
+  transition:
+    color 0.25s ease,
+    background 0.25s ease,
+    transform 0.35s var(--ease-expo);
+}
+
+.vg4 .hero-action:hover {
+  transform: translateY(-3px);
+}
+
+.vg4 .hero-action.primary {
+  color: #fff;
+  background: var(--violet);
+  border-color: var(--violet);
+}
+
+.vg4 .hero-copy strong {
+  font-weight: 800;
+}
+
+.vg4 .copy-line {
+  display: block;
+}
+
+.vg4 .mobile-break {
+  display: none;
+}
+
+.vg4 .hero-copy .copy-line,
+.vg4 .manifesto-korean .copy-line,
+.vg4 .proof-left h2 .copy-line,
+.vg4 .flow-copy h2 .copy-line,
+.vg4 .final-copy p .copy-line {
+  white-space: nowrap;
+}
+
+.vg4 .scroll-cue {
+  position: absolute;
+  bottom: 24px;
+  left: 50%;
+  z-index: 30;
+  display: grid;
+  justify-items: center;
+  gap: 7px;
+  /* 대비 3.0→5.1:1 (low-contrast) */
+  color: rgba(10, 9, 11, 0.6);
+  font-size: 10px;
+  font-weight: 650;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  transform: translateX(-50%);
+}
+
+.vg4 .scroll-cue i {
+  position: relative;
+  width: 24px;
+  height: 24px;
+  border: 2px solid currentColor;
+  border-radius: 50%;
+}
+
+.vg4 .scroll-cue i::after {
+  position: absolute;
+  top: 7px;
+  left: 8px;
+  width: 5px;
+  height: 5px;
+  content: "";
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: rotate(45deg);
+  animation: vg4-nudge 1.2s ease-in-out infinite;
+}
+
+@keyframes vg4-nudge {
+  50% {
+    transform: translateY(4px) rotate(45deg);
+  }
+}
+
+/* ─────────────────────────────
+   02 Full-bleed statement
+───────────────────────────── */
+.vg4 .manifesto {
+  min-height: 135vh;
+  color: #fff;
+  background: #0b090e;
+}
+
+.vg4 .manifesto .scene-sticky {
+  z-index: 26;
+  display: grid;
+  align-content: center;
+}
+
+.vg4 .manifesto-title {
+  position: relative;
+  z-index: 30;
+  width: 100%;
+  margin: 0;
+  padding: 0 3vw;
+  color: #fff;
+  font-family: var(--display);
+  font-size: clamp(76px, 12.2vw, 204px);
+  line-height: 0.75;
+  letter-spacing: -0.04em;
+  text-transform: uppercase;
+  text-shadow: 0 3px 30px rgba(0, 0, 0, 0.2);
+}
+
+.vg4 .manifesto-title span {
+  display: block;
+  white-space: nowrap;
+}
+
+.vg4 .manifesto-title span:nth-child(2) {
+  color: transparent;
+  -webkit-text-stroke: 2px #fff;
+  text-align: right;
+}
+
+.vg4 .manifesto-korean {
+  position: absolute;
+  right: 5vw;
+  bottom: 11vh;
+  z-index: 32;
+  max-width: 520px;
+  margin: 0;
+  font-size: clamp(19px, 1.55vw, 28px);
+  font-weight: 620;
+  line-height: 1.35;
+  letter-spacing: -0.025em;
+  text-align: right;
+}
+
+.vg4 .spread-sticker {
+  position: absolute;
+  z-index: 34;
+  top: 47%;
+  left: 35%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: min(44vw, 760px);
+  padding: 0.18em 0.4em 0.24em;
+  color: #fff;
+  background: var(--violet);
+  border: 2px solid rgba(255, 255, 255, 0.92);
+  box-shadow: 0 22px 50px rgba(0, 0, 0, 0.34);
+  font-family: var(--display);
+  font-size: clamp(36px, 5vw, 84px);
+  line-height: 0.9;
+  letter-spacing: -0.04em;
+  text-align: center;
+  text-transform: uppercase;
+  pointer-events: none;
+  transform: translate(-50%, -50%) rotate(-6deg);
+}
+
+.vg4 .spread-sticker::before {
+  margin-right: 0.24em;
+  content: "↗";
+  font-family: var(--font-sans);
+  font-size: 0.72em;
+  font-weight: 900;
+}
+
+/* ─────────────────────────────
+   03 Reward proof
+───────────────────────────── */
+.vg4 .proof {
+  min-height: 140vh;
+  background: var(--paper);
+}
+
+.vg4 .proof .scene-sticky {
+  z-index: 26;
+  display: grid;
+  align-items: center;
+}
+
+.vg4 .proof-ghost {
+  top: 50%;
+  left: 50%;
+  width: max-content;
+  font-size: clamp(96px, 16.5vw, 280px);
+  text-align: center;
+  transform: translate(-50%, -50%);
+}
+
+.vg4 .proof-ghost span {
+  display: block;
+}
+
+.vg4 .proof-ghost span:last-child {
+  margin-left: 0.34em;
+  color: rgba(115, 49, 224, 0.14);
+}
+
+.vg4 .proof-left,
+.vg4 .proof-right {
+  position: absolute;
+  z-index: 30;
+  top: 50%;
+  width: min(27vw, 460px);
+  transform: translateY(-50%);
+}
+
+.vg4 .proof-left {
+  left: 4vw;
+}
+
+.vg4 .proof-right {
+  right: 4vw;
+  text-align: right;
+}
+
+.vg4 .proof-left h2 {
+  margin: 22px 0 0;
+  font-size: clamp(32px, 3.5vw, 58px);
+  line-height: 1.08;
+  letter-spacing: -0.035em;
+  font-weight: 850;
+}
+
+.vg4 .proof-left h2 em {
+  color: var(--violet);
+  font-style: normal;
+}
+
+.vg4 .proof-right p {
+  margin: 0 0 38px auto;
+  max-width: 380px;
+  font-size: clamp(16px, 1.3vw, 22px);
+  line-height: 1.5;
+  letter-spacing: -0.025em;
+}
+
+.vg4 .reward-lines {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--ink-line);
+}
+
+.vg4 .reward-lines li {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 18px;
+  align-items: baseline;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--ink-line);
+  font-size: 12px;
+  letter-spacing: -0.01em;
+}
+
+.vg4 .reward-lines b {
+  font-family: var(--display);
+  font-size: clamp(19px, 1.55vw, 28px);
+  letter-spacing: -0.04em;
+}
+
+.vg4 .proof-stamp {
+  position: absolute;
+  right: 4vw;
+  bottom: 8vh;
+  z-index: 32;
+  display: grid;
+  place-items: center;
+  width: 112px;
+  aspect-ratio: 1;
+  color: #fff;
+  background: var(--violet);
+  border-radius: 50%;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-align: center;
+  text-transform: uppercase;
+  transform: rotate(8deg);
+}
+
+/* ─────────────────────────────
+   04 Flow
+───────────────────────────── */
+.vg4 .flow {
+  min-height: 150vh;
+  background: var(--violet-soft);
+}
+
+.vg4 .flow .scene-sticky {
+  z-index: 26;
+  display: flex;
+  align-items: center;
+  padding: 14vh 4vw 8vh;
+}
+
+.vg4 .flow-copy {
+  position: relative;
+  z-index: 30;
+  width: 58%;
+}
+
+.vg4 .flow-copy h2 {
+  margin: 22px 0 7vh;
+  max-width: 750px;
+  font-size: clamp(34px, 4.7vw, 78px);
+  line-height: 1.03;
+  letter-spacing: -0.035em;
+  font-weight: 850;
+}
+
+.vg4 .flow-steps {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 2px solid var(--ink);
+}
+
+.vg4 .flow-steps li {
+  display: grid;
+  grid-template-columns: 58px 1fr auto;
+  gap: 16px;
+  align-items: center;
+  padding: 15px 0 17px;
+  border-bottom: 2px solid var(--ink);
+  transition: color 0.35s ease;
+}
+
+/* 들여쓰기는 padding(레이아웃 리플로우) 대신 transform 으로 —
+   스크롤 루프가 매 프레임 토글하는 구간이라 컴포지터에서만 처리한다. */
+.vg4 .flow-steps li > * {
+  transition: transform 0.5s var(--ease-expo);
+}
+
+.vg4 .flow-steps li.is-current {
+  color: var(--violet);
+}
+
+.vg4 .flow-steps li.is-current > * {
+  transform: translateX(14px);
+}
+
+.vg4 .flow-steps .no {
+  font-size: 12px;
+  font-weight: 750;
+  letter-spacing: 0.06em;
+}
+
+.vg4 .flow-steps strong {
+  font-family: var(--display);
+  font-size: clamp(28px, 3.4vw, 58px);
+  line-height: 0.9;
+  letter-spacing: -0.04em;
+  text-transform: uppercase;
+}
+
+.vg4 .flow-steps small {
+  max-width: 190px;
+  font-size: 12px;
+  font-weight: 620;
+  line-height: 1.4;
+  text-align: right;
+}
+
+.vg4 .flow-hand {
+  position: absolute;
+  right: 3.5vw;
+  bottom: 9vh;
+  z-index: 32;
+  color: var(--violet);
+  font-family: var(--display);
+  font-size: clamp(44px, 6.4vw, 104px);
+  line-height: 0.78;
+  letter-spacing: -0.04em;
+  text-align: right;
+  text-transform: uppercase;
+  transform: rotate(-7deg);
+}
+
+/* ─────────────────────────────
+   05 Final
+───────────────────────────── */
+.vg4 .final {
+  min-height: 115vh;
+  color: #fff;
+  background: #0a090b;
+}
+
+.vg4 .final .scene-sticky {
+  z-index: 26;
+  display: grid;
+  place-items: center;
+  text-align: center;
+}
+
+.vg4 .final-ghost {
+  top: 50%;
+  left: 50%;
+  width: 110vw;
+  color: rgba(255, 255, 255, 0.14);
+  font-size: clamp(92px, 17vw, 270px);
+  transform: translate(-50%, -50%);
+}
+
+.vg4 .final-copy {
+  position: relative;
+  z-index: 32;
+  display: grid;
+  justify-items: center;
+  width: min(92vw, 920px);
+}
+
+.vg4 .final-copy h2 {
+  margin: 0;
+  font-family: var(--display);
+  font-size: clamp(60px, 10vw, 160px);
+  line-height: 0.78;
+  letter-spacing: -0.04em;
+  text-transform: uppercase;
+}
+
+.vg4 .final-copy h2 span {
+  display: block;
+  color: var(--violet-bright);
+}
+
+.vg4 .final-copy p {
+  max-width: 560px;
+  margin: 32px 0 28px;
+  font-size: clamp(17px, 1.25vw, 21px);
+  line-height: 1.5;
+  letter-spacing: -0.025em;
+  font-weight: 560;
+}
+
+.vg4 .final-brand-mark {
+  width: clamp(146px, 13vw, 220px);
+  height: auto;
+  margin-bottom: 26px;
+  filter: invert(1);
+}
+
+.vg4 .cta-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.vg4 .cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 180px;
+  min-height: 54px;
+  padding: 0 24px;
+  color: var(--ink);
+  background: #fff;
+  border: 2px solid #fff;
+  border-radius: 999px;
+  font-size: 15px;
+  font-weight: 750;
+  letter-spacing: -0.01em;
+  transition:
+    color 0.25s,
+    background 0.25s,
+    transform 0.35s var(--ease-expo);
+}
+
+.vg4 .cta:hover {
+  transform: translateY(-4px);
+}
+
+.vg4 .cta.violet {
+  color: #fff;
+  background: var(--violet);
+  border-color: var(--violet);
+}
+
+.vg4 .footer-note {
+  position: absolute;
+  right: 22px;
+  bottom: 22px;
+  left: 22px;
+  z-index: 32;
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  font-weight: 620;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* ─────────────────────────────
+   06 Reel picker
+───────────────────────────── */
+.vg4 .reels {
+  min-height: 150vh;
+  color: #fff;
+  background: #0a090b;
+}
+
+.vg4 .reels .scene-sticky {
+  z-index: 26;
+  display: grid;
+  align-content: center;
+  justify-items: end;
+  padding: 0 clamp(20px, 4vw, 74px);
+}
+
+.vg4 .reels-ghost {
+  top: 50%;
+  right: clamp(-20px, -1vw, 0px);
+  color: rgba(255, 255, 255, 0.055);
+  font-size: clamp(96px, 16vw, 250px);
+  transform: translateY(-50%);
+}
+
+.vg4 .reels-panel {
+  position: relative;
+  z-index: 32;
+  width: min(46vw, 560px);
+}
+
+/* 폰이 도킹되는 만큼 목록이 함께 올라온다 */
+.vg4 .reels-panel,
+.vg4 .reels-ghost,
+.vg4 .reels .footer-note {
+  opacity: var(--dock, 0);
+}
+
+.vg4 .reels-panel {
+  transform: translateY(calc((1 - var(--dock, 0)) * 26px));
+}
+
+.vg4 .reels-title {
+  margin: 0 0 26px;
+  font-family: var(--display);
+  font-size: clamp(46px, 5.6vw, 96px);
+  line-height: 0.78;
+  letter-spacing: -0.04em;
+  text-transform: uppercase;
+}
+
+.vg4 .reels-title span {
+  display: block;
+  white-space: nowrap;
+}
+
+.vg4 .reels-title span:last-child {
+  margin-left: 0.55em;
+  color: transparent;
+  -webkit-text-stroke: 2px #fff;
+}
+
+.vg4 .reels-korean {
+  max-width: 400px;
+  margin: 0 0 6.5vh;
+  font-size: clamp(15px, 1.15vw, 20px);
+  font-weight: 560;
+  line-height: 1.5;
+  letter-spacing: -0.025em;
+}
+
+.vg4 .reel-lines {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 2px solid rgba(255, 255, 255, 0.92);
+}
+
+.vg4 .reel-line {
+  display: grid;
+  grid-template-columns: 54px 1fr auto;
+  gap: 18px;
+  align-items: center;
+  width: 100%;
+  padding: 13px 0 15px;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.92);
+  text-align: left;
+  transition: color 0.35s ease;
+}
+
+.vg4 .reel-line > * {
+  transition: transform 0.5s var(--ease-expo);
+}
+
+.vg4 .reel-line:hover,
+.vg4 .reel-line.is-current {
+  color: var(--violet-bright);
+}
+
+.vg4 .reel-line:hover > *,
+.vg4 .reel-line.is-current > * {
+  transform: translateX(14px);
+}
+
+/* 폴라로이드 스티커처럼 살짝 기울어진 썸네일 */
+.vg4 .reel-thumb {
+  position: relative;
+  display: block;
+  width: 46px;
+  aspect-ratio: 9 / 14;
+  overflow: hidden;
+  background: #050506;
+  border: 3px solid #fff;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45);
+  transform: rotate(-6deg);
+  transition:
+    transform 0.45s var(--ease-expo),
+    border-color 0.35s ease;
+}
+
+.vg4 .reel-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.vg4 .reel-line:hover .reel-thumb {
+  transform: translateX(14px) rotate(3deg) scale(1.08);
+}
+
+.vg4 .reel-line.is-current .reel-thumb {
+  border-color: var(--violet-bright);
+  transform: translateX(14px) rotate(5deg) scale(1.12);
+}
+
+.vg4 .reel-name strong {
+  display: block;
+  font-family: var(--display);
+  font-size: clamp(24px, 2.6vw, 44px);
+  line-height: 0.9;
+  letter-spacing: -0.04em;
+  text-transform: uppercase;
+}
+
+.vg4 .reel-name small {
+  display: block;
+  margin-top: 6px;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 11px;
+  font-weight: 620;
+  letter-spacing: 0.02em;
+}
+
+.vg4 .reel-line.is-current .reel-name small {
+  color: rgba(154, 100, 245, 0.85);
+}
+
+.vg4 .reel-views {
+  display: grid;
+  justify-items: end;
+  gap: 3px;
+  font-family: var(--display);
+  font-size: clamp(19px, 1.55vw, 28px);
+  letter-spacing: -0.04em;
+  white-space: nowrap;
+}
+
+.vg4 .reel-views i {
+  color: rgba(255, 255, 255, 0.6);
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.vg4 .reel-line.is-current .reel-views i {
+  color: rgba(154, 100, 245, 0.75);
+}
+
+/* now playing 원형 스탬프 — proof-stamp와 같은 문법 */
+.vg4 .reels-stamp {
+  position: absolute;
+  bottom: 12vh;
+  left: 41vw;
+  z-index: 34;
+  display: grid;
+  place-items: center;
+  width: 112px;
+  aspect-ratio: 1;
+  color: #fff;
+  background: var(--violet);
+  border-radius: 50%;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-align: center;
+  text-transform: uppercase;
+  opacity: var(--dock, 0);
+  pointer-events: none;
+  transform: rotate(-10deg);
+}
+
+/* ─────────────────────────────
+   Reveal — 기본은 "보이는" 상태. JS 가 스크롤 루프를 시작할 때만
+   .anim-armed 를 붙여 숨김을 활성화한다 (content-hidden-at-rest 방지:
+   JS 실패·차단 시에도 카피가 사라지지 않는다).
+───────────────────────────── */
+.vg4 .reveal {
+  transition:
+    opacity 0.8s var(--ease-expo),
+    transform 0.8s var(--ease-expo);
+}
+
+.vg4.anim-armed .reveal:not(.is-visible) {
+  opacity: 0;
+  transform: translateY(36px);
+}
+
+.vg4 .reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ─────────────────────────────
+   Responsive
+───────────────────────────── */
+@media (max-width: 900px) {
+  .vg4 .page-rail {
+    display: none;
+  }
+
+  .vg4 .hero .scene-sticky {
+    min-height: 640px;
+  }
+
+  .vg4 .hero-title {
+    top: 18%;
+    left: 16px;
+    font-size: clamp(56px, 18.4vw, 104px);
+  }
+
+  .vg4 .hero-title span:nth-child(2) {
+    margin-left: 0.22em;
+  }
+
+  .vg4 .hero-word-logo {
+    width: clamp(190px, 61vw, 270px);
+    margin-top: 0.16em;
+    margin-left: 0.04em;
+  }
+
+  .vg4 .hero-copy {
+    top: auto;
+    right: 18px;
+    bottom: 12vh;
+    width: min(78vw, 390px);
+    font-size: clamp(18px, 5.1vw, 25px);
+  }
+
+  .vg4 .hero-actions {
+    display: none;
+  }
+
+  .vg4 .hero-action {
+    flex: 1;
+    min-width: 142px;
+    min-height: 48px;
+    padding: 0 14px;
+    background: rgba(246, 245, 241, 0.96);
+  }
+
+  .vg4 .manifesto-title {
+    padding: 0 15px;
+    font-size: clamp(54px, 15.8vw, 92px);
+  }
+
+  .vg4 .manifesto-title span:nth-child(2) {
+    -webkit-text-stroke-width: 1px;
+  }
+
+  .vg4 .manifesto-korean {
+    right: 20px;
+    bottom: 13vh;
+    left: 20px;
+    max-width: none;
+    font-size: 18px;
+  }
+
+  .vg4 .spread-sticker {
+    top: 48%;
+    left: 50%;
+    min-width: 86vw;
+    padding: 0.22em 0.42em 0.28em;
+    border-width: 1px;
+    box-shadow: 0 14px 32px rgba(0, 0, 0, 0.32);
+    font-size: clamp(28px, 9.6vw, 46px);
+  }
+
+  .vg4 .proof-ghost {
+    top: 27%;
+    font-size: 28vw;
+  }
+
+  .vg4 .proof-left {
+    top: 14vh;
+    right: 20px;
+    left: 20px;
+    width: auto;
+    transform: none;
+  }
+
+  .vg4 .proof-left h2 {
+    max-width: 340px;
+    font-size: 38px;
+  }
+
+  .vg4 .proof-right {
+    top: auto;
+    right: 20px;
+    bottom: 10vh;
+    left: 20px;
+    width: auto;
+    transform: none;
+  }
+
+  .vg4 .proof-right p {
+    display: none;
+  }
+
+  .vg4 .proof-stamp {
+    display: none;
+  }
+
+  .vg4 .reward-lines li {
+    padding: 9px 0;
+  }
+
+  .vg4 .flow .scene-sticky {
+    align-items: flex-start;
+    padding: 12vh 20px 7vh;
+  }
+
+  .vg4 .flow-copy {
+    width: 100%;
+  }
+
+  .vg4 .flow-copy h2 {
+    width: 76%;
+    margin-bottom: 5vh;
+    font-size: clamp(30px, 8vw, 34px);
+  }
+
+  .vg4 .flow-steps {
+    width: 56%;
+  }
+
+  .vg4 .flow-steps li {
+    grid-template-columns: 34px 1fr;
+    gap: 8px;
+  }
+
+  .vg4 .flow-steps strong {
+    font-size: clamp(28px, 9vw, 42px);
+  }
+
+  .vg4 .flow-steps small {
+    display: none;
+  }
+
+  .vg4 .mobile-break {
+    display: block;
+  }
+
+  .vg4 .flow-hand {
+    right: 18px;
+    bottom: 9vh;
+    font-size: 13vw;
+  }
+
+  .vg4 .final-copy h2 {
+    font-size: clamp(58px, 19vw, 92px);
+  }
+
+  .vg4 .final-copy p {
+    width: 88%;
+    font-size: 16px;
+  }
+
+  .vg4 .final-brand-mark {
+    width: 142px;
+    margin-bottom: 20px;
+  }
+
+  .vg4 .footer-note {
+    display: none;
+  }
+
+  .vg4 .reels {
+    min-height: 150vh;
+  }
+
+  .vg4 .reels .scene-sticky {
+    align-content: end;
+    justify-items: stretch;
+    padding: 0 16px 68px;
+  }
+
+  .vg4 .reels-ghost {
+    top: auto;
+    right: 50%;
+    bottom: 4px;
+    font-size: 74px;
+    transform: translate(50%, 0);
+  }
+
+  .vg4 .reels-panel {
+    width: 100%;
+  }
+
+  .vg4 .reels-title {
+    margin-bottom: 14px;
+    font-size: clamp(38px, 11vw, 58px);
+  }
+
+  .vg4 .reels-title span:last-child {
+    margin-left: 0.4em;
+    -webkit-text-stroke-width: 1.6px;
+  }
+
+  .vg4 .reels-korean {
+    margin-bottom: 22px;
+    font-size: 13px;
+  }
+
+  .vg4 .reel-line {
+    grid-template-columns: 40px 1fr auto;
+    gap: 12px;
+    padding: 10px 0 12px;
+  }
+
+  .vg4 .reel-thumb {
+    width: 36px;
+    border-width: 2px;
+  }
+
+  .vg4 .reel-name strong {
+    font-size: 21px;
+  }
+
+  .vg4 .reel-name small {
+    margin-top: 4px;
+    font-size: 12px;
+  }
+
+  .vg4 .reel-views {
+    font-size: 17px;
+  }
+
+  .vg4 .reel-views i {
+    display: none;
+  }
+
+  .vg4 .reels-stamp {
+    top: 6vh;
+    right: 5vw;
+    bottom: auto;
+    left: auto;
+    width: 82px;
+    font-size: 9px;
+  }
+
+  .vg4 .film-controls {
+    bottom: 16px;
+    left: 14px;
+  }
+
+  .vg4 .film-controls button {
+    min-height: 44px;
+    padding: 0 10px;
+  }
+
+  .vg4 .mobile-sticky-actions {
+    position: fixed;
+    right: 12px;
+    bottom: max(10px, env(safe-area-inset-bottom));
+    left: 12px;
+    z-index: 88;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    padding: 6px;
+    background: rgba(10, 9, 11, 0.92);
+    border-radius: 999px;
+    box-shadow: 0 12px 34px rgba(10, 9, 11, 0.28);
+  }
+
+  .vg4 .mobile-sticky-actions a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 0 12px;
+    color: #fff;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 800;
+    text-align: center;
+  }
+
+  .vg4 .mobile-sticky-actions a:first-child {
+    background: var(--violet);
+  }
+}
+
+@media (max-width: 520px) {
+  .vg4 .scene {
+    min-height: 130vh;
+  }
+
+  .vg4 .hero {
+    min-height: 115vh;
+  }
+
+  .vg4 .manifesto {
+    min-height: 135vh;
+  }
+
+  .vg4 .proof {
+    min-height: 140vh;
+  }
+
+  .vg4 .flow {
+    min-height: 145vh;
+  }
+
+  .vg4 .final {
+    min-height: 115vh;
+  }
+
+  .vg4 .reels {
+    min-height: 145vh;
+  }
+
+  .vg4 .film-controls {
+    bottom: 74px;
+  }
+
+  .vg4 .intro-word {
+    font-size: clamp(44px, 15.5vw, 66px);
+  }
+
+  .vg4 .intro-word > span:last-child {
+    margin-left: 0;
+  }
+
+  .vg4 .intro-word em {
+    display: inline;
+    margin-left: 0;
+  }
+
+  .vg4 .cta-row {
+    width: 100%;
+    padding: 0 20px;
+  }
+
+  .vg4 .cta {
+    flex: 1;
+    min-width: 145px;
+    min-height: 50px;
+    padding: 0 16px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 900px) and (max-height: 720px) {
+  .vg4 .reels .scene-sticky {
+    padding-bottom: 54px;
+  }
+
+  .vg4 .reels-title {
+    margin-bottom: 10px;
+    font-size: 34px;
+  }
+
+  .vg4 .reels-korean {
+    display: none;
+  }
+
+  .vg4 .reel-line {
+    padding: 8px 0 10px;
+  }
+
+  .vg4 .reel-thumb {
+    width: 30px;
+  }
+
+  .vg4 .reel-name strong {
+    font-size: 18px;
+  }
+
+  .vg4 .reel-name small {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vg4 *,
+  .vg4 *::before,
+  .vg4 *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .vg4 .reveal {
+    opacity: 1;
+    transform: none;
+  }
+
+  .vg4 .intro,
+  .vg4 .film-shell,
+  .vg4 .film-controls,
+  .vg4 .page-rail,
+  .vg4 .reels-stamp {
+    display: none;
+  }
+
+  .vg4 .scene {
+    min-height: auto;
+  }
+
+  .vg4 .scene-sticky {
+    position: relative;
+    min-height: 100svh;
+  }
+
+  .vg4 .reels-panel,
+  .vg4 .reels-ghost,
+  .vg4 .reels .footer-note {
+    opacity: 1;
+    transform: none;
+  }
+}

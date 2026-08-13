@@ -1,27 +1,32 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import { GoogleAnalytics } from "@next/third-parties/google";
+import { Archivo_Black } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/layout/Header";
 import ConditionalFooter from "@/components/layout/ConditionalFooter";
 import AuthInit from "@/components/auth/AuthInit";
+import ConsentAnalytics from "@/components/analytics/ConsentAnalytics";
 
 const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+// 2-축 폰트 시스템: Pretendard(본문, globals.css에서 import) + Archivo Black(영문 디스플레이).
+// Geist/Geist Mono 는 미사용 프리로드였으므로 제거 (AI-tells audit 2026-08-13).
+// 시안4 확정 디스플레이 폰트 — 영문 헤드라인 전용(한글은 Pretendard 굵은 웨이트).
+const archivoBlack = Archivo_Black({
+  variable: "--font-archivo",
+  weight: "400",
   subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  display: "swap",
 });
 
 
 export const metadata: Metadata = {
-  title: "Viral Ground",
-  description: "크리에이터와 브랜드를 연결하는 마케팅 플랫폼",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://viralground.kr"),
+  title: {
+    default: "Viral Ground — AI SaaS Creator Network",
+    template: "%s | Viral Ground",
+  },
+  description: "AI SaaS를 이해하는 크리에이터와 브랜드를 연결하고 콘텐츠 성과를 함께 운영합니다.",
+  alternates: { canonical: "/" },
   verification: {
     other: {
       "naver-site-verification": "a59b53171d2e2a259c4912e2d9490bbc0cd28384",
@@ -29,7 +34,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: "Viral Ground",
-    description: "크리에이터와 브랜드를 연결하는 마케팅 플랫폼",
+    description: "AI SaaS를 이해하는 크리에이터와 브랜드를 연결하고 콘텐츠 성과를 함께 운영합니다.",
     url: "https://viralground.kr",
     siteName: "Viral Ground",
     images: [{ url: "/opengraph-image", width: 1200, height: 630 }],
@@ -39,7 +44,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Viral Ground",
-    description: "크리에이터와 브랜드를 연결하는 마케팅 플랫폼",
+    description: "AI SaaS를 이해하는 크리에이터와 브랜드를 연결하고 콘텐츠 성과를 함께 운영합니다.",
     images: ["/opengraph-image"],
   },
 };
@@ -52,7 +57,7 @@ export default function RootLayout({
   return (
     <html
       lang="ko"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${archivoBlack.variable} h-full antialiased`}
     >
       <head>
         {/* hydration 전에 동기 실행. localStorage 우선, 없으면 OS 설정. <html.dark> 를
@@ -68,8 +73,8 @@ export default function RootLayout({
         <Header />
         <main className="flex-1">{children}</main>
         <ConditionalFooter />
+        <ConsentAnalytics gaId={GA_ID} />
       </body>
-      {GA_ID && <GoogleAnalytics gaId={GA_ID} />}
     </html>
   );
 }

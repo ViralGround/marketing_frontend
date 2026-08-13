@@ -18,8 +18,7 @@ export default function Image() {
         style={{
           width: "100%",
           height: "100%",
-          background:
-            "linear-gradient(135deg, #1a1025 0%, #2b1055 45%, #5B21B6 100%)",
+          background: "#0a090b",
           display: "flex",
           flexDirection: "column",
           padding: "72px 80px",
@@ -27,7 +26,7 @@ export default function Image() {
           fontFamily: "sans-serif",
         }}
       >
-        {/* 배경 장식 — 라이트 원 */}
+        {/* 배경 장식 — 전기 보라 편집 면 */}
         <div
           style={{
             position: "absolute",
@@ -35,9 +34,8 @@ export default function Image() {
             right: -120,
             width: 420,
             height: 420,
-            borderRadius: 9999,
-            background:
-              "radial-gradient(circle, rgba(167,139,250,0.35) 0%, rgba(167,139,250,0) 70%)",
+            background: "#7331E0",
+            transform: "rotate(8deg)",
           }}
         />
         <div
@@ -47,14 +45,15 @@ export default function Image() {
             left: -80,
             width: 440,
             height: 440,
-            borderRadius: 9999,
-            background:
-              "radial-gradient(circle, rgba(124,58,237,0.3) 0%, rgba(124,58,237,0) 70%)",
+            border: "2px solid rgba(246,245,241,0.26)",
+            transform: "rotate(-8deg)",
           }}
         />
 
         {/* 상단: 로고(흰 VG 마크) + 서비스명 */}
         <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
+          {/* ImageResponse requires a standard img element for an embedded data URL. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={markSrc} width={89} height={56} alt="" style={{ objectFit: "contain" }} />
           <span
             style={{
@@ -77,8 +76,8 @@ export default function Image() {
             gap: 10,
             padding: "10px 20px",
             borderRadius: 9999,
-            background: "rgba(255,255,255,0.12)",
-            border: "1px solid rgba(255,255,255,0.2)",
+            background: "#7331E0",
+            border: "2px solid #f6f5f1",
             alignSelf: "flex-start",
           }}
         >
@@ -91,7 +90,7 @@ export default function Image() {
             }}
           />
           <span style={{ color: "#E9D5FF", fontSize: 22, fontWeight: 500 }}>
-            첫 영상 업로드 시 3만원 즉시 지급
+            AI SAAS × CREATOR / MANAGED BETA
           </span>
         </div>
 
@@ -108,18 +107,15 @@ export default function Image() {
             flexDirection: "column",
           }}
         >
-          <span>영상 하나로 시작하는</span>
-          <span>
-            나만의{" "}
+          <span>AI PRODUCTS,</span>
+          <span style={{ display: "flex" }}>
+            CREATOR{" "}
             <span
               style={{
-                background:
-                  "linear-gradient(135deg, #A78BFA 0%, #F5F3FF 100%)",
-                backgroundClip: "text",
-                color: "transparent",
+                color: "#A78BFA",
               }}
             >
-              부업
+              FILMS.
             </span>
           </span>
         </div>

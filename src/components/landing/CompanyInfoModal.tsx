@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import {
   X,
   Building2,
@@ -15,6 +15,7 @@ import type { LucideIcon } from "lucide-react";
 import api from "@/lib/api";
 import { useLang } from "@/lib/i18n";
 import type { CompanyPublic, FeaturedCampaign } from "@/types/landing";
+import { useDialogA11y } from "@/hooks/useDialogA11y";
 
 interface Props {
   open: boolean;
@@ -25,6 +26,17 @@ interface Props {
 
 function rewardText(amount: number): string {
   return `₩${amount.toLocaleString("ko-KR")}`;
+}
+
+function safePublicUrl(raw: string | null | undefined): string | null {
+  if (!raw) return null;
+  try {
+    const url = new URL(raw);
+    if (url.protocol !== "https:" || url.username || url.password) return null;
+    return url.toString();
+  } catch {
+    return null;
+  }
 }
 
 function deadlineText(deadline: string | null, t: (ko: string, en: string) => string): string {
@@ -45,27 +57,20 @@ function InfoRow({ icon: Icon, label, value }: { icon: LucideIcon; label: string
         <Icon className="h-4 w-4 flex-shrink-0" strokeWidth={2} />
         {label}
       </span>
-      <span className="text-sm font-semibold text-foreground">{value}</span>
+      <span className="text-sm font-semibold text-foreground tabular-nums">{value}</span>
     </div>
   );
 }
 
 export default function CompanyInfoModal({ open, campaign, onClose }: Props) {
   const { t } = useLang();
+  const titleId = useId();
+  const dialogRef = useDialogA11y<HTMLDivElement>(open, onClose);
   const companyMemberId = campaign?.companyMemberId ?? null;
   const [company, setCompany] = useState<CompanyPublic | null>(null);
   // 모달은 key 로 리마운트되므로 mount 시점의 companyMemberId 로 초기 로딩 여부를 정한다.
   const [loading, setLoading] = useState(companyMemberId != null);
   const [error, setError] = useState(false);
-
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [open, onClose]);
 
   useEffect(() => {
     // 회원 기업이면 공개 프로필(소개·로고·진행 캠페인)을 조회. admin 직접 생성 캠페인은 생략.
@@ -83,13 +88,19 @@ export default function CompanyInfoModal({ open, campaign, onClose }: Props) {
   // 회원 기업이면 조회 결과를, admin 직접 생성 캠페인이면 캠페인의 브랜드 정보를 쓴다.
   const logoUrl = company?.logoUrl ?? campaign.logoUrl;
   const introduction = company?.introduction ?? campaign.brandIntroduction;
+  const homepage = safePublicUrl(company?.homepage);
 
   return (
     <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby={titleId}
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
       onClick={onClose}
     >
       <div
+        ref={dialogRef}
+        tabIndex={-1}
         className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-surface shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
@@ -129,12 +140,12 @@ export default function CompanyInfoModal({ open, campaign, onClose }: Props) {
 
         {/* 본문 */}
         <div className="px-7 pb-8 pt-14">
-          <h2 className="mt-1 text-2xl font-bold text-foreground">{title}</h2>
+          <h2 id={titleId} className="mt-1 text-2xl font-bold text-foreground">{title}</h2>
 
           {loading ? (
             <p className="mt-6 text-sm text-muted">{t("불러오는 중...", "Loading...")}</p>
           ) : error ? (
-            <p className="mt-6 text-sm text-muted">
+            <p role="alert" className="mt-6 text-sm text-error">
               {t("회사 정보를 불러오지 못했습니다.", "Couldn't load company info.")}
             </p>
           ) : (
@@ -157,7 +168,7 @@ export default function CompanyInfoModal({ open, campaign, onClose }: Props) {
                     </p>
                   )}
 
-                  {(company?.industry || company?.homepage) && (
+                  {(company?.industry || homepage) && (
                     <div className="space-y-2">
                       {company?.industry && (
                         <div className="flex items-center gap-2 text-sm text-content-soft">
@@ -165,16 +176,16 @@ export default function CompanyInfoModal({ open, campaign, onClose }: Props) {
                           <span>{company.industry}</span>
                         </div>
                       )}
-                      {company?.homepage && (
+                      {homepage && (
                         <div className="flex items-center gap-2 text-sm">
                           <Globe className="h-4 w-4 flex-shrink-0 text-muted" strokeWidth={2} />
                           <a
-                            href={company.homepage}
+                            href={homepage}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="truncate font-medium text-primary hover:underline"
                           >
-                            {company.homepage}
+                            {homepage}
                           </a>
                         </div>
                       )}
@@ -182,12 +193,12 @@ export default function CompanyInfoModal({ open, campaign, onClose }: Props) {
                   )}
                 </div>
 
-                {/* 오른쪽: 캠페인 정보 */}
+                {/* 오른쪽: 캠페인 정보 — 모달(카드) 안의 카드 대신 룰드 행 (nested-cards 해소) */}
                 <div>
                   <h3 className="mb-2 text-base font-semibold text-foreground">
                     {t("캠페인 정보", "Campaign info")}
                   </h3>
-                  <div className="space-y-3 rounded-xl border border-line bg-surface-muted p-4">
+                  <div className="divide-y divide-line border-y border-line [&>div]:py-2.5">
                     <InfoRow
                       icon={Coins}
                       label={t("기본급", "Base pay")}
@@ -219,16 +230,17 @@ export default function CompanyInfoModal({ open, campaign, onClose }: Props) {
                     {t("진행 중인 캠페인", "Active campaigns")}
                   </h3>
                   {company.openCampaigns.length > 0 ? (
-                    <ul className="space-y-2">
+                    /* 박스-안-박스 대신 룰드 리스트 (nested-cards 해소) */
+                    <ul className="divide-y divide-line border-y border-line">
                       {company.openCampaigns.map((c) => (
                         <li
                           key={c.id}
-                          className="flex items-center justify-between gap-3 rounded-xl border border-line bg-surface-muted px-4 py-3"
+                          className="flex items-center justify-between gap-3 py-3"
                         >
                           <span className="truncate text-sm font-medium text-foreground">
                             {c.title}
                           </span>
-                          <span className="flex flex-shrink-0 items-center gap-2 text-xs">
+                          <span className="flex flex-shrink-0 items-center gap-2 text-xs tabular-nums">
                             <span className="font-semibold text-primary">
                               {rewardText(c.rewardAmount)}
                             </span>

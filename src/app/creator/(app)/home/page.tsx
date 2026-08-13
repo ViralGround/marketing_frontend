@@ -42,6 +42,15 @@ export default function CreatorHomePage() {
   const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
 
+  // 워크스페이스 topbar 검색은 ?search= 로 진입한다 — hydration 후 1회 URL 값을 반영.
+  useEffect(() => {
+    const initial = new URLSearchParams(window.location.search).get("search")?.trim();
+    if (initial) {
+      setSearchInput(initial);
+      setSearch(initial);
+    }
+  }, []);
+
   useEffect(() => {
     const params = new URLSearchParams();
     params.set("sort", sort);

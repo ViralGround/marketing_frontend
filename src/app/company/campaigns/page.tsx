@@ -70,6 +70,7 @@ export default function CompanyCampaignsPage() {
   const { t } = useLang();
   const [campaigns, setCampaigns] = useState<CampaignItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
     api
@@ -78,6 +79,16 @@ export default function CompanyCampaignsPage() {
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
+
+  // 워크스페이스 topbar 검색은 ?search= 로 진입한다 — 클라이언트 필터로 반영.
+  useEffect(() => {
+    const initial = new URLSearchParams(window.location.search).get("search")?.trim();
+    if (initial) setSearch(initial);
+  }, []);
+
+  const visibleCampaigns = search
+    ? campaigns.filter((campaign) => campaign.title.toLowerCase().includes(search.toLowerCase()))
+    : campaigns;
 
   return (
     <div className="mx-auto max-w-5xl">
@@ -95,9 +106,11 @@ export default function CompanyCampaignsPage() {
 
       {loading ? (
         <p className="mt-10 text-muted">{t("불러오는 중...", "Loading...")}</p>
-      ) : campaigns.length === 0 ? (
+      ) : visibleCampaigns.length === 0 ? (
         <Card className="mt-10 border-dashed bg-surface-muted py-12 text-center text-muted">
-          {t("아직 등록한 캠페인이 없습니다.", "No campaigns yet.")}
+          {search
+            ? t(`"${search}" 검색 결과가 없습니다.`, `No campaigns match "${search}".`)
+            : t("아직 등록한 캠페인이 없습니다.", "No campaigns yet.")}
         </Card>
       ) : (
         <Card className="mt-8 overflow-hidden p-0">
@@ -114,7 +127,7 @@ export default function CompanyCampaignsPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-line">
-                {campaigns.map((c) => (
+                {visibleCampaigns.map((c) => (
                   <tr key={c.id} className="transition-colors hover:bg-surface-muted">
                     <td className="px-5 py-3">
                       <div className="flex items-center gap-3">

@@ -70,12 +70,17 @@ export default function AdminMemberDetailPage() {
   const [member, setMember] = useState<MemberDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
+  // 로드 실패 시 조용히 목록으로 튕기지 않고 이유를 보여준다.
+  const [loadError, setLoadError] = useState("");
 
   const fetchMember = () => {
     api
       .get(`/admin/members/${id}`)
-      .then((res) => setMember(res.data))
-      .catch(() => router.push("/admin/members"))
+      .then((res) => {
+        setMember(res.data);
+        setLoadError("");
+      })
+      .catch(() => setLoadError(t("회원 정보를 불러오지 못했습니다.", "Failed to load this member.")))
       .finally(() => setLoading(false));
   };
 
@@ -105,8 +110,34 @@ export default function AdminMemberDetailPage() {
     }
   };
 
-  if (loading || !member) {
+  if (loading) {
     return <p className="text-muted">{t("불러오는 중...", "Loading...")}</p>;
+  }
+  if (loadError || !member) {
+    return (
+      <div className="max-w-xl rounded-xl border border-error/30 bg-error/5 p-5">
+        <p className="text-sm text-error">{loadError || t("회원 정보를 찾을 수 없습니다.", "Member not found.")}</p>
+        <div className="mt-4 flex gap-2">
+          <button
+            type="button"
+            onClick={() => {
+              setLoading(true);
+              fetchMember();
+            }}
+            className="rounded-full bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-dark"
+          >
+            {t("다시 시도", "Retry")}
+          </button>
+          <button
+            type="button"
+            onClick={() => router.push("/admin/members")}
+            className="rounded-full border border-line px-4 py-2 text-sm font-medium text-content-soft hover:text-foreground"
+          >
+            {t("회원 목록으로", "Back to member list")}
+          </button>
+        </div>
+      </div>
+    );
   }
 
   return (

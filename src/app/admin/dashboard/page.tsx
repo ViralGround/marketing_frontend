@@ -23,6 +23,7 @@ export default function AdminDashboardPage() {
   const [kpi, setKpi] = useState<Kpi | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -47,7 +48,7 @@ export default function AdminDashboardPage() {
       active = false;
       controller.abort();
     };
-  }, [t]);
+  }, [t, reloadKey]);
 
   if (loading)
     return (
@@ -55,9 +56,21 @@ export default function AdminDashboardPage() {
     );
   if (error || !kpi)
     return (
-      <p className="mx-auto max-w-5xl px-4 py-10 text-error">
-        {error || t("데이터 없음", "No data")}
-      </p>
+      <div className="mx-auto max-w-5xl px-4 py-10">
+        <div className="max-w-xl rounded-xl border border-error/30 bg-error/5 p-5">
+          <p className="text-sm text-error">{error || t("데이터 없음", "No data")}</p>
+          <button
+            type="button"
+            onClick={() => {
+              setLoading(true);
+              setReloadKey((key) => key + 1);
+            }}
+            className="mt-4 rounded-full bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-dark"
+          >
+            {t("다시 시도", "Retry")}
+          </button>
+        </div>
+      </div>
     );
 
   return (

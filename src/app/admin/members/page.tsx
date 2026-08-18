@@ -68,7 +68,9 @@ export default function AdminMembersPage() {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("ALL");
   const [search, setSearch] = useState("");
   const [searchInput, setSearchInput] = useState("");
+  // 로드 실패는 인라인 카드(재시도 포함), 액션 실패는 모달 — 실패가 "빈 목록"으로 위장되지 않게 분리.
   const [errorMessage, setErrorMessage] = useState("");
+  const [loadError, setLoadError] = useState("");
 
   const refreshMembers = async () => {
     setLoading(true);
@@ -76,8 +78,9 @@ export default function AdminMembersPage() {
       const response = await requestMembers(statusFilter, search);
       setMembers(response.data.members);
       setStats(response.data.stats);
+      setLoadError("");
     } catch {
-      setErrorMessage(t("회원 목록을 불러오지 못했습니다.", "Failed to load members."));
+      setLoadError(t("회원 목록을 불러오지 못했습니다.", "Failed to load members."));
     } finally {
       setLoading(false);
     }
@@ -92,10 +95,11 @@ export default function AdminMembersPage() {
         if (!active) return;
         setMembers(response.data.members);
         setStats(response.data.stats);
+        setLoadError("");
       })
       .catch(() => {
         if (!active) return;
-        setErrorMessage(t("회원 목록을 불러오지 못했습니다.", "Failed to load members."));
+        setLoadError(t("회원 목록을 불러오지 못했습니다.", "Failed to load members."));
       })
       .finally(() => {
         if (active) setLoading(false);
@@ -244,6 +248,13 @@ export default function AdminMembersPage() {
 
       {loading ? (
         <p className="text-muted">{t("불러오는 중...", "Loading...")}</p>
+      ) : loadError ? (
+        <Card className="border-error/30 bg-error/5">
+          <p className="text-sm text-error">{loadError}</p>
+          <Button size="sm" className="mt-3" onClick={refreshMembers}>
+            {t("다시 시도", "Retry")}
+          </Button>
+        </Card>
       ) : members.length === 0 ? (
         <Card className="bg-surface-muted py-12 text-center text-muted">
           {t("검색 결과가 없습니다.", "No results found.")}

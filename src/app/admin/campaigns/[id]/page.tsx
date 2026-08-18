@@ -123,12 +123,17 @@ export default function AdminCampaignDetailPage() {
   const [loading, setLoading] = useState(true);
   const [editMode, setEditMode] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  // 로드 실패 시 조용히 목록으로 튕기지 않고 이유를 보여준다.
+  const [loadError, setLoadError] = useState("");
 
   const load = () => {
     api
       .get(`/admin/campaigns/${id}`)
-      .then((res) => setCampaign(res.data))
-      .catch(() => router.push("/admin/campaigns"))
+      .then((res) => {
+        setCampaign(res.data);
+        setLoadError("");
+      })
+      .catch(() => setLoadError(t("캠페인 정보를 불러오지 못했습니다.", "Failed to load this campaign.")))
       .finally(() => setLoading(false));
   };
 
@@ -245,8 +250,34 @@ export default function AdminCampaignDetailPage() {
     }
   };
 
-  if (loading || !campaign) {
+  if (loading) {
     return <p className="text-muted">{t("불러오는 중...", "Loading...")}</p>;
+  }
+  if (loadError || !campaign) {
+    return (
+      <div className="max-w-xl rounded-xl border border-error/30 bg-error/5 p-5">
+        <p className="text-sm text-error">{loadError || t("캠페인을 찾을 수 없습니다.", "Campaign not found.")}</p>
+        <div className="mt-4 flex gap-2">
+          <button
+            type="button"
+            onClick={() => {
+              setLoading(true);
+              load();
+            }}
+            className="rounded-full bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-dark"
+          >
+            {t("다시 시도", "Retry")}
+          </button>
+          <button
+            type="button"
+            onClick={() => router.push("/admin/campaigns")}
+            className="rounded-full border border-line px-4 py-2 text-sm font-medium text-content-soft hover:text-foreground"
+          >
+            {t("캠페인 목록으로", "Back to campaigns")}
+          </button>
+        </div>
+      </div>
+    );
   }
 
   if (editMode) {

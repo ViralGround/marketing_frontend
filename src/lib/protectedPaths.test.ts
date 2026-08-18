@@ -22,12 +22,19 @@ describe("isProtectedAppPath", () => {
 });
 
 describe("isRoleWorkspacePath", () => {
-  it.each(["/company/dashboard", "/company/campaigns/4", "/creator/dashboard", "/creator/mypage"])(
+  it.each([
+    "/company/dashboard",
+    "/company/campaigns/4",
+    "/creator/dashboard",
+    "/creator/mypage",
+    "/admin",
+    "/admin/dashboard",
+  ])(
     "uses the authenticated workspace chrome for %s",
     (pathname) => expect(isRoleWorkspacePath(pathname)).toBe(true),
   );
 
-  it.each(["/creator", "/creators", "/business", "/admin/dashboard", "/profile/setup"])(
+  it.each(["/creator", "/creators", "/business", "/profile/setup"])(
     "keeps the existing page chrome for %s",
     (pathname) => expect(isRoleWorkspacePath(pathname)).toBe(false),
   );

@@ -1,77 +1,21 @@
 "use client";
 
-import Link from "next/link";
-import { useAuthStore } from "@/store/useAuthStore";
-import { removeTokens } from "@/lib/auth";
-import { useRouter } from "next/navigation";
 import { AuthGuard } from "@/components/auth/AuthGuard";
-import { useLang } from "@/lib/i18n";
+import WorkspaceShell from "@/components/workspace/WorkspaceShell";
+import primitives from "@/components/workspace/WorkspacePrimitives.module.css";
 
-export default function AdminLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const { t } = useLang();
-  const { logout } = useAuthStore();
-  const router = useRouter();
-
-  const handleLogout = async () => {
-    await removeTokens();
-    logout();
-    router.push("/login");
-  };
-
+/**
+ * 관리자도 브랜드·크리에이터와 같은 WorkspaceShell 크롬을 쓴다.
+ * 이전에는 전역 Header 아래 자체 사이드바가 겹쳐 이중 크롬이었다.
+ * 관리자 페이지들은 자체 스크롤 래퍼가 없어 레이아웃에서 .page 로 감싼다
+ * (셸 콘텐츠 영역은 overflow:hidden — 스크롤은 .page 가 담당).
+ */
+export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
     <AuthGuard requiredRole="ADMIN">
-      <div className="flex min-h-[calc(100vh-65px)]">
-        <aside className="w-56 border-r border-line bg-surface-muted p-5">
-          <h2 className="mb-6 px-3 text-xs font-semibold uppercase tracking-wider text-muted">
-            {t("관리자", "Admin")}
-          </h2>
-          <nav className="space-y-1">
-            <Link
-              href="/admin/members"
-              className="block rounded-lg px-3 py-2 text-sm font-medium text-content-soft transition-colors hover:bg-surface hover:text-foreground"
-            >
-              {t("회원 관리", "Members")}
-            </Link>
-            <Link
-              href="/admin/campaigns"
-              className="block rounded-lg px-3 py-2 text-sm font-medium text-content-soft transition-colors hover:bg-surface hover:text-foreground"
-            >
-              {t("캠페인 관리", "Campaigns")}
-            </Link>
-            <Link
-              href="/admin/analytics"
-              className="block rounded-lg px-3 py-2 text-sm font-medium text-content-soft transition-colors hover:bg-surface hover:text-foreground"
-            >
-              {t("릴스 분석", "Reel analytics")}
-            </Link>
-            <Link
-              href="/admin/escrow"
-              className="block rounded-lg px-3 py-2 text-sm font-medium text-content-soft transition-colors hover:bg-surface hover:text-foreground"
-            >
-              {t("예치금 확인", "Deposits")}
-            </Link>
-            <Link
-              href="/admin/contacts"
-              className="block rounded-lg px-3 py-2 text-sm font-medium text-content-soft transition-colors hover:bg-surface hover:text-foreground"
-            >
-              {t("상담 신청", "Consultation requests")}
-            </Link>
-          </nav>
-          <div className="mt-8 border-t border-line pt-4">
-            <button
-              onClick={handleLogout}
-              className="rounded-lg px-3 py-2 text-sm font-medium text-muted transition-colors hover:bg-surface hover:text-error"
-            >
-              {t("로그아웃", "Log out")}
-            </button>
-          </div>
-        </aside>
-        <div className="flex-1 p-8 md:p-10">{children}</div>
-      </div>
+      <WorkspaceShell role="ADMIN">
+        <div className={`${primitives.page} ${primitives.pageWide}`}>{children}</div>
+      </WorkspaceShell>
     </AuthGuard>
   );
 }

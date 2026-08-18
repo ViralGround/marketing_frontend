@@ -11,10 +11,13 @@ import {
   CircleUserRound,
   FilePlus2,
   Globe2,
+  Inbox,
+  Landmark,
   LayoutDashboard,
   LogOut,
   Search,
   Settings2,
+  UsersRound,
   X,
   type LucideIcon,
 } from "lucide-react";
@@ -26,7 +29,7 @@ import { useAuthStore } from "@/store/useAuthStore";
 import type { UserRole } from "@/types";
 import styles from "./WorkspaceShell.module.css";
 
-type WorkspaceRole = Extract<UserRole, "COMPANY" | "CREATOR">;
+type WorkspaceRole = UserRole;
 
 type NavItem = {
   href: string;
@@ -68,6 +71,14 @@ const NAV: Record<WorkspaceRole, NavItem[]> = {
     { href: "/creator/performance", labelKo: "성과 기록", labelEn: "Performance", shortKo: "성과", shortEn: "Results", icon: BarChart3 },
     { href: "/creator/profile", labelKo: "내 프로필", labelEn: "My profile", shortKo: "프로필", shortEn: "Profile", icon: CircleUserRound },
   ],
+  ADMIN: [
+    { href: "/admin/dashboard", labelKo: "대시보드", labelEn: "Dashboard", shortKo: "홈", shortEn: "Home", icon: LayoutDashboard },
+    { href: "/admin/members", labelKo: "회원 관리", labelEn: "Members", shortKo: "회원", shortEn: "Members", icon: UsersRound },
+    { href: "/admin/campaigns", labelKo: "캠페인 관리", labelEn: "Campaigns", shortKo: "캠페인", shortEn: "Camps", icon: BriefcaseBusiness },
+    { href: "/admin/analytics", labelKo: "릴스 분석", labelEn: "Reel analytics", shortKo: "분석", shortEn: "Reels", icon: BarChart3 },
+    { href: "/admin/escrow", labelKo: "예치금 확인", labelEn: "Deposits", shortKo: "예치", shortEn: "Deposits", icon: Landmark },
+    { href: "/admin/contacts", labelKo: "상담 신청", labelEn: "Consultations", shortKo: "상담", shortEn: "Inbox", icon: Inbox },
+  ],
 };
 
 function isActive(pathname: string, item: NavItem) {
@@ -89,8 +100,16 @@ export default function WorkspaceShell({ role, children }: { role: WorkspaceRole
   const [query, setQuery] = useState("");
   const searchDialogRef = useDialogA11y<HTMLElement>(searchOpen, () => setSearchOpen(false));
   const accountDialogRef = useDialogA11y<HTMLElement>(accountOpen, () => setAccountOpen(false));
-  const roleLabel = role === "COMPANY" ? t("브랜드", "Brand") : t("크리에이터", "Creator");
-  const dashboardHref = role === "COMPANY" ? "/company/dashboard" : "/creator/dashboard";
+  const roleLabel =
+    role === "COMPANY" ? t("브랜드", "Brand")
+    : role === "ADMIN" ? t("관리자", "Admin")
+    : t("크리에이터", "Creator");
+  const dashboardHref =
+    role === "COMPANY" ? "/company/dashboard"
+    : role === "ADMIN" ? "/admin/dashboard"
+    : "/creator/dashboard";
+  // 관리자 목록 페이지들은 검색 파라미터를 받지 않으므로 검색 UI 자체를 숨긴다(가짜 어포던스 방지).
+  const searchEnabled = role !== "ADMIN";
 
   const toggleSidebar = () => {
     window.localStorage.setItem(SIDEBAR_KEY, String(!sidebarCollapsed));
@@ -107,7 +126,10 @@ export default function WorkspaceShell({ role, children }: { role: WorkspaceRole
   const handleSearch = (event: React.FormEvent) => {
     event.preventDefault();
     const q = query.trim();
-    const base = role === "COMPANY" ? "/company/campaigns" : "/creator/home";
+    const base =
+      role === "COMPANY" ? "/company/campaigns"
+      : role === "ADMIN" ? "/admin/campaigns"
+      : "/creator/home";
     setSearchOpen(false);
     router.push(q ? `${base}?search=${encodeURIComponent(q)}` : base);
   };
@@ -185,11 +207,13 @@ export default function WorkspaceShell({ role, children }: { role: WorkspaceRole
               <strong>MANAGED BETA</strong>
               <p>{t("결제·정산은 운영 계약과 PG 연결 후 활성화됩니다.", "Payments activate after the operating contract and gateway are ready.")}</p>
             </div>
-            <Link className={styles.accountLink} href={role === "COMPANY" ? "/company/profile" : "/creator/profile"} onClick={() => setAccountOpen(false)}>
-              <Settings2 aria-hidden="true" />
-              <span>{t("프로필과 계정 관리", "Profile and account")}</span>
-              <ChevronRight aria-hidden="true" />
-            </Link>
+            {role !== "ADMIN" && (
+              <Link className={styles.accountLink} href={role === "COMPANY" ? "/company/profile" : "/creator/profile"} onClick={() => setAccountOpen(false)}>
+                <Settings2 aria-hidden="true" />
+                <span>{t("프로필과 계정 관리", "Profile and account")}</span>
+                <ChevronRight aria-hidden="true" />
+              </Link>
+            )}
           </div>
           <footer className={styles.accountActions}>
             <button type="button" onClick={handleLogout}><LogOut aria-hidden="true" />{t("로그아웃", "Log out")}</button>
@@ -213,16 +237,20 @@ export default function WorkspaceShell({ role, children }: { role: WorkspaceRole
           <span>VIRAL GROUND</span>
         </Link>
         <div className={styles.topbarEnd}>
-          <form className={styles.searchForm} role="search" onSubmit={handleSearch}>
-            <Search className={styles.searchIcon} aria-hidden="true" strokeWidth={1.8} />
-            <input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder={t("캠페인 검색", "Search campaigns")} aria-label={t("캠페인 검색", "Search campaigns")} />
-          </form>
-          <button type="button" className={`${styles.topAction} ${styles.mobileSearchButton}`} aria-label={t("검색 열기", "Open search")} onClick={() => setSearchOpen(true)}><Search aria-hidden="true" /></button>
+          {searchEnabled && (
+            <>
+              <form className={styles.searchForm} role="search" onSubmit={handleSearch}>
+                <Search className={styles.searchIcon} aria-hidden="true" strokeWidth={1.8} />
+                <input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder={t("캠페인 검색", "Search campaigns")} aria-label={t("캠페인 검색", "Search campaigns")} />
+              </form>
+              <button type="button" className={`${styles.topAction} ${styles.mobileSearchButton}`} aria-label={t("검색 열기", "Open search")} onClick={() => setSearchOpen(true)}><Search aria-hidden="true" /></button>
+            </>
+          )}
           <button type="button" className={styles.accountButton} aria-label={t("계정 메뉴 열기", "Open account menu")} aria-expanded={accountOpen} onClick={openAccount}>
             <span className={styles.avatar} aria-hidden="true">{user?.name?.trim().slice(0, 1) || "V"}</span>
             <span className={styles.profileCopy}>
               <span className={styles.profileName}>{user?.name ?? roleLabel}</span>
-              <span className={styles.profileRole}>MANAGED BETA</span>
+              <span className={styles.profileRole}>{role === "ADMIN" ? "OPERATIONS" : "MANAGED BETA"}</span>
             </span>
           </button>
         </div>

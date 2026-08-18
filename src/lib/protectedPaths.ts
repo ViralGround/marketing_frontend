@@ -12,5 +12,9 @@ export function isProtectedAppPath(pathname: string): boolean {
 }
 
 export function isRoleWorkspacePath(pathname: string): boolean {
-  return matchesPrefix(pathname, "/company") || pathname.startsWith("/creator/");
+  return (
+    matchesPrefix(pathname, "/company") ||
+    matchesPrefix(pathname, "/admin") ||
+    pathname.startsWith("/creator/")
+  );
 }

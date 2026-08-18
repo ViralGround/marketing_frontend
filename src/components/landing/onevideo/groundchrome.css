@@ -263,3 +263,48 @@
     text-transform: uppercase;
   }
 }
+
+/* 언어 토글 — 공개 페이지 유일한 전환 지점. 링크와 구분되는 필 컨트롤 문법. */
+.vg-topbar .lang-toggle {
+  min-width: 48px;
+  min-height: 36px;
+  align-self: center;
+  padding: 0 12px;
+  color: inherit;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  background: transparent;
+  border: 1.5px solid currentColor;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+.vg-topbar .lang-toggle:hover {
+  color: var(--paper, #f6f5f1);
+  background: var(--ink, #0a090b);
+}
+
+.ground-mobile-menu .mobile-lang {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  margin-top: 10px;
+  padding: 0 12px;
+  color: var(--ink, #0a090b);
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 800;
+  background: transparent;
+  border: 1.5px solid var(--ink, #0a090b);
+  cursor: pointer;
+}
+
+.ground-mobile-menu .mobile-lang svg {
+  width: 17px;
+  height: 17px;
+}

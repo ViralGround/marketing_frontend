@@ -4,7 +4,9 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import GroundTopbar from "./GroundTopbar";
 
 vi.mock("next/navigation", () => ({ usePathname: () => "/" }));
-vi.mock("@/lib/i18n", () => ({ useLang: () => ({ t: (ko: string) => ko }) }));
+vi.mock("@/lib/i18n", () => ({
+  useLang: () => ({ t: (ko: string) => ko, lang: "ko", setLang: vi.fn() }),
+}));
 vi.mock("@/lib/gtag", () => ({ trackEvent: vi.fn() }));
 
 describe("GroundTopbar", () => {
@@ -28,7 +30,10 @@ describe("GroundTopbar", () => {
 
     expect(document.activeElement).toBe(within(menu).getByRole("link", { name: "크리에이터" }));
     await user.keyboard("{Shift>}{Tab}{/Shift}");
-    expect(document.activeElement).toBe(screen.getByRole("link", { name: "크리에이터 지원" }));
+    // 포커스 트랩은 마지막 포커스 가능 요소(언어 토글)로 감긴다
+    expect(document.activeElement).toBe(
+      within(menu).getByRole("button", { name: "Switch to English" }),
+    );
 
     await user.keyboard("{Escape}");
     expect(document.activeElement).toBe(trigger);

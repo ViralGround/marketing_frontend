@@ -11,14 +11,15 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { usePathname } from "next/navigation";
-import { ArrowUpRight, Menu, X } from "lucide-react";
+import { ArrowUpRight, Globe, Menu, X } from "lucide-react";
 import { useLang } from "@/lib/i18n";
 import { trackEvent } from "@/lib/gtag";
 import "./groundchrome.css";
 
 export default function GroundTopbar({ tone = "paper" }: { tone?: "paper" | "dark" }) {
   const pathname = usePathname();
-  const { t } = useLang();
+  const { t, lang, setLang } = useLang();
+  const toggleLang = () => setLang(lang === "ko" ? "en" : "ko");
   const [menuOpen, setMenuOpen] = useState(false);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
@@ -95,6 +96,15 @@ export default function GroundTopbar({ tone = "paper" }: { tone?: "paper" | "dar
       </Link>
 
       <nav className="nav-right" aria-label="계정">
+        {/* 공개 페이지의 유일한 언어 전환 지점 — 이전에는 앱 헤더에서만 가능했다 */}
+        <button
+          type="button"
+          className="lang-toggle"
+          aria-label={lang === "ko" ? "Switch to English" : "한국어로 보기"}
+          onClick={toggleLang}
+        >
+          {lang === "ko" ? "EN" : "KO"}
+        </button>
         <Link
           href="/login"
           onClick={() => trackEvent("cta_click", { location: "topbar", target: "login" })}
@@ -163,6 +173,15 @@ export default function GroundTopbar({ tone = "paper" }: { tone?: "paper" | "dar
               <Link href="/business" onClick={() => setMenuOpen(false)}>{t("브랜드 베타 문의", "Brand beta")}</Link>
               <Link href="/creator" onClick={() => setMenuOpen(false)}>{t("크리에이터 지원", "Creator application")}</Link>
             </div>
+            <button
+              type="button"
+              className="mobile-lang"
+              aria-label={lang === "ko" ? "Switch to English" : "한국어로 보기"}
+              onClick={toggleLang}
+            >
+              <Globe aria-hidden="true" />
+              {lang === "ko" ? "English" : "한국어"}
+            </button>
             <p>ViralGround / Seoul / Managed beta</p>
           </div>,
           document.body,

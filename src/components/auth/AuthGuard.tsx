@@ -3,6 +3,7 @@
 import { ReactNode, useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import api from "@/lib/api";
+import { setSessionHint } from "@/lib/sessionHint";
 import { useAuthStore } from "@/store/useAuthStore";
 
 type Role = "CREATOR" | "COMPANY" | "ADMIN";
@@ -39,6 +40,7 @@ export function AuthGuard({ children, requiredRole }: { children: ReactNode; req
           return;
         }
         setUser(data);
+        setSessionHint();
         setChecking(false);
       } catch {
         if (cancelled) return;

@@ -1,11 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import Cookies from "js-cookie";
 import { Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import api from "@/lib/api";
 import { useAuthStore } from "@/store/useAuthStore";
+import { setSessionHint } from "@/lib/sessionHint";
 import { setGaUser, trackEvent } from "@/lib/gtag";
 import { useLang } from "@/lib/i18n";
 import AlertModal from "@/components/ui/AlertModal";
@@ -52,12 +54,18 @@ export default function LoginForm({ expectedRole }: { expectedRole: LoginRole })
     setLoading(true);
 
     try {
+      // 익명 방문은 부트스트랩 프로브를 건너뛰므로(sessionHint) 로그인 POST 에 필요한
+      // double-submit CSRF 쿠키가 없을 수 있다 — 없을 때만 받아온다.
+      if (!Cookies.get("XSRF-TOKEN")) {
+        await api.get("/auth/csrf");
+      }
       const credentials = resolveLoginCredentials(expectedRole, email, password);
       await api.post("/auth/login", credentials);
       await api.get("/auth/csrf");
       const { data: member } = await api.get<Member>("/auth/me");
       const role = member.role;
       setUser(member);
+      setSessionHint();
       setGaUser(member.id, role);
       trackEvent("login_success", { role });
 

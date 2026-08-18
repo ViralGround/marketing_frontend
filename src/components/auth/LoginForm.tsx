@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import api from "@/lib/api";
 import { useAuthStore } from "@/store/useAuthStore";
@@ -161,6 +162,14 @@ export default function LoginForm({ expectedRole }: { expectedRole: LoginRole })
             {passwordVisible ? <EyeOff className="h-5 w-5" aria-hidden="true" /> : <Eye className="h-5 w-5" aria-hidden="true" />}
           </button>
         </div>
+        <p className="mt-2 text-right text-sm">
+          <Link
+            href="/password-reset"
+            className="text-muted underline underline-offset-4 hover:text-foreground"
+          >
+            {t("비밀번호를 잊으셨나요?", "Forgot your password?")}
+          </Link>
+        </p>
       </div>
       <button
         type="submit"

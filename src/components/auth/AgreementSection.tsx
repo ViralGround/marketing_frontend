@@ -4,6 +4,7 @@ import { useId, useState } from "react";
 import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import { useLang } from "@/lib/i18n";
+import { AGE14_BODY, AGE14_TITLE } from "@/lib/legal/age14";
 import { TERMS_BODY, TERMS_TITLE } from "@/lib/legal/terms";
 import { PRIVACY_BODY, PRIVACY_TITLE } from "@/lib/legal/privacy";
 import { THIRD_PARTY_BODY, THIRD_PARTY_TITLE } from "@/lib/legal/thirdParty";
@@ -35,7 +36,7 @@ interface Props {
 export default function AgreementSection({ role, value, onChange }: Props) {
   const { t } = useLang();
   const items = [
-    { key: "age14" as const, label: t("만 14세 이상입니다", "I am 14 years or older"), required: true, body: null, title: null },
+    { key: "age14" as const, label: t("만 14세 이상입니다", "I am 14 years or older"), required: true, body: AGE14_BODY, title: AGE14_TITLE },
     { key: "terms" as const, label: t("서비스 이용약관 동의", "Agree to the Terms of Service"), required: true, body: TERMS_BODY, title: TERMS_TITLE },
     { key: "privacy" as const, label: t("개인정보 수집·이용 동의", "Agree to the collection and use of personal information"), required: true, body: PRIVACY_BODY, title: PRIVACY_TITLE },
     ...(role === "CREATOR"

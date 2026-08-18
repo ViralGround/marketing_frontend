@@ -15,6 +15,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import GroundTopbar from "./GroundTopbar";
+import GroundFooter from "./GroundFooter";
 import { trackEvent } from "@/lib/gtag";
 import "./onevideo.css";
 
@@ -677,6 +678,9 @@ export default function OneVideoLanding() {
           </div>
         </section>
       </div>
+
+      {/* 법적 링크·사업자 표기 — 이전에는 메인에만 푸터가 없어 약관·개인정보 링크가 0개였다 */}
+      <GroundFooter />
     </div>
   );
 }

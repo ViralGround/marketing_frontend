@@ -70,6 +70,12 @@ if (isProductionBuild) {
     "NEXT_PUBLIC_LEGAL_MARKETING_VERSION",
     "NEXT_PUBLIC_PRIVACY_OFFICER_NAME",
     "NEXT_PUBLIC_PRIVACY_OFFICER_CONTACT",
+    // 사업자 정보 표기(전자상거래법 필수 고지) — 푸터 렌더에 사용
+    "NEXT_PUBLIC_BUSINESS_NAME",
+    "NEXT_PUBLIC_BUSINESS_CEO",
+    "NEXT_PUBLIC_BUSINESS_REG_NO",
+    "NEXT_PUBLIC_BUSINESS_ADDRESS",
+    "NEXT_PUBLIC_BUSINESS_CONTACT",
   ]) requireProductionValue(name);
 
   const storageOrigins = requireProductionValue("NEXT_PUBLIC_STORAGE_ORIGINS").split(",");

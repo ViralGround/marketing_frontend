@@ -24,9 +24,9 @@ export default function GroundTopbar({ tone = "paper" }: { tone?: "paper" | "dar
   const mobileMenuRef = useRef<HTMLDivElement>(null);
   const firstMobileLinkRef = useRef<HTMLAnchorElement>(null);
 
+  // 소프트 오픈 공개 범위: 결제 체인이 잠긴 동안 /creators·/campaigns는 내비에서 제외.
   const leftLinks = [
-    { href: "/creators", label: t("크리에이터", "Creators") },
-    { href: "/campaigns", label: t("캠페인", "Campaigns") },
+    { href: "/creator", label: t("크리에이터", "Creators") },
     { href: "/business", label: t("브랜드", "For Brands") },
   ];
 

@@ -189,10 +189,10 @@ export default function CreatorApplyPage() {
                 </Link>
                 <Link
                   className={styles.secondary}
-                  href="/campaigns"
-                  onClick={() => trackEvent("cta_click", { location: "creator_final", target: "campaigns" })}
+                  href="/login/creator"
+                  onClick={() => trackEvent("cta_click", { location: "creator_final", target: "login_creator" })}
                 >
-                  {t("공개 캠페인 먼저 보기", "See open campaigns first")}
+                  {t("이미 지원했다면 로그인", "Already applied? Log in")}
                   <ArrowUpRight aria-hidden="true" />
                 </Link>
               </div>
@@ -216,7 +216,11 @@ export default function CreatorApplyPage() {
         <Link href="/signup/creator" onClick={() => trackEvent("cta_click", { location: "creator_mobile_dock", target: "signup_creator" })}>
           {t("지원서 제출", "Submit application")}
         </Link>
-        <Link href="/campaigns" aria-label={t("캠페인 보기", "Browse campaigns")}>
+        <Link
+          href="/login/creator"
+          aria-label={t("크리에이터 로그인", "Creator log in")}
+          onClick={() => trackEvent("cta_click", { location: "creator_mobile_dock", target: "login_creator" })}
+        >
           <ArrowUpRight aria-hidden="true" />
         </Link>
       </div>

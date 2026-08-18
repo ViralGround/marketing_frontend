@@ -23,7 +23,7 @@ export default function AdminLayout({
   };
 
   return (
-    <AuthGuard>
+    <AuthGuard requiredRole="ADMIN">
       <div className="flex min-h-[calc(100vh-65px)]">
         <aside className="w-56 border-r border-line bg-surface-muted p-5">
           <h2 className="mb-6 px-3 text-xs font-semibold uppercase tracking-wider text-muted">

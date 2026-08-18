@@ -1,4 +1,4 @@
-const PROTECTED_PREFIXES = ["/company", "/admin"] as const;
+const PROTECTED_PREFIXES = ["/company", "/admin", "/profile"] as const;
 
 function matchesPrefix(pathname: string, prefix: string): boolean {
   return pathname === prefix || pathname.startsWith(`${prefix}/`);

@@ -75,6 +75,7 @@ export async function proxy(request: NextRequest) {
   }
 
   if (isProtected) {
+    // /profile(온보딩)은 크리에이터 전용, 그 외는 경로 접두어가 역할을 정한다.
     const requiredRole: Role = pathname.startsWith("/admin")
       ? "ADMIN"
       : pathname.startsWith("/company")
@@ -100,5 +101,6 @@ export const config = {
     "/creator/:path*",
     "/company/:path*",
     "/admin/:path*",
+    "/profile/:path*",
   ],
 };

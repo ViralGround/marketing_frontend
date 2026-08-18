@@ -15,6 +15,7 @@ describe("isProtectedAppPath", () => {
     "/admin/members",
     "/creator/home",
     "/creator/campaigns/1",
+    "/profile/setup",
   ])("recognizes the protected route %s", (pathname) => {
     expect(isProtectedAppPath(pathname)).toBe(true);
   });

@@ -1,17 +1,24 @@
 "use client";
 
 import Link from "next/link";
+import { Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { useLang } from "@/lib/i18n";
 import AuthSurface from "@/components/auth/AuthSurface";
 
-export default function LoginPage() {
+/** 미들웨어가 붙여준 ?redirect= 를 역할 로그인 페이지까지 그대로 전달한다. */
+function LoginChooser() {
   const { t } = useLang();
+  const searchParams = useSearchParams();
+  const redirect = searchParams.get("redirect");
+  const withRedirect = (href: string) =>
+    redirect ? `${href}?redirect=${encodeURIComponent(redirect)}` : href;
 
   return (
     <AuthSurface title={t("로그인", "Log in")} description={t("사용할 워크스페이스를 선택하세요.", "Choose the workspace you use.")}>
         <div className="space-y-3">
           <Link
-            href="/login/creator"
+            href={withRedirect("/login/creator")}
             className="group flex min-h-20 flex-col justify-center gap-1 border-y-2 border-ink px-2 py-4 transition-[padding] hover:pl-5 hover:text-violet"
           >
             <span className="text-base font-semibold text-foreground">
@@ -22,7 +29,7 @@ export default function LoginPage() {
             </span>
           </Link>
           <Link
-            href="/login/company"
+            href={withRedirect("/login/company")}
             className="group flex min-h-20 flex-col justify-center gap-1 border-b-2 border-ink px-2 py-4 transition-[padding] hover:pl-5 hover:text-violet"
           >
             <span className="text-base font-semibold text-foreground">
@@ -41,5 +48,13 @@ export default function LoginPage() {
           </Link>
         </p>
     </AuthSurface>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginChooser />
+    </Suspense>
   );
 }

@@ -5,7 +5,7 @@ import WorkspaceShell from "@/components/workspace/WorkspaceShell";
 
 export default function CreatorLayout({ children }: { children: React.ReactNode }) {
   return (
-    <AuthGuard>
+    <AuthGuard requiredRole="CREATOR">
       <WorkspaceShell role="CREATOR">{children}</WorkspaceShell>
     </AuthGuard>
   );

@@ -44,7 +44,8 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Viral Ground",
     description: "AI SaaS를 이해하는 크리에이터와 브랜드를 연결하고 콘텐츠 성과를 함께 운영합니다.",
-    url: "https://viralground.kr",
+    // metadataBase(NEXT_PUBLIC_SITE_URL) 기준으로 절대화 — 도메인 하드코딩 금지.
+    url: "/",
     siteName: "Viral Ground",
     images: [{ url: "/opengraph-image", width: 1200, height: 630 }],
     locale: "ko_KR",
@@ -78,7 +79,10 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-full flex flex-col">
-        <template data-impeccable-contract dangerouslySetInnerHTML={{ __html: SUBLANDING_DIRECTION_CONTRACT }} />
+        {/* 디자인 방향 계약은 작업용 메타데이터 — 프로덕션 HTML에는 싣지 않는다 */}
+        {process.env.NODE_ENV !== "production" && (
+          <template data-impeccable-contract dangerouslySetInnerHTML={{ __html: SUBLANDING_DIRECTION_CONTRACT }} />
+        )}
         <AuthInit />
         <Header />
         <main className="flex-1">{children}</main>

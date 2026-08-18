@@ -82,6 +82,11 @@ if (isProductionBuild) {
   storageOrigins.forEach((origin, index) => {
     validateProductionOrigin(`NEXT_PUBLIC_STORAGE_ORIGINS[${index}]`, origin.trim());
   });
+
+  // 결정: GA 는 빌드 차단 사유가 아니다 — 비어 있으면 경고만 남기고 수집 없이 배포한다.
+  if (!process.env.NEXT_PUBLIC_GA_ID?.trim()) {
+    console.warn("[production-config] NEXT_PUBLIC_GA_ID is empty — analytics are disabled for this build.");
+  }
 }
 
 const nextConfig: NextConfig = {
@@ -123,7 +128,20 @@ const nextConfig: NextConfig = {
         ? [{ key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" }]
         : []),
     ];
-    return [{ source: "/(.*)", headers: securityHeaders }];
+    // 보호 영역은 HTTP 헤더로 색인 차단 — 해당 레이아웃들이 클라이언트 컴포넌트라
+    // metadata.robots 를 내보낼 수 없어 헤더가 단일 소스다 (robots.txt disallow 와 정합).
+    // /creator 공개 랜딩은 제외되도록 하위 경로에만 건다.
+    const noindexHeader = [{ key: "X-Robots-Tag", value: "noindex, nofollow" }];
+    return [
+      { source: "/(.*)", headers: securityHeaders },
+      { source: "/admin", headers: noindexHeader },
+      { source: "/admin/:path*", headers: noindexHeader },
+      { source: "/company", headers: noindexHeader },
+      { source: "/company/:path*", headers: noindexHeader },
+      { source: "/creator/:path*", headers: noindexHeader },
+      { source: "/profile", headers: noindexHeader },
+      { source: "/profile/:path*", headers: noindexHeader },
+    ];
   },
 };
 

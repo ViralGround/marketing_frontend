@@ -12,7 +12,7 @@ interface Props extends InputHTMLAttributes<HTMLInputElement> {
 }
 
 const BASE =
-  "block h-11 w-full rounded-[10px] border border-line bg-surface px-3.5 text-sm text-foreground placeholder-faint transition-[border-color,box-shadow] duration-150 focus:border-primary focus:outline-none focus:ring-[3px] focus:ring-primary-bg aria-invalid:border-error aria-invalid:ring-error/10 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-surface-muted";
+  "block h-11 w-full rounded-[10px] border border-line bg-surface px-3.5 text-sm max-[1023px]:text-base text-foreground placeholder-faint transition-[border-color,box-shadow] duration-150 focus:border-primary focus:outline-none focus:ring-[3px] focus:ring-primary-bg aria-invalid:border-error aria-invalid:ring-error/10 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-surface-muted";
 
 export default function Input({ className = "", ref, ...rest }: Props) {
   return <input ref={ref} className={`${BASE} ${className}`} {...rest} />;

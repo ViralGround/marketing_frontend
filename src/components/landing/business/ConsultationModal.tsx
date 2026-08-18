@@ -3,14 +3,13 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { createPortal } from "react-dom";
+import { Check, X } from "lucide-react";
 import api from "@/lib/api";
 import { trackEvent } from "@/lib/gtag";
 import { useLang } from "@/lib/i18n";
-import Button from "@/components/ui/Button";
-import Input from "@/components/ui/Input";
-import { Check, X } from "lucide-react";
 import { useDialogA11y } from "@/hooks/useDialogA11y";
 import { PRIVACY_VERSION } from "@/lib/legal/privacy";
+import { groundStyles } from "@/components/landing/ground/PublicGround";
 
 interface Props {
   open: boolean;
@@ -36,14 +35,13 @@ export default function ConsultationModal({ open, onClose }: Props) {
 
   useEffect(() => {
     if (!open) {
-      // 닫힐 때 상태 초기화 (다음 오픈 시 깔끔하게)
-      const t = setTimeout(() => {
+      const resetTimer = setTimeout(() => {
         setForm(INITIAL);
         setSubmitted(false);
         setError("");
         setPrivacyAgreed(false);
       }, 200);
-      return () => clearTimeout(t);
+      return () => clearTimeout(resetTimer);
     }
   }, [open]);
 
@@ -54,8 +52,8 @@ export default function ConsultationModal({ open, onClose }: Props) {
     form.brandName.trim().length > 0 &&
     privacyAgreed;
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
     if (!valid || submitting) return;
     setError("");
     setSubmitting(true);
@@ -71,16 +69,15 @@ export default function ConsultationModal({ open, onClose }: Props) {
       });
       trackEvent("contact_success", {});
       setSubmitted(true);
-    } catch (err: unknown) {
-      const response = (err as { response?: { status?: number; data?: { message?: string } } })
-        .response;
-      const msg =
+    } catch (caught: unknown) {
+      const response = (caught as { response?: { status?: number; data?: { message?: string } } }).response;
+      setError(
         response?.data?.message ||
-        t(
-          "신청 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.",
-          "Something went wrong with your request. Please try again shortly.",
-        );
-      setError(msg);
+          t(
+            "신청 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.",
+            "Something went wrong with your request. Please try again shortly.",
+          ),
+      );
       trackEvent("contact_fail", { status: response?.status ?? 0 });
     } finally {
       setSubmitting(false);
@@ -92,121 +89,112 @@ export default function ConsultationModal({ open, onClose }: Props) {
       role="dialog"
       aria-modal="true"
       aria-labelledby="consultation-title"
-      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/55 p-4"
+      className={groundStyles.sheetBackdrop}
       onClick={onClose}
     >
       <div
         ref={dialogRef}
         tabIndex={-1}
-        className="w-full max-w-md rounded-2xl bg-surface p-7 shadow-2xl"
-        onClick={(e) => e.stopPropagation()}
+        className={`${groundStyles.sheet} ${groundStyles.sheetCompact}`}
+        onClick={(event) => event.stopPropagation()}
       >
-        <div className="mb-5 flex items-start justify-between">
-          <h2 id="consultation-title" className="text-xl font-bold text-foreground">
-            {t("가벼운 상담신청", "Request a consultation")}
-          </h2>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label={t("닫기", "Close")}
-            className="inline-flex min-h-11 min-w-11 items-center justify-center text-muted transition-colors hover:text-foreground"
-          >
-            <X className="h-5 w-5" />
+        <header className={groundStyles.sheetHeader}>
+          <div>
+            <h2 id="consultation-title">{t("가벼운 상담신청", "Request a consultation")}</h2>
+            <p>{t("제품과 목표부터 알려주세요", "Start with your product and goal")}</p>
+          </div>
+          <button type="button" onClick={onClose} aria-label={t("닫기", "Close")} className={groundStyles.sheetClose}>
+            <X aria-hidden="true" />
           </button>
+        </header>
+
+        <div className={groundStyles.sheetBody}>
+          {submitted ? (
+            <div className={groundStyles.sheetSuccess}>
+              <Check aria-hidden="true" size={32} strokeWidth={2.4} />
+              <strong>{t("신청이 접수되었습니다", "Your request has been received")}</strong>
+              <p>
+                {t(
+                  "평일 기준 1영업일 이내에 입력하신 이메일로 회신드리겠습니다.",
+                  "We'll reply to the email you entered within one business day.",
+                )}
+              </p>
+            </div>
+          ) : (
+            <form id="consultation-form" className={groundStyles.sheetForm} onSubmit={handleSubmit}>
+              <div className={groundStyles.sheetField}>
+                <label htmlFor="c-email">{t("이메일 주소", "Email address")} *</label>
+                <input
+                  id="c-email"
+                  type="email"
+                  required
+                  value={form.email}
+                  onChange={(event) => setForm({ ...form, email: event.target.value })}
+                  placeholder="example@email.com"
+                />
+              </div>
+
+              <div className={groundStyles.sheetField}>
+                <label htmlFor="c-brand">{t("브랜드명", "Brand name")} *</label>
+                <input
+                  id="c-brand"
+                  type="text"
+                  required
+                  value={form.brandName}
+                  onChange={(event) => setForm({ ...form, brandName: event.target.value })}
+                  placeholder={t("브랜드명을 입력해주세요", "Enter your brand name")}
+                />
+              </div>
+
+              <div className={groundStyles.sheetField}>
+                <label htmlFor="c-name">{t("담당자명 (선택)", "Contact name (optional)")}</label>
+                <input
+                  id="c-name"
+                  type="text"
+                  value={form.contactName}
+                  onChange={(event) => setForm({ ...form, contactName: event.target.value })}
+                  placeholder={t("담당자명을 입력해주세요", "Enter the contact name")}
+                />
+              </div>
+
+              <label className={groundStyles.sheetConsent}>
+                <input
+                  type="checkbox"
+                  checked={privacyAgreed}
+                  onChange={(event) => setPrivacyAgreed(event.target.checked)}
+                  required
+                />
+                <span>
+                  {t(
+                    "상담 회신을 위한 개인정보 수집·이용에 동의합니다. ",
+                    "I agree to the collection and use of my information for this consultation. ",
+                  )}
+                  <Link href="/privacy" target="_blank" className={groundStyles.sheetLink}>
+                    {t("개인정보처리방침", "Privacy policy")}
+                  </Link>
+                </span>
+              </label>
+
+              {error && <p role="alert" className={groundStyles.sheetError}>{error}</p>}
+            </form>
+          )}
         </div>
 
-        {submitted ? (
-          <div className="py-6 text-center">
-            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
-              <Check className="h-6 w-6" strokeWidth={2.5} />
-            </div>
-            <p className="font-semibold text-foreground">{t("신청이 접수되었습니다.", "Your request has been received.")}</p>
-            <p className="mt-2 text-sm text-muted">
-              {t(
-                "평일 기준 1영업일 이내에 입력하신 이메일로 회신드리겠습니다.",
-                "We'll reply to the Email you entered within 1 business day.",
-              )}
-            </p>
-            <Button type="button" onClick={onClose} className="mt-6">
-              {t("확인", "Confirm")}
-            </Button>
-          </div>
-        ) : (
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label htmlFor="c-email" className="block text-sm font-medium text-foreground">
-                {t("이메일 주소", "Email address")} <span className="text-primary">*</span>
-              </label>
-              <Input
-                id="c-email"
-                type="email"
-                required
-                value={form.email}
-                onChange={(e) => setForm({ ...form, email: e.target.value })}
-                placeholder="example@email.com"
-                className="mt-1"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="c-brand" className="block text-sm font-medium text-foreground">
-                {t("브랜드명", "Brand name")} <span className="text-primary">*</span>
-              </label>
-              <Input
-                id="c-brand"
-                type="text"
-                required
-                value={form.brandName}
-                onChange={(e) => setForm({ ...form, brandName: e.target.value })}
-                placeholder={t("브랜드명을 입력해주세요", "Enter your Brand name")}
-                className="mt-1"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="c-name" className="block text-sm font-medium text-foreground">
-                {t("담당자명", "Contact name")} <span className="text-faint">{t("(선택)", "(optional)")}</span>
-              </label>
-              <Input
-                id="c-name"
-                type="text"
-                value={form.contactName}
-                onChange={(e) => setForm({ ...form, contactName: e.target.value })}
-                placeholder={t("담당자명을 입력해주세요", "Enter the Contact name")}
-                className="mt-1"
-              />
-            </div>
-
-            <label className="flex cursor-pointer items-start gap-2.5 text-xs leading-relaxed text-content-soft">
-              <input
-                type="checkbox"
-                checked={privacyAgreed}
-                onChange={(event) => setPrivacyAgreed(event.target.checked)}
-                className="mt-0.5 h-4 w-4 rounded border-line-strong accent-primary"
-                required
-              />
-              <span>
-                {t("상담 회신을 위한 개인정보 수집·이용에 동의합니다. ", "I agree to the collection and use of my information for this consultation. ")}
-                <Link href="/privacy" target="_blank" className="font-semibold text-primary underline underline-offset-2">
-                  {t("개인정보처리방침", "Privacy policy")}
-                </Link>
-              </span>
-            </label>
-
-            {error && <p role="alert" className="text-sm text-error">{error}</p>}
-
-            <Button type="submit" disabled={!valid || submitting} fullWidth>
+        <footer className={groundStyles.sheetFooter}>
+          <button type="button" className={groundStyles.actionSecondary} onClick={onClose}>
+            {submitted ? t("확인", "Confirm") : t("취소", "Cancel")}
+          </button>
+          {!submitted && (
+            <button
+              type="submit"
+              form="consultation-form"
+              disabled={!valid || submitting}
+              className={groundStyles.actionPrimary}
+            >
               {submitting ? t("전송 중...", "Sending...") : t("상담 신청하기", "Request consultation")}
-            </Button>
-
-            <p className="text-center text-xs text-muted">
-              {t(
-                "제출된 정보는 상담 회신 목적으로만 사용됩니다.",
-                "The information you submit is used only to reply to your Consultation.",
-              )}
-            </p>
-          </form>
-        )}
+            </button>
+          )}
+        </footer>
       </div>
     </div>,
     document.body,

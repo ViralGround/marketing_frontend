@@ -29,7 +29,3 @@ export default function ApplicationStatusBadge({ status }: { status: Application
   const c = CONFIG[status];
   return <Badge tone={c.tone}>{t(c.label, c.labelEn)}</Badge>;
 }
-
-export const APPLICATION_STATUS_LABEL = Object.fromEntries(
-  Object.entries(CONFIG).map(([k, v]) => [k, v.label]),
-) as Record<ApplicationStatus, string>;

@@ -14,7 +14,7 @@ export type EscrowStatus =
   | "REFUNDED";
 
 export type CampaignStatus = "DRAFT" | "OPEN" | "CLOSED";
-export type CampaignEditorRole = "ADMIN" | "COMPANY";
+type CampaignEditorRole = "ADMIN" | "COMPANY";
 
 /**
  * 보상·모집인원 변경 가능 여부. 정산 무결성 보호를 위해 예치금이 잠기기 전까지만 허용.

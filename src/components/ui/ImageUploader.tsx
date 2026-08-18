@@ -168,7 +168,10 @@ export default function ImageUploader({ previewUrl, onChange, disabled, aspect }
 
   return (
     <div>
-      <div
+      <button
+        type="button"
+        disabled={disabled || loading}
+        aria-label={display ? t("이미지 교체", "Replace image") : t("이미지 선택", "Choose image")}
         onDragOver={(e) => {
           if (disabled || loading) return;
           e.preventDefault();
@@ -182,7 +185,8 @@ export default function ImageUploader({ previewUrl, onChange, disabled, aspect }
           handleFile(e.dataTransfer.files[0]);
         }}
         onClick={() => !disabled && !loading && inputRef.current?.click()}
-        className={`relative aspect-video w-full cursor-pointer overflow-hidden rounded-xl border-2 border-dashed transition ${
+        style={{ aspectRatio: aspect ?? 16 / 9 }}
+        className={`relative w-full cursor-pointer overflow-hidden rounded-xl border-2 border-dashed transition ${
           dragging ? "border-gray-900 bg-surface-muted" : "border-line-strong hover:border-gray-400"
         } ${disabled || loading ? "pointer-events-none opacity-60" : ""}`}
       >
@@ -202,7 +206,7 @@ export default function ImageUploader({ previewUrl, onChange, disabled, aspect }
             <p className="mt-1 text-xs text-faint">{hint}</p>
           </div>
         )}
-      </div>
+      </button>
       <input
         ref={inputRef}
         type="file"

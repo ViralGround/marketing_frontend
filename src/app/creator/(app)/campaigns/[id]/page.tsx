@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import api from "@/lib/api";
 import { trackEvent } from "@/lib/gtag";
@@ -8,9 +9,20 @@ import { useLang } from "@/lib/i18n";
 import ApplicationStatusBadge from "@/components/campaign/ApplicationStatusBadge";
 import Button from "@/components/ui/Button";
 import Textarea from "@/components/ui/Textarea";
-import Card from "@/components/ui/Card";
+import BackButton from "@/components/ui/BackButton";
+import {
+  MetricStrip,
+  ResponsiveSheet,
+  StateSkeleton,
+  WorkspacePage,
+  WorkspaceStage,
+  WorkspaceTabPanel,
+  WorkspaceTabs,
+} from "@/components/workspace/WorkspacePrimitives";
+import viewStyles from "@/components/workspace/WorkspaceViews.module.css";
 
 type AppStatus = "PENDING" | "WITHDRAWN" | "APPROVED" | "REJECTED" | "SUBMITTED" | "SETTLED";
+type DetailTab = "overview" | "requirements";
 
 interface CampaignDetail {
   id: number;
@@ -24,14 +36,8 @@ interface CampaignDetail {
   maxParticipants: number;
   status: "OPEN" | "CLOSED";
   applicationCount: number;
-  myApplication: {
-    id: number;
-    status: AppStatus;
-    appliedAt: string;
-    submissionUrl: string | null;
-  } | null;
+  myApplication: { id: number; status: AppStatus; appliedAt: string; submissionUrl: string | null } | null;
 }
-
 
 export default function CreatorCampaignDetailPage() {
   const { id } = useParams();
@@ -39,22 +45,20 @@ export default function CreatorCampaignDetailPage() {
   const { t, lang } = useLang();
   const [campaign, setCampaign] = useState<CampaignDetail | null>(null);
   const [loading, setLoading] = useState(true);
+  const [tab, setTab] = useState<DetailTab>("overview");
+  const [applyOpen, setApplyOpen] = useState(false);
   const [applying, setApplying] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
-  const load = () => {
-    api
-      .get(`/campaigns/${id}`)
-      .then((res) => setCampaign(res.data))
-      .catch(() => router.push("/creator/campaigns"))
-      .finally(() => setLoading(false));
-  };
-
   useEffect(() => {
-    load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id]);
+    let active = true;
+    api.get<CampaignDetail>(`/campaigns/${id}`)
+      .then((response) => { if (active) setCampaign(response.data); })
+      .catch(() => router.push("/creator/campaigns"))
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, [id, router]);
 
   const handleApply = async () => {
     setError("");
@@ -65,152 +69,60 @@ export default function CreatorCampaignDetailPage() {
       await api.post(`/campaigns/${id}/apply`, { message: message.trim() || null });
       trackEvent("campaign_apply_success", { campaign_id: campaignId });
       router.push("/creator/applications");
-    } catch (err: unknown) {
-      const response = (err as { response?: { status?: number; data?: { message?: string } } })
-        .response;
-      const msg = response?.data?.message || t("지원에 실패했습니다", "Failed to apply");
-      setError(msg);
-      trackEvent("campaign_apply_fail", {
-        campaign_id: campaignId,
-        status: response?.status ?? 0,
-      });
+    } catch (caught: unknown) {
+      const response = (caught as { response?: { status?: number; data?: { message?: string } } }).response;
+      setError(response?.data?.message || t("지원에 실패했습니다", "Failed to apply"));
+      trackEvent("campaign_apply_fail", { campaign_id: campaignId, status: response?.status ?? 0 });
     } finally {
       setApplying(false);
     }
   };
 
-  if (loading || !campaign) {
-    return <p className="px-6 py-10 text-muted">{t("불러오는 중...", "Loading...")}</p>;
-  }
+  if (loading || !campaign) return <WorkspacePage flow={false}><StateSkeleton label={t("캠페인 불러오는 중", "Loading campaign")} /></WorkspacePage>;
 
   const locale = lang === "en" ? "en-US" : "ko-KR";
+  const header = (
+    <div className={viewStyles.detailHeader}>
+      <BackButton href="/creator/campaigns" labelKo="캠페인 목록으로" labelEn="Back to campaigns" className="!mb-0" />
+      <div className={viewStyles.detailTitleRow}><div><p>{campaign.brandName}</p><h1>{campaign.title}</h1></div>{campaign.myApplication && <ApplicationStatusBadge status={campaign.myApplication.status} />}</div>
+      <MetricStrip label={t("캠페인 핵심 정보", "Campaign key information")} items={[
+        { label: t("보상", "Reward"), value: `₩${campaign.rewardAmount.toLocaleString(locale)}`, tone: "accent" },
+        { label: t("마감일", "Deadline"), value: campaign.deadline ? new Date(campaign.deadline).toLocaleDateString(locale) : "—" },
+        { label: t("지원 현황", "Applicants"), value: `${campaign.applicationCount} / ${campaign.maxParticipants}` },
+      ]} />
+      <WorkspaceTabs label={t("캠페인 상세 메뉴", "Campaign detail sections")} value={tab} onChange={setTab} options={[{ value: "overview", label: t("개요", "Overview") }, { value: "requirements", label: t("요구사항", "Requirements") }]} />
+    </div>
+  );
+
+  const footer = (
+    <div className={viewStyles.dockedAction}>
+      <p><strong>{campaign.title}</strong>{campaign.myApplication ? t(`${new Date(campaign.myApplication.appliedAt).toLocaleDateString(locale)} 지원`, `Applied ${new Date(campaign.myApplication.appliedAt).toLocaleDateString(locale)}`) : t("지원 메시지는 다음 시트에서 선택적으로 작성합니다.", "Add an optional message in the next sheet.")}</p>
+      <div className={viewStyles.dockedActionButtons}>
+        {campaign.myApplication ? <Link href="/creator/applications" className="inline-flex h-11 items-center justify-center rounded-full bg-primary px-5 text-sm font-bold text-white">{t("내 지원 현황", "My applications")}</Link> : campaign.status === "OPEN" ? <Button onClick={() => setApplyOpen(true)}>{t("이 캠페인에 지원", "Apply to campaign")}</Button> : <Button disabled>{t("모집 종료", "Recruiting closed")}</Button>}
+      </div>
+    </div>
+  );
 
   return (
-    <div className="mx-auto max-w-3xl">
-      <button
-        onClick={() => router.push("/creator/campaigns")}
-        className="mb-6 text-sm font-medium text-muted transition-colors hover:text-foreground"
-      >
-        &larr; {t("캠페인 목록으로", "Back to campaigns")}
-      </button>
-
-      {campaign.thumbnailUrl && (
-        <div className="mb-8 aspect-video overflow-hidden rounded-2xl bg-surface-chip">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={campaign.thumbnailUrl}
-            alt={campaign.title}
-            className="h-full w-full object-contain"
-          />
-        </div>
-      )}
-
-      <div className="mb-2 flex items-center gap-2">
-        <p className="text-sm font-medium text-muted">{campaign.brandName}</p>
-        {campaign.myApplication && (
-          <ApplicationStatusBadge status={campaign.myApplication.status} />
-        )}
-      </div>
-      <h1 className="mb-6 text-3xl font-black tracking-[-0.03em] text-foreground md:text-4xl">
-        {campaign.title}
-      </h1>
-
-      <div className="mb-8 grid grid-cols-3 gap-3">
-        <Card className="p-4">
-          <p className="text-xs font-medium text-muted">{t("보상", "Reward")}</p>
-          <p className="mt-1 font-bold tracking-tight text-foreground">
-            ₩{campaign.rewardAmount.toLocaleString(locale)}
-          </p>
-        </Card>
-        <Card className="p-4">
-          <p className="text-xs font-medium text-muted">{t("마감일", "Deadline")}</p>
-          <p className="mt-1 font-bold tracking-tight text-foreground">
-            {campaign.deadline
-              ? new Date(campaign.deadline).toLocaleDateString(locale)
-              : "-"}
-          </p>
-        </Card>
-        <Card className="p-4">
-          <p className="text-xs font-medium text-muted">{t("지원 현황", "Applicants")}</p>
-          <p className="mt-1 font-bold tracking-tight text-foreground">
-            {campaign.applicationCount} / {campaign.maxParticipants}
-          </p>
-        </Card>
-      </div>
-
-      <section className="mb-8">
-        <h2 className="mb-3 text-lg font-semibold text-foreground">{t("설명", "Description")}</h2>
-        <p className="whitespace-pre-wrap text-sm leading-relaxed text-content-soft">
-          {campaign.description}
-        </p>
-      </section>
-
-      {campaign.requirements && (
-        <section className="mb-8">
-          <h2 className="mb-3 text-lg font-semibold text-foreground">{t("요구사항", "Requirements")}</h2>
-          <p className="whitespace-pre-wrap text-sm leading-relaxed text-content-soft">
-            {campaign.requirements}
-          </p>
-        </section>
-      )}
-
-      {/* 지원 섹션 */}
-      {campaign.myApplication ? (
-        <Card className="bg-surface-muted">
-          <p className="mb-2 text-sm font-medium text-muted">{t("지원 현황", "Application status")}</p>
-          <div className="mb-3 flex items-center gap-2">
-            <ApplicationStatusBadge status={campaign.myApplication.status} />
-            <span className="text-sm text-content-soft">
-              {t(
-                `${new Date(campaign.myApplication.appliedAt).toLocaleDateString(locale)} 지원`,
-                `Applied on ${new Date(campaign.myApplication.appliedAt).toLocaleDateString(locale)}`,
-              )}
-            </span>
+    <WorkspacePage size="standard" flow={false}>
+      <WorkspaceStage className={viewStyles.pageStage} header={header} footer={footer}>
+        <WorkspaceTabPanel value="overview" activeValue={tab} className={viewStyles.detailContent}>
+          <div className={viewStyles.detailOverview}>
+            <div className={viewStyles.detailMedia}>{campaign.thumbnailUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={campaign.thumbnailUrl} alt={campaign.title} />
+            ) : <div className={viewStyles.detailMediaFallback}>VIRAL GROUND</div>}</div>
+            <div className={viewStyles.detailCopy}>{campaign.description}</div>
           </div>
-          <p className="text-sm text-muted">
-            {t("상세 진행은 ", "Track the details on the ")}
-            <a
-              href="/creator/applications"
-              className="font-medium text-primary underline-offset-2 hover:underline"
-            >
-              {t("내 지원 현황", "My applications")}
-            </a>
-            {t(" 페이지에서 확인할 수 있어요.", " page.")}
-          </p>
-        </Card>
-      ) : campaign.status === "OPEN" ? (
-        <Card>
-          <h2 className="mb-4 text-lg font-semibold text-foreground">{t("이 캠페인에 지원하기", "Apply to this campaign")}</h2>
-          <label htmlFor="message" className="block text-sm font-medium text-content-soft">
-            {t("지원 메시지", "Application message")} <span className="text-faint">{t("(선택)", "(optional)")}</span>
-          </label>
-          <Textarea
-            id="message"
-            rows={3}
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            placeholder={t(
-              "어떤 스타일의 영상을 만들 계획인지 간단히 소개해주세요.",
-              "Briefly describe the style of video you plan to create.",
-            )}
-            className="mt-1.5"
-          />
-          {error && <p className="mt-2 text-sm text-error">{error}</p>}
-          <Button onClick={handleApply} disabled={applying} fullWidth className="mt-5">
-            {applying ? t("지원 중...", "Applying...") : t("지원하기", "Apply")}
-          </Button>
-          <p className="mt-3 text-xs text-muted">
-            {t(
-              "관리자 검토 후 승인되면 영상 제작을 시작할 수 있어요.",
-              "Once approved after admin review, you can start creating your video.",
-            )}
-          </p>
-        </Card>
-      ) : (
-        <Card className="bg-surface-muted text-sm text-muted">
-          {t("이 캠페인은 모집이 종료되었습니다.", "Recruiting for this campaign has ended.")}
-        </Card>
-      )}
-    </div>
+        </WorkspaceTabPanel>
+        <WorkspaceTabPanel value="requirements" activeValue={tab} className={viewStyles.detailContent}>
+          <div className={viewStyles.detailCopy}>{campaign.requirements || t("별도로 등록된 요구사항이 없습니다.", "No additional requirements were provided.")}</div>
+        </WorkspaceTabPanel>
+      </WorkspaceStage>
+
+      <ResponsiveSheet open={applyOpen} onClose={() => setApplyOpen(false)} title={t("캠페인 지원", "Apply to campaign")} description={campaign.title} label={t("지원 시트 닫기", "Close application sheet")} size="compact">
+        <div className="grid gap-4"><div><label htmlFor="application-message" className="mb-1.5 block text-sm font-semibold text-content-soft">{t("지원 메시지", "Application message")} <span className="text-faint">{t("(선택)", "(optional)")}</span></label><Textarea id="application-message" rows={5} value={message} onChange={(event) => setMessage(event.target.value)} placeholder={t("어떤 스타일의 영상을 만들 계획인지 간단히 소개해주세요.", "Briefly describe the style of video you plan to create.")} /></div>{error && <p role="alert" className="text-sm font-medium text-error">{error}</p>}<p className="text-xs leading-relaxed text-muted">{t("관리자 검토 후 승인되면 영상 제작을 시작할 수 있습니다.", "You can begin production after admin review and approval.")}</p><Button onClick={handleApply} loading={applying} fullWidth>{t("지원 제출", "Submit application")}</Button></div>
+      </ResponsiveSheet>
+    </WorkspacePage>
   );
 }

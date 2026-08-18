@@ -37,7 +37,7 @@ export default function GroundFooter() {
               key={link.href}
               href={link.href}
               onClick={() => trackEvent("cta_click", { location: "ground_footer", target: link.href })}
-              className="inline-flex min-h-11 items-center transition-colors hover:text-violet-bright"
+              className="inline-flex min-h-11 min-w-11 items-center justify-center transition-colors hover:text-violet-bright"
             >
               {t(link.ko, link.en)}
             </Link>

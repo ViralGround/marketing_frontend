@@ -38,7 +38,10 @@
   grid-column: 2;
   justify-self: center;
   display: inline-flex;
+  min-width: 44px;
+  min-height: 44px;
   align-items: center;
+  justify-content: center;
 }
 
 .vg-topbar .brand img {

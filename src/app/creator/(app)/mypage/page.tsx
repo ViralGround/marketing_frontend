@@ -12,26 +12,30 @@ import ApplicationStatusBadge from "@/components/campaign/ApplicationStatusBadge
 import VideoUploader from "@/components/submission/VideoUploader";
 import ReviewForm from "@/components/review/ReviewForm";
 import Button from "@/components/ui/Button";
-import Card from "@/components/ui/Card";
 import { useLang } from "@/lib/i18n";
 import PageHeader from "@/components/workspace/PageHeader";
+import {
+  FilterToolbar,
+  ResponsiveSheet,
+  SegmentedControl,
+  StatePanel,
+  StateSkeleton,
+  WorkspacePage,
+  WorkspaceRecordCell,
+  WorkspaceRecordList,
+  WorkspaceRecordRow,
+  WorkspaceScrollArea,
+  WorkspaceStage,
+  WorkspaceTabPanel,
+  WorkspaceTabs,
+} from "@/components/workspace/WorkspacePrimitives";
+import viewStyles from "@/components/workspace/WorkspaceViews.module.css";
 
-type AppStatus =
-  | "PENDING"
-  | "WITHDRAWN"
-  | "APPROVED"
-  | "REJECTED"
-  | "SUBMITTED"
-  | "CHANGES_REQUESTED"
-  | "SETTLED";
+type AppStatus = "PENDING" | "WITHDRAWN" | "APPROVED" | "REJECTED" | "SUBMITTED" | "CHANGES_REQUESTED" | "SETTLED";
 type Filter = "ALL" | AppStatus;
+type WorkTab = "applications" | "instagram" | "account";
 
-interface Stats {
-  totalEarned: number;
-  completedCount: number;
-  activeCount: number;
-}
-
+interface Stats { totalEarned: number; completedCount: number; activeCount: number }
 interface ApplicationItem {
   id: number;
   status: AppStatus;
@@ -42,360 +46,121 @@ interface ApplicationItem {
   rewardPaidAmount: number | null;
   appliedAt: string;
   settledAt: string | null;
-  campaign: {
-    id: number;
-    title: string;
-    brandName: string;
-    rewardAmount: number;
-    thumbnailUrl: string | null;
-  };
+  campaign: { id: number; title: string; brandName: string; rewardAmount: number; thumbnailUrl: string | null };
 }
 
 const FILTER_LABEL: Record<Filter, { ko: string; en: string }> = {
-  ALL: { ko: "전체", en: "All" },
-  PENDING: { ko: "대기", en: "Pending" },
-  WITHDRAWN: { ko: "탈퇴", en: "Withdrawn" },
-  APPROVED: { ko: "참여", en: "Approved" },
-  SUBMITTED: { ko: "제출", en: "Submitted" },
-  CHANGES_REQUESTED: { ko: "수정요청", en: "Changes requested" },
-  SETTLED: { ko: "정산", en: "Settled" },
-  REJECTED: { ko: "거절", en: "Rejected" },
+  ALL: { ko: "전체", en: "All" }, PENDING: { ko: "대기", en: "Pending" }, WITHDRAWN: { ko: "철회", en: "Withdrawn" }, APPROVED: { ko: "참여", en: "Approved" }, SUBMITTED: { ko: "제출", en: "Submitted" }, CHANGES_REQUESTED: { ko: "수정 요청", en: "Changes" }, SETTLED: { ko: "완료", en: "Settled" }, REJECTED: { ko: "미선정", en: "Rejected" },
 };
+const FILTERS = ["ALL", "PENDING", "WITHDRAWN", "APPROVED", "SUBMITTED", "CHANGES_REQUESTED", "SETTLED", "REJECTED"] as Filter[];
+const COLUMNS = "minmax(14rem,1.4fr) minmax(10rem,.9fr) minmax(7rem,.6fr) minmax(7rem,.6fr)";
 
 export default function CreatorMyPage() {
   const { user } = useAuthStore();
   const { t } = useLang();
+  const [tab, setTab] = useState<WorkTab>("applications");
   const [stats, setStats] = useState<Stats | null>(null);
   const [statsLoading, setStatsLoading] = useState(true);
   const [applications, setApplications] = useState<ApplicationItem[]>([]);
   const [appsLoading, setAppsLoading] = useState(true);
+  const [appsError, setAppsError] = useState(false);
   const [filter, setFilter] = useState<Filter>("ALL");
-  const [submitModal, setSubmitModal] = useState<{ id: number; campaignTitle: string } | null>(
-    null,
-  );
-  const [reviewModal, setReviewModal] = useState<{ id: number; campaignTitle: string } | null>(
-    null,
-  );
+  const [submitModal, setSubmitModal] = useState<{ id: number; campaignTitle: string } | null>(null);
+  const [reviewModal, setReviewModal] = useState<{ id: number; campaignTitle: string } | null>(null);
 
   const loadStats = () => {
     setStatsLoading(true);
-    api
-      .get<Stats>("/me/stats")
-      .then((res) => setStats(res.data))
-      .catch(() => {})
-      .finally(() => setStatsLoading(false));
+    api.get<Stats>("/me/stats").then((response) => setStats(response.data)).catch(() => {}).finally(() => setStatsLoading(false));
   };
 
   const loadApps = () => {
     setAppsLoading(true);
     const params = new URLSearchParams();
     if (filter !== "ALL") params.set("status", filter);
-    api
-      .get(`/me/applications?${params.toString()}`)
-      .then((res) => setApplications(res.data.applications))
-      .catch(() => {})
-      .finally(() => setAppsLoading(false));
+    api.get<{ applications: ApplicationItem[] }>(`/me/applications?${params.toString()}`).then((response) => { setApplications(response.data.applications); setAppsError(false); }).catch(() => setAppsError(true)).finally(() => setAppsLoading(false));
   };
 
   useEffect(() => {
     let active = true;
-    api
-      .get<Stats>("/me/stats")
-      .then((res) => {
-        if (active) setStats(res.data);
-      })
-      .catch(() => {})
-      .finally(() => {
-        if (active) setStatsLoading(false);
-      });
-    return () => {
-      active = false;
-    };
+    api.get<Stats>("/me/stats").then((response) => { if (active) setStats(response.data); }).catch(() => {}).finally(() => { if (active) setStatsLoading(false); });
+    return () => { active = false; };
   }, []);
 
   useEffect(() => {
     let active = true;
     const params = new URLSearchParams();
     if (filter !== "ALL") params.set("status", filter);
-    api
-      .get(`/me/applications?${params.toString()}`)
-      .then((res) => {
-        if (active) setApplications(res.data.applications);
-      })
-      .catch(() => {})
-      .finally(() => {
-        if (active) setAppsLoading(false);
-      });
-    return () => {
-      active = false;
-    };
+    api.get<{ applications: ApplicationItem[] }>(`/me/applications?${params.toString()}`).then((response) => { if (active) { setApplications(response.data.applications); setAppsError(false); } }).catch(() => { if (active) setAppsError(true); }).finally(() => { if (active) setAppsLoading(false); });
+    return () => { active = false; };
   }, [filter]);
 
-  const openSubmitModal = (id: number, campaignTitle: string) => {
-    setSubmitModal({ id, campaignTitle });
+  const handleUploaded = () => { setSubmitModal(null); loadApps(); loadStats(); };
+
+  const actionFor = (application: ApplicationItem) => {
+    if (["APPROVED", "SUBMITTED", "CHANGES_REQUESTED"].includes(application.status)) {
+      const label = application.status === "APPROVED" ? t("영상 업로드", "Upload video") : application.status === "CHANGES_REQUESTED" ? t("재제출", "Resubmit") : t("영상 재업로드", "Re-upload");
+      return <Button size="sm" onClick={() => setSubmitModal({ id: application.id, campaignTitle: application.campaign.title })}>{label}</Button>;
+    }
+    if (application.status === "SETTLED") return <Button size="sm" variant="secondary" onClick={() => setReviewModal({ id: application.id, campaignTitle: application.campaign.title })}>{t("리뷰 작성", "Write review")}</Button>;
+    if (!application.videoFileKey && application.submissionUrl && isSafeExternalLink(application.submissionUrl)) return <a href={application.submissionUrl} target="_blank" rel="noopener noreferrer" className="inline-flex h-11 items-center rounded-full border border-line-strong px-3 text-xs font-bold text-content-soft">{t("외부 링크", "External link")}</a>;
+    return null;
   };
 
-  const handleUploaded = () => {
-    setSubmitModal(null);
-    loadApps();
-    loadStats();
-  };
+  const header = (
+    <div className={viewStyles.headerStack}>
+      <PageHeader display="MY WORK" subtitle={t(`${user?.name ?? "크리에이터"}님의 지원, 콘텐츠 제출과 계정 연결을 관리하세요.`, `Manage ${user?.name ?? "your"} applications, submissions, and account connections.`)} />
+      {statsLoading || !stats ? <div className="h-[68px] animate-pulse bg-surface-chip" /> : <StatCards totalEarned={stats.totalEarned} completedCount={stats.completedCount} activeCount={stats.activeCount} />}
+      <WorkspaceTabs label={t("내 작업 메뉴", "My work sections")} value={tab} onChange={setTab} options={[{ value: "applications", label: t("지원·콘텐츠", "Applications & content"), count: applications.length }, { value: "instagram", label: "Instagram" }, { value: "account", label: t("계정", "Account") }]} />
+    </div>
+  );
 
   return (
-    <div className="mx-auto max-w-5xl">
-      <PageHeader
-        display="MY WORK"
-        subtitle={t(
-          `${user?.name ?? "크리에이터"} 님의 지원 현황과 콘텐츠 제출을 관리하세요.`,
-          `Manage ${user?.name ?? "your"} applications and content submissions.`,
-        )}
-      />
-
-      {/* 스탯 카드 */}
-      <div className="mb-10">
-        {statsLoading || !stats ? (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            {[0, 1, 2].map((i) => (
-              <div key={i} className="h-32 animate-pulse rounded-2xl bg-surface-chip" />
-            ))}
+    <WorkspacePage size="wide" flow={false}>
+      <WorkspaceStage className={viewStyles.pageStage} header={header}>
+        <WorkspaceTabPanel value="applications" activeValue={tab}>
+          <div id="creator-applications" className={viewStyles.tabBody}>
+            <FilterToolbar primary={<SegmentedControl label={t("지원 상태 필터", "Application status filter")} value={filter} options={FILTERS.map((value) => ({ value, label: t(FILTER_LABEL[value].ko, FILTER_LABEL[value].en) }))} onChange={(value) => { if (value !== filter) { setAppsLoading(true); setFilter(value); } }} />} secondary={<Link href="/creator/home" className="inline-flex h-11 items-center rounded-full bg-primary px-4 text-xs font-bold text-white">{t("캠페인 탐색", "Discover campaigns")}</Link>} />
+            {appsLoading ? <StateSkeleton label={t("지원 현황 불러오는 중", "Loading applications")} /> : appsError ? <StatePanel tone="error" title={t("지원 현황을 불러오지 못했습니다.", "Applications are unavailable.")} description={t("필터를 유지한 채 다시 시도할 수 있습니다.", "Retry without losing the selected filter.")} action={<Button onClick={loadApps}>{t("다시 불러오기", "Retry")}</Button>} /> : applications.length === 0 ? <StatePanel title={t("아직 지원한 캠페인이 없어요.", "You haven't applied to any campaigns yet.")} description={t("내 채널에 맞는 캠페인을 찾아 첫 지원을 시작하세요.", "Find a campaign that fits your channel and start your first application.")} action={<Link href="/creator/home" className="inline-flex h-11 items-center rounded-full bg-primary px-4 text-xs font-bold text-white">{t("캠페인 탐색", "Browse campaigns")}</Link>} /> : (
+              <WorkspaceRecordList columns={COLUMNS} labels={[t("캠페인", "Campaign"), t("상태·작업", "Status & action"), t("지원일", "Applied"), t("정산", "Settled")]}>
+                {applications.map((application) => (
+                  <WorkspaceRecordRow key={application.id} columns={COLUMNS}>
+                    <WorkspaceRecordCell label={t("캠페인", "Campaign")}><span className={viewStyles.applicationRowTitle}><span className={viewStyles.thumbnail}>{application.campaign.thumbnailUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={application.campaign.thumbnailUrl} alt="" />
+                    ) : "VG"}</span><span className={viewStyles.titleCopy}><Link href={`/creator/campaigns/${application.campaign.id}`} className={viewStyles.recordTitle}>{application.campaign.title}</Link><small className={viewStyles.recordMeta}>{application.campaign.brandName} · ₩{application.campaign.rewardAmount.toLocaleString("ko-KR")}</small>{application.status === "CHANGES_REQUESTED" && application.reviewComment && <small className={viewStyles.applicationNote}>{t("수정 요청", "Changes")}: {application.reviewComment}</small>}</span></span></WorkspaceRecordCell>
+                    <WorkspaceRecordCell label={t("상태·작업", "Status & action")}><span className={viewStyles.applicationStatus}><ApplicationStatusBadge status={application.status} />{actionFor(application)}</span></WorkspaceRecordCell>
+                    <WorkspaceRecordCell label={t("지원일", "Applied")}>{new Date(application.appliedAt).toLocaleDateString("ko-KR")}</WorkspaceRecordCell>
+                    <WorkspaceRecordCell label={t("정산", "Settled")}><span className={viewStyles.recordStrong}>{application.rewardPaidAmount !== null ? `₩${application.rewardPaidAmount.toLocaleString("ko-KR")}` : "—"}</span></WorkspaceRecordCell>
+                  </WorkspaceRecordRow>
+                ))}
+              </WorkspaceRecordList>
+            )}
           </div>
-        ) : (
-          <StatCards
-            totalEarned={stats.totalEarned}
-            completedCount={stats.completedCount}
-            activeCount={stats.activeCount}
-          />
-        )}
-      </div>
+        </WorkspaceTabPanel>
 
-      {/* 빠른 이동 */}
-      <div className="mb-12 grid grid-cols-1 gap-4 md:grid-cols-3">
-        <Link
-          href="/creator/home"
-          className="group rounded-2xl border border-line bg-surface p-6 transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-sm"
-        >
-          <h2 className="mb-1 text-lg font-semibold text-foreground">{t("캠페인 보러가기", "Browse campaigns")}</h2>
-          <p className="text-sm text-muted">{t("새로 열린 광고 탐색", "Discover newly opened campaigns")}</p>
-          <p className="mt-4 text-sm font-medium text-primary">{t("바로 가기 →", "Go now →")}</p>
-        </Link>
-        <Link
-          href="/profile/setup"
-          className="group rounded-2xl border border-line bg-surface p-6 transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-sm"
-        >
-          <h2 className="mb-1 text-lg font-semibold text-foreground">{t("프로필 관리", "Manage profile")}</h2>
-          <p className="text-sm text-muted">{t("활동 정보와 채널 업데이트", "Update your info and channels")}</p>
-          <p className="mt-4 text-sm font-medium text-primary">{t("수정하기 →", "Edit →")}</p>
-        </Link>
-        <Link
-          href="/creator/performance"
-          className="group rounded-2xl border border-line bg-surface p-6 transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-sm"
-        >
-          <h2 className="mb-1 text-lg font-semibold text-foreground">{t("성과 대시보드", "Performance dashboard")}</h2>
-          <p className="text-sm text-muted">{t("SNS 조회수·좋아요·댓글 입력 및 확인", "Enter and review views, likes, and comments")}</p>
-          <p className="mt-4 text-sm font-medium text-primary">{t("보러 가기 →", "View →")}</p>
-        </Link>
-      </div>
+        <WorkspaceTabPanel value="instagram" activeValue={tab}>
+          <WorkspaceScrollArea padded label={t("Instagram 연결 설정", "Instagram connection settings")}><div className={viewStyles.settingsStack}><InstagramConnectCard /></div></WorkspaceScrollArea>
+        </WorkspaceTabPanel>
 
-      {/* 인스타그램 연동 */}
-      <div className="mb-12">
-        <InstagramConnectCard />
-      </div>
+        <WorkspaceTabPanel value="account" activeValue={tab}>
+          <WorkspaceScrollArea padded label={t("계정 설정", "Account settings")}><div className={viewStyles.settingsStack}><MarketingConsentSettings /><CreatorAccountDeletion /></div></WorkspaceScrollArea>
+        </WorkspaceTabPanel>
+      </WorkspaceStage>
 
-      {/* 내 지원 현황 */}
-      <section id="creator-applications" className="scroll-mt-24">
-        <h2 className="mb-4 text-lg font-semibold text-foreground">{t("내 지원 현황", "My application status")}</h2>
-        <div className="mb-5 flex flex-wrap gap-1.5">
-          {(
-            [
-              "ALL",
-              "PENDING",
-              "WITHDRAWN",
-              "APPROVED",
-              "SUBMITTED",
-              "CHANGES_REQUESTED",
-              "SETTLED",
-              "REJECTED",
-            ] as Filter[]
-          ).map((f) => {
-            const active = filter === f;
-            return (
-              <button
-                key={f}
-                type="button"
-                aria-pressed={active}
-                onClick={() => {
-                  if (active) return;
-                  setAppsLoading(true);
-                  setFilter(f);
-                }}
-                className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
-                  active
-                    ? "bg-primary text-white"
-                    : "border border-line text-content-soft hover:border-primary/40 hover:text-primary"
-                }`}
-              >
-                {t(FILTER_LABEL[f].ko, FILTER_LABEL[f].en)}
-              </button>
-            );
-          })}
-        </div>
-
-        {appsLoading ? (
-          <p className="text-muted">{t("불러오는 중...", "Loading...")}</p>
-        ) : applications.length === 0 ? (
-          <Card className="border-dashed bg-surface-muted py-16 text-center">
-            <p className="text-muted">{t("아직 지원한 캠페인이 없어요.", "You haven't applied to any campaigns yet.")}</p>
-            <Link
-              href="/creator/home"
-              className="mt-2 inline-block text-sm font-medium text-primary underline-offset-2 hover:underline"
-            >
-              {t("캠페인 탐색하러 가기", "Browse campaigns")}
-            </Link>
-          </Card>
-        ) : (
-          <div className="space-y-3">
-            {applications.map((a) => (
-              <div
-                key={a.id}
-                className="flex flex-wrap items-center gap-4 rounded-2xl border border-line bg-surface p-4 transition-colors hover:border-line-strong"
-              >
-                <Link
-                  href={`/creator/campaigns/${a.campaign.id}`}
-                  className="h-16 w-24 shrink-0 overflow-hidden rounded-lg bg-surface-chip"
-                >
-                  {a.campaign.thumbnailUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={a.campaign.thumbnailUrl}
-                      alt={a.campaign.title}
-                      className="h-full w-full object-contain"
-                    />
-                  ) : (
-                    <div className="flex h-full w-full items-center justify-center text-xs text-faint">
-                      -
-                    </div>
-                  )}
-                </Link>
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs font-medium text-muted">{a.campaign.brandName}</p>
-                  <Link
-                    href={`/creator/campaigns/${a.campaign.id}`}
-                    className="block truncate font-semibold text-foreground hover:text-primary"
-                  >
-                    {a.campaign.title}
-                  </Link>
-                  <div className="mt-1.5 flex flex-wrap items-center gap-2 text-xs text-muted">
-                    <ApplicationStatusBadge status={a.status} />
-                    <span>
-                      {t("지원일", "Applied")}: {new Date(a.appliedAt).toLocaleDateString("ko-KR")}
-                    </span>
-                    {a.rewardPaidAmount !== null && (
-                      <span className="font-semibold text-foreground">
-                        {t("정산", "Settled")} ₩{a.rewardPaidAmount.toLocaleString("ko-KR")}
-                      </span>
-                    )}
-                  </div>
-                </div>
-                <div className="flex flex-col items-end gap-2">
-                  <div className="flex flex-wrap gap-2">
-                    {(a.status === "APPROVED" || a.status === "SUBMITTED") && (
-                      <Button size="sm" onClick={() => openSubmitModal(a.id, a.campaign.title)}>
-                        {a.status === "APPROVED"
-                          ? t("영상 업로드", "Upload video")
-                          : t("영상 재업로드", "Re-upload video")}
-                      </Button>
-                    )}
-                    {a.status === "CHANGES_REQUESTED" && (
-                      <Button size="sm" onClick={() => openSubmitModal(a.id, a.campaign.title)}>
-                        {t("재제출", "Resubmit")}
-                      </Button>
-                    )}
-                    {a.status === "SETTLED" && (
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        onClick={() =>
-                          setReviewModal({ id: a.id, campaignTitle: a.campaign.title })
-                        }
-                      >
-                        {t("리뷰 작성", "Write review")}
-                      </Button>
-                    )}
-                    {a.videoFileKey && a.status !== "CHANGES_REQUESTED" && (
-                      <span className="inline-flex items-center rounded-full bg-surface-chip px-3 py-1.5 text-xs font-medium text-content-soft">
-                        {t("영상 제출됨", "Video submitted")}
-                      </span>
-                    )}
-                    {!a.videoFileKey && a.submissionUrl && isSafeExternalLink(a.submissionUrl) && (
-                      <a
-                        href={a.submissionUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center rounded-full border border-line-strong px-3 py-1.5 text-xs font-medium text-content-soft transition-colors hover:border-primary/40 hover:text-primary"
-                      >
-                        {t("외부 링크 보기", "View external link")}
-                      </a>
-                    )}
-                  </div>
-                  {a.status === "CHANGES_REQUESTED" && a.reviewComment && (
-                    <p className="max-w-xs rounded-xl border border-warning/30 bg-warning/5 px-3 py-2 text-xs text-warning">
-                      <span className="font-semibold">{t("수정 요청", "Changes requested")}:</span> {a.reviewComment}
-                    </p>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </section>
-
-      <MarketingConsentSettings />
-      <CreatorAccountDeletion />
-
-      {/* 리뷰 작성 모달 */}
-      {reviewModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="w-full max-w-md rounded-2xl bg-surface p-6 shadow-2xl">
-            <h3 className="mb-1 text-lg font-semibold text-foreground">{t("브랜드 리뷰 작성", "Write a brand review")}</h3>
-            <p className="mb-4 text-sm text-muted">{reviewModal.campaignTitle}</p>
-            <ReviewForm
-              applicationId={reviewModal.id}
-              onSubmitted={() => {
-                setReviewModal(null);
-                loadApps();
-              }}
-              onCancel={() => setReviewModal(null)}
-            />
-          </div>
-        </div>
-      )}
-
-      {/* 제출 모달 */}
-      {submitModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="w-full max-w-md rounded-2xl bg-surface p-6 shadow-2xl">
-            <h3 className="mb-1 text-lg font-semibold text-foreground">{t("영상 업로드", "Upload video")}</h3>
-            <p className="mb-4 text-sm text-muted">{submitModal.campaignTitle}</p>
-            <VideoUploader
-              applicationId={submitModal.id}
-              onUploaded={handleUploaded}
-              onCancel={() => setSubmitModal(null)}
-            />
-          </div>
-        </div>
-      )}
-    </div>
+      <ResponsiveSheet open={Boolean(reviewModal)} onClose={() => setReviewModal(null)} title={t("브랜드 리뷰 작성", "Write a brand review")} description={reviewModal?.campaignTitle} label={t("리뷰 닫기", "Close review")} size="compact">
+        {reviewModal && <ReviewForm applicationId={reviewModal.id} onSubmitted={() => { setReviewModal(null); loadApps(); }} onCancel={() => setReviewModal(null)} />}
+      </ResponsiveSheet>
+      <ResponsiveSheet open={Boolean(submitModal)} onClose={() => setSubmitModal(null)} title={t("영상 업로드", "Upload video")} description={submitModal?.campaignTitle} label={t("영상 업로드 닫기", "Close video upload")} size="compact">
+        {submitModal && <VideoUploader applicationId={submitModal.id} onUploaded={handleUploaded} onCancel={() => setSubmitModal(null)} />}
+      </ResponsiveSheet>
+    </WorkspacePage>
   );
 }
 
-/**
- * 레거시 submissionUrl 렌더링 시 javascript:/data: 스킴 주입을 차단.
- * 새로 업로드된 영상은 videoFileKey 로만 서빙하므로 이 함수는 레거시 데이터 대응 용도.
- */
 function isSafeExternalLink(raw: string): boolean {
   try {
-    const u = new URL(raw);
-    return u.protocol === "http:" || u.protocol === "https:";
+    const url = new URL(raw);
+    return url.protocol === "http:" || url.protocol === "https:";
   } catch {
     return false;
   }

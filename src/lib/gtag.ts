@@ -1,10 +1,10 @@
 import { sendGAEvent } from "@next/third-parties/google";
 import type { UserRole } from "@/types";
 
-export const GA_ID = process.env.NEXT_PUBLIC_GA_ID ?? "";
+const GA_ID = process.env.NEXT_PUBLIC_GA_ID ?? "";
 
 type GtagParamValue = string | number | boolean | null | undefined;
-export type GtagParams = Record<string, GtagParamValue>;
+type GtagParams = Record<string, GtagParamValue>;
 
 function analyticsAllowed(): boolean {
   return typeof window !== "undefined" && window.localStorage.getItem("vg_analytics_consent") === "accepted";

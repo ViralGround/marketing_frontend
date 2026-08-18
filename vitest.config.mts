@@ -11,8 +11,5 @@ export default defineConfig({
     pool: "vmThreads",
     fileParallelism: false,
     setupFiles: ["./vitest.setup.ts"],
-    coverage: {
-      reporter: ["text", "json-summary"],
-    },
   },
 });

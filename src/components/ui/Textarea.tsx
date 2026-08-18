@@ -10,7 +10,7 @@ interface Props extends TextareaHTMLAttributes<HTMLTextAreaElement> {
 }
 
 const BASE =
-  "block w-full rounded-[10px] border border-line bg-surface px-3.5 py-3 text-sm leading-relaxed text-foreground placeholder-faint transition-[border-color,box-shadow] duration-150 focus:border-primary focus:outline-none focus:ring-[3px] focus:ring-primary-bg aria-invalid:border-error disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-surface-muted";
+  "block w-full rounded-[10px] border border-line bg-surface px-3.5 py-3 text-sm max-[1023px]:text-base leading-relaxed text-foreground placeholder-faint transition-[border-color,box-shadow] duration-150 focus:border-primary focus:outline-none focus:ring-[3px] focus:ring-primary-bg aria-invalid:border-error disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-surface-muted";
 
 export default function Textarea({ className = "", ref, ...rest }: Props) {
   return <textarea ref={ref} className={`${BASE} ${className}`} {...rest} />;

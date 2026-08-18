@@ -3,7 +3,7 @@
 // 그 영역을 지정 비율의 webp 로 렌더한다. 좌표 계산은 순수 함수로 분리해
 // 캔버스(DOM) 의존은 renderCropToWebp 한 곳뿐이다.
 
-export interface CropRect {
+interface CropRect {
   sx: number;
   sy: number;
   sw: number;

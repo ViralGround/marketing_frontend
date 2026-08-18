@@ -24,7 +24,7 @@ export default function BackButton({ href, labelKo, labelEn, className = "" }: P
     <button
       type="button"
       onClick={() => (href ? router.push(href) : router.back())}
-      className={`mb-6 text-sm font-medium text-muted transition-colors hover:text-foreground ${className}`}
+      className={`mb-6 w-fit justify-self-start text-sm font-medium text-muted transition-colors hover:text-foreground ${className}`}
     >
       &larr; {label}
     </button>

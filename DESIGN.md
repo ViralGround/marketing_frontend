@@ -1,89 +1,128 @@
-# Workspace Dashboard Design
+# Brand and Creator Workspace Design
 
-## Scope and visual thesis
+## Scope and thesis
 
-This document describes the implemented company and creator workspaces. The source of truth is `PRODUCT.md`, `WorkspaceShell.tsx`, `WorkspaceShell.module.css`, the shared `Dashboard.module.css`, and both dashboard pages.
+This document is the source of truth for the authenticated brand and creator workspaces. The workspace is a compact editorial campaign desk: warm paper, near-black ink, electric violet, ruled hierarchy, dense factual rows, and one clearly owned scroll region at a time. It is not a generic card dashboard and it never fills empty space with invented analytics.
 
-The workspace extends Viral Ground's paper–ink–electric-violet identity into an operational surface. It should feel like an editorial campaign desk: oversized English display type, warm paper, dense white work panels, black operational notices, and violet used for identity and action. It is intentionally not a generic analytics dashboard. The first screen prioritizes current state and the next useful action over decorative charts.
+Public landing pages and the standalone `/profile/setup` onboarding route keep their own composition. `/creator/profile` uses the authenticated workspace shell while sharing the same creator profile form and API payload with onboarding.
+
+## Public sub-landing canon
+
+The root `/` is excluded and remains unchanged. `/creators`, `/campaigns`, `/business`, and the aligned `/creator` now share one **live production call sheet** canon: a visitor understands the offer, inspects real workflow or workspace evidence, verifies terms and data scope, then acts. The system refuses generic SaaS card grids. Detailed rules live in `docs/design-system.md` §10.7 and must remain consistent with this section.
+
+### Live call sheet — `/creators`, `/campaigns`, `/business`, `/creator`
+
+- **World and form:** warm paper `#f6f5f1`, ink `#0a090b`, and electric violet `#7331e0`; ruled documents, film contact strips, and hard paper/violet/ink scene seams. Archivo Black owns short English display; Pretendard owns Korean and interface copy. The shipped form is candidate 5/7, seed `69640d99`: approved B live-call-sheet structure with C film-contact-cut typography and scroll rhythm.
+- **Single source:** use `src/components/landing/callsheet/{CallSheetFrame,CallSheet.module.css,ProductProof,CreatorsIndexCallSheetPage,CampaignsCallSheetPage,BusinessCallSheetPage}` and `src/components/landing/apply/CreatorApplyPage`. The retired `landing/viral` implementation is not part of the public routes and must not be reintroduced.
+- **First viewport and desktop lanes:** page-specific giant type sits left, the persistent vertical take strip owns the center, and a tilted factual call sheet sits right. Desktop layouts reserve explicit exclusion lanes on both sides of the central film, with a numbered scene rail on the far right; content never slides under either element. A scene whose whole job is side-by-side reading may instead retire the film for its own scene through `CallSheetFrame`'s `quietFilm` scene-id list — the strip fades out rather than being overlapped.
+- **Mobile composition:** the centered logo top bar remains visible, the hero film reduces to two frames, and one safe-area-aware fixed primary dock matches the route's first task. Duplicated hero actions disappear. The page must not overflow horizontally.
+- **Route stories:** `/creators` is offer → opt-in public roster API/search → brand workspace proof → record-reading criteria → brand CTA. `/campaigns` is offer → curated public feed API/search/details → the two-desk handover demo (apply → select → submit → review → record → settle `OFF`) → what each handover records and what is not available yet → CTA. `/business` is offer → brand workspace proof → four operating decisions → evidence/boundary → consultation. `/creator` is creator offer → creator workspace proof → example content craft → terms/boundaries → application.
+- **Product truth:** response counts and search scope describe only currently returned public records, never marketplace totals. Remote regions expose loading, empty, error, and retry states. Campaign/company details and business consultation remain real and accessible, with existing routes, APIs, analytics, validation, consent/version fields, and request payloads unchanged.
+- **Proof boundary:** dashboard evidence is visibly `SAMPLE` on desktop and mobile. KPI values are em dashes and payment/settlement is `OFF`; no sample preview implies authenticated live data. Film and contact-sheet media say `CONTENT EXAMPLE`, never performance data. Do not invent activity, trends, reach, revenue, reviews, or marketplace size.
+- **Motion and access:** reveal, hero, film, and document motion are allowed; `prefers-reduced-motion` disables them. Touch targets are at least `44px`, mobile inputs at least `16px`, and focus-visible remains explicit. Menus and modals trap focus, close with Escape, and return focus to their trigger.
+- **Reference boundary and QA:** reconstruct references in semantic React/CSS; never slice reference images into the UI. Verify `1440×900`, `1280×720`, `1024×768`, `390×844`, `360×800`, `320×568`, and `844×390` for readable hierarchy, contained film, fixed dock clearance, and no horizontal overflow.
+
+### Existing public detail tier — `/creators/[id]`
+
+`/creators/[id]` has not migrated to the call-sheet frame. Preserve its existing `PublicGround` detail composition: profile → recorded metrics → completed work → brand reviews → collaborate, with real portfolio/review API data, independent failure handling, numbered navigation, and its docked campaign inquiry. Do not infer public profile data from private applicant records.
+
+## Reference-derived component language
+
+All references are pattern sources, never cropped UI assets.
+
+- **Call-sheet tier:** approved B live-call-sheet structure and C film-contact-cut rhythm were reconstructed through the candidate 5/7 exploration (seed `69640d99`) and shipped through `src/components/landing/callsheet/`. Reference imagery supplies composition and rhythm only; the interface itself is semantic React/CSS.
+- **Existing creator detail tier:** the four HTML files under `../시안` remain pattern sources for `/creators/[id]` and authenticated workspace vocabulary. Reference 1 supplies hairline KPI strips, numbered steps, and process rows; Reference 2 the compact module density; Reference 3 numbered navigation and full-screen transitions; Reference 4 the paper/ink/violet tokens, centered mark, selected rows, and docked controls.
+- `hero-smoke`, `ground-mist`, and `smoke-wisp` are optimized WebP decorations under `public/workspace-art`. They remain workspace-only, low-opacity, non-semantic decoration for search, account, and empty states; call-sheet pages do not use them.
+- Marketing video and sample lifestyle/poster media do not appear in authenticated workspaces because they can be mistaken for operational data and cost unnecessary bandwidth.
 
 ## Tokens and typography
 
-| Purpose | Implemented value | Usage |
+| Purpose | Value | Usage |
 | --- | --- | --- |
-| Workspace paper | `#f4f1ed` | Shell background |
-| Ink | `#09090b` / `#111014` | Shell and dashboard foreground |
-| Electric violet | `#7331e0` | Active navigation, icons, links, bars, buttons |
-| Violet hover/soft | `#f0e8ff`, `#eee5ff`, `#f2ebff` | Hover, selected, empty and beta surfaces |
-| Panel | `#fff` | Metrics, lists, and action panels |
-| Warm borders | `#ddd9d4`, `#e6e2dd` | Panel structure and row division |
-| Black chrome | `#050506`–`#0a090b` | Top bar, brand block, operational strip, CTA |
-| Status green/orange/neutral | `#087556`, `#a24a0b`, `#615c63` on pale fills | Complete/open, waiting/action-needed, inactive states |
+| Paper | `#f6f5f1` | Shell and work canvas |
+| Ink | `#0a090b` | Top bar, rail, primary type |
+| Violet | `#7331e0` | Active state, focus, primary actions |
+| Violet soft | `#eee7fb` / `#d9ccff` | Selected and instructional surfaces |
+| Panel | `#fffefa` | Work panels and ruled lists |
+| Rule | ink at `15%` / `28%` | Row, panel, and hierarchy separation |
 
-The global interface stack is `Pretendard Variable`, Pretendard, system sans. Archivo Black (`--font-archivo`) is reserved for high-impact English display copy: dashboard titles, stamps, and CTA slogans. Korean headings and all operational copy remain in Pretendard. Do not apply Archivo to Korean text.
+Pretendard Variable is the interface typeface. Archivo Black is restricted to short English display marks. Korean headings, body copy, controls, tables, and metrics stay in Pretendard. Workspace values are scoped locally and intentionally stay light even if the public site uses its dark theme.
 
-The authenticated workspace currently uses local, fixed light-theme values rather than the global dark-mode token set. Treat dark workspace support as a deliberate future feature, not an implicit inheritance.
+## Fixed viewport and scroll ownership
+
+- `WorkspaceShell` is exactly `100dvh` and clips document overflow.
+- The black top bar is `3.75rem` on desktop and `3.5rem` below `1024px`.
+- Desktop content never owns body scroll. A route supplies a `WorkspaceStage` with fixed header/footer slots and a `minmax(0, 1fr)` work body.
+- Long tables use `WorkspaceRecordList`; its header is fixed and only `recordBody` scrolls.
+- Long detail, form, or settings content uses one named `WorkspaceScrollArea` or active `WorkspaceTabPanel`.
+- On mobile, only the active content region scrolls. Bottom navigation and docked actions remain outside it.
+- Use `min-height: 0`, `overscroll-behavior: contain`, and stable scrollbar gutters whenever a grid/flex child owns scrolling.
 
 ## Shell anatomy
 
-- A sticky `3.35rem` black top bar holds role context, a centered mark, the managed-beta label, and the signed-in identity.
-- A fixed `13.25rem` left sidebar begins below the top bar. It contains the brand block, role-specific primary navigation, a managed-beta/payment notice, and logout.
-- The content canvas offsets by the sidebar width, uses fluid `clamp(1.5rem, 3vw, 3rem)` padding, and gives each dashboard a centered maximum width of `82rem`.
-- `WorkspaceShell` owns navigation state, active-route rules, user identity, logout, mobile drawer behavior, and localization. Dashboard pages should not duplicate this chrome.
-- Navigation is role-specific but visually identical. Company routes focus on campaigns and company profile; creator routes focus on discovery, applications/content, performance, and creator profile.
+- At `1024px` and above, the left rail is `224px` expanded and `68px` collapsed. The state persists under `vg-workspace-sidebar-collapsed`.
+- Below `1024px`, the rail is removed and role-specific bottom navigation appears with safe-area padding. Brand uses four destinations; creator uses five.
+- The top bar keeps the centered Viral Ground mark. Desktop search stays inline; mobile search opens a full-screen numbered panel.
+- Language, managed-beta truth, profile/account navigation, and logout live in an accessible account sheet.
+- Search and account surfaces use dialog semantics, initial focus, focus trapping, Escape close, backdrop close, and focus return.
+- All coarse-pointer controls are at least `44px`; mobile inputs, textareas, and selects render at `16px` or larger.
 
-## Dashboard anatomy and role information architecture
+## Shared primitives
 
-Both roles share one composition: editorial header and stamp → five factual metrics → primary work list plus pipeline → secondary work/next-action panels → black CTA band. Shared CSS keeps density, hierarchy, statuses, empty states, and responsive behavior consistent; page code supplies role semantics.
+Use `WorkspacePrimitives` before making route-local scaffolding:
 
-| Layer | Company | Creator |
-| --- | --- | --- |
-| Primary question | What is the campaign operation state? | What requires my attention now? |
-| Metrics | Campaigns, recruiting, applications, closed records, payment off | Active work, pending applications, revisions, completed work, settled record amount |
-| Main work list | Recent campaigns | Approved/submitted/revision-requested applications |
-| Pipeline | Draft → recruiting → closed | Pending → active → complete |
-| Secondary work | Campaign creation/review and brand readiness | New campaigns and profile/performance actions |
-| Primary CTA | Create a campaign brief | Find a campaign |
+- `WorkspaceStage`: fixed header, one work body, optional docked footer.
+- `WorkspaceScrollArea`: the explicit owner of long content scrolling.
+- `WorkspaceTabs` and `WorkspaceTabPanel`: ARIA tabs with Arrow Left/Right, Home, and End navigation.
+- `MetricStrip`: open hairline metrics; it horizontally snaps on mobile.
+- `ResponsiveSheet`: right drawer on desktop and bottom sheet on mobile, with fixed title/actions and scrolling body.
+- `SectionProgress`: numbered steps. Mobile keeps a single horizontal snap row.
+- `WorkspaceRecordList`: fixed header plus internally scrolling ruled rows; mobile preserves a compact primary-information row instead of stacking cards.
 
-Status chips communicate workflow, not decoration. Violet means selected/ready/open, green means complete, orange means waiting or attention required, and neutral means inactive, withdrawn, rejected, closed, or already applied. Keep labels explicit; color alone must never carry the state.
+## Role information architecture
 
-## Responsive rules
+### Brand
 
-- Above `1100px`, metrics use five columns and the main dashboard uses asymmetric two-column grids.
-- At `1100px` and below, metrics become three columns and both content grids stack to one column.
-- At `900px` and below, the fixed sidebar becomes a portal-rendered modal drawer with backdrop; content loses its left offset. The top bar shows the menu button and hides role context, beta copy, and profile text while retaining the mark and avatar.
-- At `640px` and below, metrics become two columns, the decorative stamp is hidden, list reward/application-count columns collapse, and the CTA stacks vertically.
+- Dashboard: `운영 / 지원·파이프라인 / 일정`. The default view prioritizes next actions and the payment warning.
+- Campaign list: fixed search/count toolbar, fixed header, internal rows.
+- Campaign detail: campaign information and applicant queue form a master–detail surface. Applicant message, submission history, and review actions open in a drawer.
+- New campaign: four preserved-value steps—basics, deliverables, tone, reward/recruiting—with fixed summary and docked previous/next/create controls.
+- Edit campaign: three steps—basics, content, recruiting. Client or server errors move to the relevant step and focus the first affected field.
+- Brand settings: `공개 정보 / 마케팅 동의 / 계정`.
 
-Preserve readable ordering in the DOM when changing grids. New content must work in the existing single-column mobile flow without relying on hover or horizontal scrolling.
+### Creator
 
-## Motion and accessibility
+- Dashboard: `할 일 / 성과 / 탐색 / 정산`. Default content puts revision and active work first.
+- Discover, applications, and performance use ruled record rows and internal scrolling.
+- My Work: `지원·콘텐츠 / Instagram / 계정`. Video upload and review use `ResponsiveSheet`.
+- Campaign detail: `개요 / 요구사항` with a docked apply/status action. The optional application message opens in a sheet.
+- `/creator/profile` and `/profile/setup` share `CreatorProfileForm`; the protected workspace route and public-onboarding chrome remain distinct.
+- Compatibility redirects for `/creator/applications` and `/creator/campaigns` remain in place.
 
-The motion language is brief and directional: dashboard content reveals upward, pipeline bars grow from the left, navigation shifts by `2px`, actions lift by `1px`, and the mobile drawer uses a `260ms` expo-like slide. The loading state is a warm-paper sweep. `prefers-reduced-motion` disables the major reveals, bar/loading animation, drawer transition, and navigation transition; add equivalent reduced-motion handling for any new transform or animation.
+## Loading, failure, and empty states
 
-Keep the implemented accessibility contract:
+- Independent dashboard requests fail independently. A failed KPI/application/performance/campaign region gets its own retry while successful tabs remain usable.
+- Loading, empty, error, disabled, selected, hover, and keyboard-focus states must remain explicit in Korean and English.
+- Empty states explain the real next action and may use only the low-opacity decorative mist asset.
+- Do not render illustrative counts, trends, reach, revenue, financial accounts, sample campaigns, or sample media.
 
-- active links expose `aria-current="page"`;
-- navigation, metrics, loading states, and menu controls have localized accessible labels;
-- decorative Lucide icons and logo marks are hidden from assistive technology;
-- the mobile drawer uses dialog semantics, focus management, Escape handling, a close backdrop, and `aria-expanded`;
-- interactive elements retain a visible violet focus outline and keyboard-reachable targets;
-- loading, error/retry, empty, and success states remain distinguishable without animation or color alone.
+## Payment and truthful-data constraints
 
-## Truthful-data constraints
+- Backend REST paths, statuses, campaign payloads, and policy guards are authoritative and unchanged by layout work.
+- Payment and settlement remain visibly `OFF`. Never show an account number, transfer-complete action, payment guarantee, automatic launch promise, or implied PG completion.
+- Legacy deposit/funded/refund statuses are historical records only and must keep their qualifying copy.
+- Company metrics derive only from `/company/dashboard` and `/company/campaigns`.
+- Creator metrics derive only from `/me/stats`, `/me/applications`, `/campaigns?sort=recent`, and `/me/performance`.
+- Public creator links are never inferred from private applicant data.
 
-Every metric must come from an existing API response or an explicitly derived count from those responses. Never invent trend percentages, revenue, reach, marketplace size, sample activity, or chart history to fill space. Zero and empty states are valid product states and must explain the next action.
+## Responsive and accessibility checks
 
-- Company data comes from `/company/dashboard` and `/company/campaigns`; application totals and pipeline counts are derived from returned campaigns. The current “Recruiting” metric is bound to `summary.funded`; verify that backend meaning before changing either copy or mapping.
-- Payment and settlement remain visibly `OFF`. The UI must not show placeholder accounts or imply a live transfer path before an operating contract and production payment gateway exist.
-- Creator data comes from `/me/stats`, `/me/applications`, `/campaigns?sort=recent`, and `/me/performance`. Settled amounts and performance are labeled as recorded/completed history, not projected earnings or automated live settlement.
-- Preserve request cancellation, loading, retryable error, and honest empty states whenever data sources change.
-- Sample media or legacy financial records require explicit provenance labels and must respect role authorization boundaries.
+Verify `1440×900`, `1280×720`, `1024×768`, `390×844`, `360×800`, `320×568`, and mobile landscape. At every size confirm:
 
-## Reuse and maintenance
-
-- Reuse `WorkspaceShell` for company/creator chrome and extend its `NAV` map for role navigation. Preserve the special company campaign matching rule so “Campaigns” and “Create campaign” do not appear active together.
-- Reuse `Dashboard.module.css` for dashboard primitives: header, metrics, panels, lists, status chips, pipeline, empty state, actions, operational strip, CTA, loading, and error. Add a shared variant before creating role-local copies.
-- Keep role pages responsible for API orchestration, truthful derivations, localized copy, links, and status mappings. Keep layout and presentation in the shared module.
-- All user-facing workspace strings require Korean and English through `t(ko, en)`. Format counts and currency from real values; do not bake formatted sample numbers into markup.
-- Prefer Lucide icons already used by the shell and dashboards. Icons should clarify labels, not replace them.
-- When adding a metric or panel, test the five-column, three-column, two-column, and stacked states; long Korean/English labels; large values; empty arrays; request failure; keyboard navigation; and reduced motion.
-- If palette values are refactored, promote the workspace colors to semantic CSS custom properties instead of proliferating new literals. Preserve the warmer authenticated paper (`#f4f1ed`) or consciously reconcile it with the public `--paper` token (`#f6f5f1`).
+- no body scroll or horizontal overflow;
+- one clearly named scrolling work region;
+- safe-area bottom navigation and docked actions;
+- keyboard tab switching, focus trap, Escape, and focus return;
+- readable layout at 200% zoom;
+- real long Korean/English labels and large values do not overlap;
+- reduced motion removes panel reveal, sheet motion, bar growth, and loading sweeps.

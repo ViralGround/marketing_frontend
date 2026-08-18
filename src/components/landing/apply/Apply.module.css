@@ -1,0 +1,472 @@
+/*
+ * /creator — "지원서 그 자체" 구조.
+ * 페이지가 곧 한 장의 원서다. 씬을 쌓지 않고 문서를 내려 읽으며,
+ * 마지막 서명란에서 제출로 끝난다. 콜시트 킷과 공유하는 것은 브랜드 서체뿐이고
+ * 지면·간격·컴포넌트는 전부 이 문서 전용이다.
+ */
+
+.doc {
+  --paper: #f2efe6;
+  --sheet: #fffdf7;
+  --ink: #131118;
+  --rule: rgba(19, 17, 24, 0.16);
+  --rule-strong: rgba(19, 17, 24, 0.42);
+  --mark: #7331e0;
+  --muted: rgba(19, 17, 24, 0.62);
+  min-height: 100dvh;
+  padding: 96px 20px 120px;
+  color: var(--ink);
+  background:
+    repeating-linear-gradient(90deg, transparent 0 38px, rgba(19, 17, 24, 0.035) 38px 39px),
+    var(--paper);
+  font-family: var(--font-sans);
+}
+
+.sheet {
+  position: relative;
+  width: min(920px, 100%);
+  margin: 0 auto;
+  background: var(--sheet);
+  border: 1px solid var(--rule-strong);
+  box-shadow: 0 30px 80px rgba(19, 17, 24, 0.14);
+}
+
+/* ── 문서 머리 ── */
+.docHead {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 18px;
+  align-items: end;
+  padding: 30px clamp(24px, 4vw, 48px) 22px;
+  border-bottom: 2px solid var(--ink);
+}
+
+.docTitle {
+  margin: 0;
+  font-family: var(--display);
+  font-size: clamp(38px, 6vw, 74px);
+  line-height: 0.9;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+}
+
+.docTitle span {
+  display: block;
+  color: var(--mark);
+}
+
+.docMeta {
+  display: grid;
+  gap: 6px;
+  justify-items: end;
+  text-align: right;
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+
+.docStamp {
+  padding: 6px 11px;
+  color: var(--mark);
+  border: 1.5px solid var(--mark);
+  border-radius: 3px;
+  transform: rotate(-2.5deg);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+}
+
+.docLead {
+  padding: 24px clamp(24px, 4vw, 48px) 26px;
+  border-bottom: 1px solid var(--rule);
+  font-size: clamp(15px, 1.5vw, 18px);
+  line-height: 1.75;
+  font-weight: 600;
+  word-break: keep-all;
+}
+
+.docLead b {
+  font-weight: 850;
+}
+
+/* ── 조항 ── */
+.clause {
+  display: grid;
+  grid-template-columns: 92px minmax(0, 1fr);
+  border-bottom: 1px solid var(--rule);
+}
+
+.clauseNo {
+  padding: 26px 0 26px clamp(18px, 3vw, 34px);
+  border-right: 1px solid var(--rule);
+  font-family: var(--display);
+  font-size: 20px;
+  color: var(--mark);
+  letter-spacing: 0;
+}
+
+.clauseBody {
+  min-width: 0;
+  padding: 26px clamp(24px, 4vw, 48px) 30px;
+  display: grid;
+  gap: 14px;
+  align-content: start;
+}
+
+.clauseTitle {
+  margin: 0;
+  font-size: clamp(20px, 2.3vw, 27px);
+  font-weight: 900;
+  letter-spacing: -0.035em;
+  line-height: 1.28;
+  word-break: keep-all;
+}
+
+.clauseNote {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.7;
+  font-weight: 600;
+  color: var(--muted);
+  word-break: keep-all;
+}
+
+/* 채워진 항목(체크) */
+.fields {
+  display: grid;
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--rule);
+}
+
+.fields li {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
+  gap: 12px;
+  padding: 13px 0;
+  border-bottom: 1px solid var(--rule);
+  font-size: 14.5px;
+  line-height: 1.6;
+  font-weight: 620;
+  word-break: keep-all;
+}
+
+.fields svg {
+  width: 16px;
+  height: 16px;
+  margin-top: 3px;
+  color: var(--mark);
+}
+
+.fields b {
+  font-weight: 850;
+}
+
+/* 값이 적힌 칸 (보상 조항) */
+.entry {
+  display: grid;
+  grid-template-columns: 108px minmax(0, 1fr);
+  gap: 16px;
+  align-items: baseline;
+  padding: 14px 0;
+  border-bottom: 1px dashed var(--rule-strong);
+}
+
+.entry:last-of-type {
+  border-bottom: 1px solid var(--rule-strong);
+}
+
+.entry dt {
+  font-size: 11.5px;
+  font-weight: 850;
+  letter-spacing: 0.07em;
+  color: var(--mark);
+  text-transform: uppercase;
+}
+
+.entry dd {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.65;
+  font-weight: 650;
+  word-break: keep-all;
+}
+
+/* 상태 경로 (원서 뒷면의 진행표) */
+.states {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  border: 1px solid var(--rule-strong);
+}
+
+.states > div {
+  padding: 14px 14px 16px;
+  border-right: 1px solid var(--rule);
+  display: grid;
+  gap: 6px;
+  align-content: start;
+}
+
+.states > div:last-child {
+  border-right: 0;
+}
+
+.states small {
+  font-family: var(--display);
+  font-size: 12px;
+  color: var(--mark);
+}
+
+.states strong {
+  font-size: 13.5px;
+  font-weight: 850;
+}
+
+.states span {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--muted);
+  word-break: keep-all;
+}
+
+/* 주의 박스 (결제 OFF) */
+.notice {
+  display: flex;
+  gap: 11px;
+  align-items: flex-start;
+  padding: 14px 16px;
+  color: #7a3500;
+  background: #fdefdd;
+  border: 1px solid rgba(122, 53, 0, 0.28);
+  font-size: 13.5px;
+  line-height: 1.6;
+  font-weight: 700;
+  word-break: keep-all;
+}
+
+.notice svg {
+  width: 17px;
+  height: 17px;
+  flex: none;
+  margin-top: 2px;
+}
+
+/* 예시 프레임 (콘텐츠 3컷) */
+.frames {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.frames figure {
+  margin: 0;
+  border: 1px solid var(--rule-strong);
+  background: #17141c;
+}
+
+.frames img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+  filter: saturate(0.9);
+}
+
+.frames figcaption {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 10px;
+  color: #fffdf7;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+}
+
+/* ── 서명란 ── */
+.signature {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(240px, 0.62fr);
+  gap: clamp(20px, 4vw, 44px);
+  padding: 32px clamp(24px, 4vw, 48px) 36px;
+  background: var(--ink);
+  color: #fffdf7;
+}
+
+.signature h2 {
+  margin: 0 0 10px;
+  font-size: clamp(22px, 2.6vw, 32px);
+  font-weight: 900;
+  letter-spacing: -0.035em;
+  line-height: 1.28;
+  word-break: keep-all;
+}
+
+.signature p {
+  margin: 0;
+  font-size: 14.5px;
+  line-height: 1.7;
+  font-weight: 600;
+  color: rgba(255, 253, 247, 0.74);
+  word-break: keep-all;
+}
+
+.signLine {
+  display: grid;
+  gap: 10px;
+  align-content: end;
+}
+
+.signLine span {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: rgba(255, 253, 247, 0.6);
+}
+
+.signRule {
+  height: 1px;
+  background: rgba(255, 253, 247, 0.45);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.submit,
+.secondary {
+  display: inline-flex;
+  min-height: 50px;
+  align-items: center;
+  gap: 9px;
+  padding: 0 22px;
+  font-family: var(--font-sans);
+  font-size: 15px;
+  font-weight: 800;
+  text-decoration: none;
+  border: 1.5px solid transparent;
+  transition: transform 200ms var(--ease-expo), background-color 200ms ease;
+}
+
+.submit {
+  color: var(--ink);
+  background: #fffdf7;
+}
+
+.submit:hover {
+  transform: translateY(-2px);
+}
+
+.secondary {
+  color: #fffdf7;
+  border-color: rgba(255, 253, 247, 0.5);
+}
+
+.secondary:hover {
+  border-color: #fffdf7;
+  transform: translateY(-2px);
+}
+
+.submit svg,
+.secondary svg {
+  width: 17px;
+  height: 17px;
+}
+
+.docFoot {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px clamp(24px, 4vw, 48px) 16px;
+  border-top: 1px solid var(--rule);
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 780;
+  letter-spacing: 0.06em;
+}
+
+/* 모바일 독 */
+.dock {
+  position: fixed;
+  right: 10px;
+  bottom: max(10px, env(safe-area-inset-bottom));
+  left: 10px;
+  z-index: 60;
+  display: none;
+  gap: 8px;
+}
+
+.dock a {
+  display: inline-flex;
+  flex: 1;
+  min-height: 52px;
+  align-items: center;
+  justify-content: center;
+  color: #fffdf7;
+  background: var(--ink);
+  font-size: 15px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.dock a:last-child {
+  flex: none;
+  width: 56px;
+  color: var(--ink);
+  background: #fffdf7;
+  border: 1.5px solid var(--ink);
+}
+
+@media (max-width: 900px) {
+  .doc {
+    padding: 84px 12px 110px;
+  }
+
+  .docHead {
+    grid-template-columns: minmax(0, 1fr);
+    align-items: start;
+  }
+
+  .docMeta {
+    justify-items: start;
+    text-align: left;
+  }
+
+  .clause {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .clauseNo {
+    padding: 20px clamp(18px, 5vw, 28px) 0;
+    border-right: 0;
+  }
+
+  .clauseBody {
+    padding-top: 12px;
+  }
+
+  .states,
+  .signature {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .states > div {
+    border-right: 0;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .dock {
+    display: flex;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .submit,
+  .secondary {
+    transition: none;
+  }
+}

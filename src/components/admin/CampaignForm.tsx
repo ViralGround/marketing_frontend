@@ -12,7 +12,7 @@ import Textarea from "@/components/ui/Textarea";
 import { canEditBudget, EscrowStatus } from "@/lib/campaignPolicy";
 import { useLang } from "@/lib/i18n";
 
-export interface CampaignFormInitial {
+interface CampaignFormInitial {
   id?: number;
   title?: string;
   description?: string;

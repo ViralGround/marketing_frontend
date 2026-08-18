@@ -1,14 +1,35 @@
 "use client";
 
 import { useCallback, useEffect, useState, type ReactNode } from "react";
-import Link from "next/link";
 import { useParams } from "next/navigation";
 import { ArrowLeft, Star } from "lucide-react";
 import api from "@/lib/api";
-import ReviewList, { type ReviewItem } from "@/components/review/ReviewList";
-import GroundTopbar from "@/components/landing/onevideo/GroundTopbar";
-import GroundFooter from "@/components/landing/onevideo/GroundFooter";
+import {
+  GroundAccent,
+  GroundActionButton,
+  GroundActionLink,
+  GroundDockLink,
+  GroundFinalBand,
+  GroundHero,
+  GroundMetricStrip,
+  GroundSection,
+  GroundState,
+  PublicGroundFrame,
+  groundStyles,
+} from "@/components/landing/ground/PublicGround";
 import { useLang } from "@/lib/i18n";
+import { trackEvent } from "@/lib/gtag";
+
+type ReviewAuthorRole = "CREATOR" | "COMPANY" | "ADMIN";
+
+interface ReviewItem {
+  id: number;
+  authorRole: ReviewAuthorRole;
+  authorName: string;
+  rating: number;
+  comment: string | null;
+  createdAt: string;
+}
 
 interface PortfolioItem {
   campaignTitle: string;
@@ -31,6 +52,12 @@ interface Portfolio {
   items: PortfolioItem[];
 }
 
+const ROLE_CODE = {
+  CREATOR: "CREATOR",
+  COMPANY: "BRAND",
+  ADMIN: "ADMIN",
+} as const;
+
 export default function CreatorPortfolioPage() {
   const params = useParams<{ id: string }>();
   const id = params?.id;
@@ -39,149 +66,262 @@ export default function CreatorPortfolioPage() {
   const [portfolio, setPortfolio] = useState<Portfolio | null>(null);
   const [reviews, setReviews] = useState<ReviewItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
+  const [portfolioError, setPortfolioError] = useState(false);
+  const [reviewsError, setReviewsError] = useState(false);
 
-  const loadPortfolio = useCallback(() => {
+  const loadPortfolio = useCallback(async () => {
     if (!id) return;
-    Promise.all([
+    const [portfolioResult, reviewsResult] = await Promise.allSettled([
       api.get<Portfolio>(`/creators/${id}/portfolio`),
       api.get<{ reviews: ReviewItem[] }>(`/creators/${id}/reviews`),
-    ])
-      .then(([portfolioResponse, reviewsResponse]) => {
-        setPortfolio(portfolioResponse.data);
-        setReviews(reviewsResponse.data.reviews);
-        setError(false);
-      })
-      .catch(() => setError(true))
-      .finally(() => setLoading(false));
+    ]);
+
+    if (portfolioResult.status === "fulfilled") {
+      setPortfolio(portfolioResult.value.data);
+      setPortfolioError(false);
+    } else {
+      setPortfolioError(true);
+    }
+
+    if (reviewsResult.status === "fulfilled") {
+      setReviews(reviewsResult.value.data.reviews);
+      setReviewsError(false);
+    } else {
+      setReviewsError(true);
+    }
+    setLoading(false);
+  }, [id]);
+
+  const retryReviews = useCallback(async () => {
+    if (!id) return;
+    try {
+      const response = await api.get<{ reviews: ReviewItem[] }>(`/creators/${id}/reviews`);
+      setReviews(response.data.reviews);
+      setReviewsError(false);
+    } catch {
+      setReviewsError(true);
+    }
   }, [id]);
 
   useEffect(() => {
-    loadPortfolio();
+    const requestTimer = window.setTimeout(() => {
+      void loadPortfolio();
+    }, 0);
+    return () => window.clearTimeout(requestTimer);
   }, [loadPortfolio]);
 
-  const content = (() => {
-    if (loading) {
-      return (
-        <div className="border-y-2 border-ink py-12" aria-live="polite">
-          <p className="text-[15px] font-semibold text-ink/60">{t("포트폴리오를 불러오는 중입니다…", "Loading the portfolio…")}</p>
-        </div>
-      );
-    }
+  const sections = [
+    { id: "creator-profile", label: t("프로필", "Profile") },
+    { id: "creator-work", label: t("완료 작업", "Completed work") },
+    { id: "creator-reviews", label: t("브랜드 리뷰", "Brand reviews") },
+    { id: "creator-collaborate", label: t("함께하기", "Collaborate") },
+  ];
 
-    if (error || !portfolio) {
-      return (
-        <div role="alert" className="border-y-2 border-ink bg-white px-6 py-10">
-          <h1 className="text-[clamp(26px,4vw,42px)] font-black tracking-[-0.035em]">
-            {t("포트폴리오를 불러오지 못했습니다", "The portfolio couldn't be loaded")}
-          </h1>
-          <p className="mt-3 text-[15px] text-ink/65">
-            {t("연결 상태를 확인한 뒤 다시 시도해 주세요.", "Check your connection and try again.")}
-          </p>
-          <button
-            type="button"
-            onClick={() => {
-              setLoading(true);
-              setError(false);
-              loadPortfolio();
-            }}
-            className="mt-6 min-h-12 rounded-full bg-violet px-6 text-[15px] font-bold text-white"
-          >
-            {t("다시 불러오기", "Try again")}
-          </button>
-        </div>
-      );
-    }
+  const heroTitle: ReactNode = loading ? (
+    t("프로필을 불러오는 중입니다", "Loading creator profile")
+  ) : portfolioError || !portfolio ? (
+    t("포트폴리오를 불러오지 못했습니다", "The portfolio couldn't be loaded")
+  ) : (
+    <GroundAccent>{portfolio.creator.name}</GroundAccent>
+  );
 
-    const summary = portfolio.summary;
-    const metrics: { label: string; value: ReactNode }[] = [
-      { label: t("완료 캠페인", "Completed"), value: t(`${summary.totalCompleted}건`, `${summary.totalCompleted}`) },
-      { label: t("리뷰", "Reviews"), value: t(`${summary.reviewCount}건`, `${summary.reviewCount}`) },
-      {
-        label: t("평점", "Rating"),
-        value: summary.reviewCount ? (
-          <span className="inline-flex items-center gap-2">
-            <Star className="h-6 w-6" fill="currentColor" aria-hidden="true" />
-            {summary.averageRating.toFixed(1)}
-          </span>
-        ) : (
-          "-"
-        ),
-      },
-      { label: t("평균 조회수", "Average views"), value: summary.metricSampleSize ? summary.averageViews.toLocaleString(locale) : "-" },
-      { label: t("누적 조회수", "Total views"), value: summary.totalViews.toLocaleString(locale) },
-      { label: t("누적 좋아요", "Total likes"), value: summary.totalLikes.toLocaleString(locale) },
-    ];
+  const heroDescription = loading
+    ? t("공개된 작업 이력과 리뷰를 확인하고 있습니다.", "Checking public work history and reviews.")
+    : portfolioError || !portfolio
+      ? t("연결 상태를 확인한 뒤 다시 시도해 주세요.", "Check your connection and try again.")
+      : t(
+          `${new Date(portfolio.creator.joinedAt).toLocaleDateString(locale)}부터 활동한 공개 크리에이터입니다. 캠페인에 기록된 완료 이력과 성과만 표시합니다.`,
+          `Public creator since ${new Date(portfolio.creator.joinedAt).toLocaleDateString(locale)}. Only completed work and recorded performance are shown.`,
+        );
 
-    return (
-      <>
-        {/* kicker("Creator on the ground") 삭제 — 이름이 스스로 말하게. 한글 이름 행간 확보 */}
-        <header className="pb-12 pt-4 md:pb-16 md:pt-8">
-          <h1 className="text-[clamp(38px,7vw,84px)] font-black leading-[1.1] tracking-[-0.035em]">
-            {portfolio.creator.name}
-          </h1>
-          <p className="mt-4 text-[15px] font-medium text-ink/65">
-            {t("활동 시작", "Joined")} {new Date(portfolio.creator.joinedAt).toLocaleDateString(locale)}
-          </p>
-        </header>
+  const heroActions = portfolioError ? (
+    <>
+      <GroundActionButton
+        onClick={() => {
+          setLoading(true);
+          setPortfolioError(false);
+          void loadPortfolio();
+        }}
+      >
+        {t("다시 불러오기", "Try again")}
+      </GroundActionButton>
+      <GroundActionLink href="/creators" tone="secondary">
+        {t("크리에이터 목록", "Creator list")}
+      </GroundActionLink>
+    </>
+  ) : (
+    <>
+      <GroundActionLink
+        href="/business"
+        onClick={() => trackEvent("cta_click", { location: "creator_profile_hero", target: "business" })}
+      >
+        {t("이 크리에이터와 캠페인 문의", "Ask about a campaign")}
+      </GroundActionLink>
+      <GroundActionLink href="/creators" tone="secondary">
+        {t("크리에이터 목록", "Creator list")}
+      </GroundActionLink>
+    </>
+  );
 
-        <dl className="grid border-y-2 border-ink sm:grid-cols-2 lg:grid-cols-3">
-          {metrics.map((metric, index) => (
-            <div key={index} className="border-b border-ink/25 py-5 sm:px-5 sm:odd:border-r lg:border-b-0 lg:border-r lg:odd:border-r [&:nth-child(3n)]:lg:border-r-0">
-              <dt className="text-xs font-bold text-ink/60">{metric.label}</dt>
-              {/* 지표 숫자는 tabular-nums 로 자릿수 정렬 */}
-              <dd className="mt-2 font-display text-[clamp(25px,3vw,38px)] tracking-[-0.04em] text-violet tabular-nums">{metric.value}</dd>
-            </div>
-          ))}
-        </dl>
-
-        <section className="py-16" aria-labelledby="work-history-title">
-          <h2 id="work-history-title" className="text-[clamp(26px,4vw,42px)] font-black tracking-[-0.035em]">
-            {t("완료한 작업", "Completed work")}
-          </h2>
-          {portfolio.items.length === 0 ? (
-            <p className="mt-7 border-y-2 border-ink py-8 text-[15px] text-ink/65">
-              {t("아직 공개된 완료 작업이 없습니다.", "No completed work is public yet.")}
-            </p>
-          ) : (
-            <ol className="mt-7 border-t-2 border-ink">
-              {portfolio.items.map((item, index) => (
-                <li key={`${item.brandName}-${item.campaignTitle}-${item.settledAt ?? index}`} className="grid gap-3 border-b-2 border-ink py-6 md:grid-cols-[48px_1fr] md:items-center">
-                  <span className="font-display text-xs text-violet">{String(index + 1).padStart(2, "0")}</span>
-                  <div>
-                    <p className="text-xs font-bold text-ink/60">{item.brandName}</p>
-                    <h3 className="mt-1 text-[18px] font-extrabold tracking-[-0.02em]">{item.campaignTitle}</h3>
-                    <p className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-ink/65">
-                      {item.settledAt && <span>{t("완료", "Completed")} {new Date(item.settledAt).toLocaleDateString(locale)}</span>}
-                    </p>
-                  </div>
-                </li>
-              ))}
-            </ol>
-          )}
-        </section>
-
-        <section className="pb-20" aria-labelledby="reviews-title">
-          <h2 id="reviews-title" className="text-[clamp(26px,4vw,42px)] font-black tracking-[-0.035em]">
-            {t("브랜드 리뷰", "Brand reviews")}
-          </h2>
-          <div className="mt-7"><ReviewList reviews={reviews} /></div>
-        </section>
-      </>
-    );
-  })();
+  const metrics = portfolio
+    ? [
+        { label: t("완료 캠페인", "Completed"), value: t(`${portfolio.summary.totalCompleted}건`, `${portfolio.summary.totalCompleted}`) },
+        { label: t("브랜드 리뷰", "Reviews"), value: t(`${portfolio.summary.reviewCount}건`, `${portfolio.summary.reviewCount}`) },
+        {
+          label: t("평점", "Rating"),
+          value: portfolio.summary.reviewCount ? portfolio.summary.averageRating.toFixed(1) : "—",
+        },
+        {
+          label: t("평균 조회수", "Average views"),
+          value: portfolio.summary.metricSampleSize ? portfolio.summary.averageViews.toLocaleString(locale) : "—",
+        },
+        { label: t("누적 조회수", "Total views"), value: portfolio.summary.totalViews.toLocaleString(locale) },
+        { label: t("누적 좋아요", "Total likes"), value: portfolio.summary.totalLikes.toLocaleString(locale) },
+      ]
+    : [];
 
   return (
-    <div className="min-h-screen bg-paper text-ink">
-      <GroundTopbar />
-      <div className="mx-auto min-h-[70svh] max-w-6xl px-6 pb-12 pt-28 md:pt-32">
-        <Link href="/creators" className="inline-flex min-h-11 items-center gap-2 text-[15px] font-bold text-ink/65 transition-colors hover:text-violet">
-          <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-          {t("크리에이터 목록", "Creator list")}
-        </Link>
-        {content}
-      </div>
-      <GroundFooter />
-    </div>
+    <PublicGroundFrame
+      sections={sections}
+      mobileDock={
+        <>
+          <GroundDockLink href="/business">
+            {t("이 크리에이터와 캠페인 문의", "Ask about a campaign")}
+          </GroundDockLink>
+          <GroundDockLink href="/creators" secondary aria-label={t("목록으로", "Back to list")}>
+            <ArrowLeft aria-hidden="true" size={19} />
+          </GroundDockLink>
+        </>
+      }
+    >
+      <GroundHero
+        id="creator-profile"
+        profile
+        corner="ViralGround / Public portfolio"
+        title={heroTitle}
+        description={heroDescription}
+        actions={heroActions}
+        media={
+          <div className={groundStyles.profileMonogram} aria-hidden="true">
+            {portfolio?.creator.name.trim().charAt(0) || "VG"}
+          </div>
+        }
+      />
+
+      {metrics.length > 0 && <GroundMetricStrip items={metrics} />}
+
+      <GroundSection
+        id="creator-work"
+        title={t("완료한 작업", "Completed work")}
+        description={t(
+          "정산 완료로 기록된 공개 캠페인만 표시합니다. 작업별 브랜드와 완료일을 확인할 수 있습니다.",
+          "Only public campaigns recorded as completed are shown, with brand and completion date.",
+        )}
+      >
+        {loading ? (
+          <GroundState loading title={t("작업 이력을 확인하는 중입니다", "Loading work history")} />
+        ) : portfolioError || !portfolio ? (
+          <GroundState
+            title={t("작업 이력을 표시할 수 없습니다", "Work history is unavailable")}
+            description={t("프로필을 다시 불러오면 함께 확인됩니다.", "Reload the profile to check it again.")}
+          />
+        ) : portfolio.items.length === 0 ? (
+          <GroundState
+            title={t("아직 공개된 완료 작업이 없습니다", "No completed work is public yet")}
+            description={t("완료된 캠페인이 공개되면 이곳에 기록됩니다.", "Completed campaigns will appear here when made public.")}
+          />
+        ) : (
+          <ol className={groundStyles.historyList}>
+            {portfolio.items.map((item, index) => (
+              <li
+                key={`${item.brandName}-${item.campaignTitle}-${item.settledAt ?? index}`}
+                className={groundStyles.historyItem}
+              >
+                <span className={groundStyles.historyIndex}>{String(index + 1).padStart(2, "0")}</span>
+                <div>
+                  <p className={groundStyles.historyBrand}>{item.brandName}</p>
+                  <h3 className={groundStyles.historyTitle}>{item.campaignTitle}</h3>
+                </div>
+                <span className={groundStyles.historyBrand}>
+                  {item.settledAt
+                    ? `${t("완료", "Completed")} ${new Date(item.settledAt).toLocaleDateString(locale)}`
+                    : t("완료일 미표시", "Date unavailable")}
+                </span>
+              </li>
+            ))}
+          </ol>
+        )}
+      </GroundSection>
+
+      <GroundSection
+        id="creator-reviews"
+        title={t("브랜드 리뷰", "Brand reviews")}
+        description={t(
+          "완료 캠페인에서 작성된 리뷰만 표시합니다. 리뷰를 불러오지 못해도 작업 이력은 그대로 볼 수 있습니다.",
+          "Only reviews from completed campaigns are shown. Work history remains available if reviews fail to load.",
+        )}
+      >
+        {loading ? (
+          <GroundState loading title={t("리뷰를 확인하는 중입니다", "Loading reviews")} />
+        ) : reviewsError ? (
+          <div role="alert">
+            <GroundState
+              title={t("리뷰만 불러오지 못했습니다", "Only reviews couldn't be loaded")}
+              description={t("프로필과 작업 이력은 정상적으로 표시되고 있습니다.", "The profile and work history remain available.")}
+              action={
+                <GroundActionButton onClick={() => void retryReviews()}>
+                  {t("리뷰 다시 불러오기", "Retry reviews")}
+                </GroundActionButton>
+              }
+            />
+          </div>
+        ) : reviews.length === 0 ? (
+          <GroundState
+            title={t("아직 작성된 리뷰가 없습니다", "No reviews yet")}
+            description={t("완료 캠페인의 브랜드 리뷰가 공개되면 이곳에 표시됩니다.", "Published brand reviews from completed campaigns will appear here.")}
+          />
+        ) : (
+          <ul className={groundStyles.reviewList}>
+            {reviews.map((review) => (
+              <li key={review.id} className={groundStyles.reviewItem}>
+                <span className={groundStyles.historyIndex}>{ROLE_CODE[review.authorRole]}</span>
+                <div>
+                  <p className={groundStyles.reviewMeta}>
+                    {new Date(review.createdAt).toLocaleDateString(locale)}
+                  </p>
+                  <h3 className={groundStyles.reviewAuthor}>{review.authorName}</h3>
+                  {review.comment && <p className={groundStyles.reviewComment}>{review.comment}</p>}
+                </div>
+                <span className={groundStyles.reviewRating} aria-label={t(`평점 ${review.rating}점`, `Rating ${review.rating} out of 5`)}>
+                  <Star size={16} fill="currentColor" aria-hidden="true" /> {review.rating.toFixed(1)}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </GroundSection>
+
+      <GroundFinalBand
+        id="creator-collaborate"
+        title={t("이 크리에이터와 캠페인을 시작해 보세요", "Start a campaign with this creator")}
+        description={t(
+          "브랜드 상담에서 제품과 목표를 알려주시면 가능한 운영 범위와 크리에이터 검토 기준부터 정리합니다.",
+          "Share your product and goal in a brand consultation; we begin with scope and creator-review criteria.",
+        )}
+        actions={
+          <>
+            <GroundActionLink
+              href="/business"
+              onClick={() => trackEvent("cta_click", { location: "creator_portfolio", target: "business" })}
+            >
+              {t("브랜드 캠페인 문의", "Brand campaign inquiry")}
+            </GroundActionLink>
+            <GroundActionLink href="/creators" tone="onDark">
+              {t("다른 크리에이터 보기", "Browse other creators")}
+            </GroundActionLink>
+          </>
+        }
+      />
+    </PublicGroundFrame>
   );
 }

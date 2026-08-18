@@ -62,10 +62,6 @@ if (isProductionBuild) {
   requireProductionOrigin("NEXT_PUBLIC_SITE_URL");
   requireProductionOrigin("NEXT_PUBLIC_API_URL");
   requireProductionUrl("NEXT_PUBLIC_SENTRY_DSN");
-  const calendlyUrl = new URL(requireProductionUrl("NEXT_PUBLIC_CALENDLY_URL"));
-  if (calendlyUrl.hostname !== "calendly.com" && !calendlyUrl.hostname.endsWith(".calendly.com")) {
-    throw new Error("[production-config] NEXT_PUBLIC_CALENDLY_URL must be a Calendly event URL");
-  }
   for (const name of [
     "NEXT_PUBLIC_LEGAL_TERMS_VERSION",
     "NEXT_PUBLIC_LEGAL_PRIVACY_VERSION",
@@ -104,10 +100,10 @@ const nextConfig: NextConfig = {
       "img-src 'self' data: blob: https:",
       "media-src 'self' blob: https:",
       `connect-src 'self' ${apiOrigin} ${storageOrigins} https://*.google-analytics.com https://*.analytics.google.com https://*.sentry.io`,
-      "font-src 'self' data: https://assets.calendly.com",
-      "style-src 'self' 'unsafe-inline' https://assets.calendly.com",
-      `script-src 'self' 'unsafe-inline'${isProduction ? "" : " 'unsafe-eval'"} https://www.googletagmanager.com https://assets.calendly.com`,
-      "frame-src https://calendly.com https://*.calendly.com",
+      "font-src 'self' data:",
+      "style-src 'self' 'unsafe-inline'",
+      `script-src 'self' 'unsafe-inline'${isProduction ? "" : " 'unsafe-eval'"} https://www.googletagmanager.com`,
+      "frame-src 'none'",
       isProduction ? "upgrade-insecure-requests" : "",
     ].filter(Boolean).join("; ");
 

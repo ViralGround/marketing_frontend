@@ -15,14 +15,11 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
-  Check,
   Eye,
   Gem,
   Laugh,
   Megaphone,
-  Minus,
   MousePointerClick,
-  Plus,
   ShoppingBag,
   Smile,
   Sparkles,
@@ -39,6 +36,23 @@ import Input from "@/components/ui/Input";
 import Textarea from "@/components/ui/Textarea";
 import { useLang } from "@/lib/i18n";
 import PageHeader from "@/components/workspace/PageHeader";
+import {
+  ChoiceGrid,
+  ChoiceTile,
+  FieldStack,
+  FormContextRail,
+  FormLayout,
+  FormStack,
+  NumberStepper,
+  SectionProgress,
+  SummaryRow,
+  SummaryRows,
+  WorkspacePage,
+  WorkspacePanel,
+  WorkspaceScrollArea,
+  WorkspaceStage,
+} from "@/components/workspace/WorkspacePrimitives";
+import viewStyles from "@/components/workspace/WorkspaceViews.module.css";
 
 const TITLE_MAX = 80;
 const DESC_MAX = 1000;
@@ -84,6 +98,8 @@ const REWARD_CHIPS = [
   { amount: 1_000_000, ko: "+100만", en: "+1M" },
 ] as const;
 
+const STEP_IDS = ["brief-basics", "brief-content", "brief-tone", "brief-budget"] as const;
+
 function daysUntil(dateValue: string): number | null {
   if (!dateValue) return null;
   const end = new Date(dateValue);
@@ -92,7 +108,6 @@ function daysUntil(dateValue: string): number | null {
   return Math.ceil((end.getTime() - now.getTime()) / 86_400_000);
 }
 
-/* 킷 선택 카드 — 라벤더 활성(보더+배경+체크) */
 function OptionCard({
   option,
   active,
@@ -106,38 +121,13 @@ function OptionCard({
 }) {
   const Icon = option.icon;
   return (
-    <button
-      type="button"
-      aria-pressed={active}
+    <ChoiceTile
+      icon={Icon}
+      title={t(option.ko, option.en)}
+      description={t(option.descKo, option.descEn)}
+      active={active}
       onClick={onToggle}
-      className={`relative rounded-xl border p-4 text-left transition-all duration-150 ${
-        active
-          ? "border-primary bg-primary-bg"
-          : "border-line bg-surface hover:border-primary/40"
-      }`}
-    >
-      <span
-        aria-hidden="true"
-        className={`absolute right-3 top-3 grid h-5 w-5 place-items-center rounded-full transition-colors ${
-          active ? "bg-primary text-white" : "border border-line-strong bg-surface text-transparent"
-        }`}
-      >
-        <Check className="h-3 w-3" strokeWidth={3} />
-      </span>
-      <Icon className={`h-5 w-5 ${active ? "text-primary" : "text-muted"}`} aria-hidden="true" />
-      <span className="mt-2.5 block text-sm font-bold text-foreground">{t(option.ko, option.en)}</span>
-      <span className="mt-1 block text-xs leading-relaxed text-muted">{t(option.descKo, option.descEn)}</span>
-    </button>
-  );
-}
-
-/* 섹션 패널 헤더 — 보라 번호 + 제목 (작성 순서가 곧 정보) */
-function SectionHead({ no, title }: { no: string; title: string }) {
-  return (
-    <h2 className="mb-5 flex items-baseline gap-2.5 border-b border-line pb-4">
-      <span className="font-display text-sm text-primary">{no}</span>
-      <span className="text-base font-extrabold text-foreground">{title}</span>
-    </h2>
+    />
   );
 }
 
@@ -159,6 +149,7 @@ export default function NewCampaignPage() {
   const [thumbnailFileKey, setThumbnailFileKey] = useState<string | null>(null);
   const [requirements, setRequirements] = useState("");
   const [deadline, setDeadline] = useState("");
+  const [activeSection, setActiveSection] = useState("brief-basics");
 
   const totalBudget = useMemo(() => {
     const r = Number(rewardAmount);
@@ -176,12 +167,42 @@ export default function NewCampaignPage() {
 
   const addReward = (amount: number) =>
     setRewardAmount((prev) => String(Math.max(0, (Number(prev) || 0) + amount)));
-  const stepParticipants = (delta: number) =>
-    setMaxParticipants((prev) => String(Math.max(1, (Number(prev) || 1) + delta)));
+
+  const stepIndex = STEP_IDS.indexOf(activeSection as (typeof STEP_IDS)[number]);
+  const validateVisibleStep = () => {
+    const form = document.getElementById("campaign-brief-form") as HTMLFormElement | null;
+    return form?.reportValidity() ?? true;
+  };
+  const goToStep = (nextId: string) => {
+    const nextIndex = STEP_IDS.indexOf(nextId as (typeof STEP_IDS)[number]);
+    if (nextIndex < 0) return;
+    if (nextIndex > stepIndex && !validateVisibleStep()) return;
+    setError("");
+    setActiveSection(nextId);
+  };
+  const validateAll = () => {
+    if (!title.trim() || !brandName.trim() || !description.trim()) {
+      setActiveSection("brief-basics");
+      setError(t("기본 정보의 필수 항목을 입력해주세요.", "Complete the required basic information."));
+      return false;
+    }
+    if (!rewardAmount || Number(rewardAmount) < 0 || !Number.isInteger(Number(maxParticipants)) || Number(maxParticipants) < 1) {
+      setActiveSection("brief-budget");
+      setError(t("보상과 모집 인원을 확인해주세요.", "Check the reward and recruiting count."));
+      return false;
+    }
+    if (remainingDays !== null && remainingDays < 0) {
+      setActiveSection("brief-budget");
+      setError(t("마감일은 오늘 이후여야 합니다.", "The deadline must be in the future."));
+      return false;
+    }
+    return true;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    if (!validateAll()) return;
     setLoading(true);
 
     /* 구조화 선택값 → 라벨 라인 직렬화 (크리에이터 상세에 그대로 노출) */
@@ -229,18 +250,42 @@ export default function NewCampaignPage() {
   };
 
   return (
-    <div className="mx-auto max-w-6xl">
-      <BackButton href="/company/campaigns" labelKo="캠페인 목록으로" labelEn="Back to campaigns" />
-      <PageHeader
-        display="NEW BRIEF"
-        subtitle={t(
-          "캠페인의 목표와 개요를 설정하고, 기본 정보를 입력하세요. 캠페인은 초안으로 저장되며 등록 후에도 수정할 수 있습니다.",
-          "Set the campaign goal and basics. Campaigns are saved as drafts and can be edited after creation.",
-        )}
-      />
-
-      <div className="mt-8 grid gap-5 xl:grid-cols-[minmax(0,1fr)_280px]">
-        <form onSubmit={handleSubmit} className="min-w-0 space-y-5">
+    <WorkspacePage size="form" flow={false}>
+      <WorkspaceStage
+        className={viewStyles.pageStage}
+        header={
+          <div className={viewStyles.headerStack}>
+            <BackButton href="/company/campaigns" labelKo="캠페인 목록으로" labelEn="Back to campaigns" className="!mb-0" />
+            <PageHeader display="NEW BRIEF" subtitle={t("한 단계씩 입력하면 값은 다음 단계에서도 그대로 유지됩니다.", "Complete one step at a time. Your values stay preserved between steps.")} />
+            <SectionProgress
+              label={t("브리프 작성 단계", "Brief steps")}
+              activeId={activeSection}
+              onChange={goToStep}
+              items={[
+                { id: "brief-basics", label: t("기본 정보", "Basics") },
+                { id: "brief-content", label: t("결과물", "Deliverables") },
+                { id: "brief-tone", label: t("톤앤매너", "Tone") },
+                { id: "brief-budget", label: t("보상·모집", "Reward") },
+              ]}
+            />
+          </div>
+        }
+        footer={
+          <div className={viewStyles.formActions}>
+            <Button type="button" variant="secondary" disabled={stepIndex === 0 || loading} onClick={() => goToStep(STEP_IDS[Math.max(0, stepIndex - 1)])}>{t("이전", "Previous")}</Button>
+            <span className="text-xs font-bold text-muted tabular-nums">{stepIndex + 1} / {STEP_IDS.length}</span>
+            {stepIndex < STEP_IDS.length - 1 ? (
+              <Button type="button" onClick={() => goToStep(STEP_IDS[stepIndex + 1])}>{t("다음", "Next")}</Button>
+            ) : (
+              <Button type="submit" form="campaign-brief-form" loading={loading}>{t("캠페인 등록", "Create campaign")}</Button>
+            )}
+          </div>
+        }
+      >
+      <FormLayout>
+        <WorkspaceScrollArea label={t("현재 브리프 단계 입력", "Current brief step form")}>
+        <form id="campaign-brief-form" onSubmit={handleSubmit}>
+          <FormStack>
           {error && (
             <div
               role="alert"
@@ -252,10 +297,15 @@ export default function NewCampaignPage() {
           )}
 
           {/* 01 — 캠페인 기본 정보 */}
-          <section className="rounded-2xl border border-line bg-surface p-6 shadow-[0_8px_24px_rgba(0,0,0,0.06)]">
-            <SectionHead no="01" title={t("캠페인 기본 정보", "Campaign basics")} />
-            <div className="space-y-5">
-              <Field label={t("캠페인 제목", "Campaign title")} htmlFor="title" required>
+          {activeSection === "brief-basics" && <WorkspacePanel
+            id="brief-basics"
+            number="01"
+            title={t("캠페인 기본 정보", "Campaign basics")}
+            description={t("크리에이터가 목록에서 가장 먼저 확인하는 정보입니다.", "This is what creators scan first in the campaign list.")}
+          >
+            <FieldStack>
+              <div className="grid gap-4 md:grid-cols-[minmax(0,1.45fr)_minmax(12rem,.75fr)]">
+                <Field label={t("캠페인 제목", "Campaign title")} htmlFor="title" required>
                 <div className="relative">
                   <Input
                     id="title"
@@ -271,21 +321,22 @@ export default function NewCampaignPage() {
                     {title.length} / {TITLE_MAX}
                   </span>
                 </div>
-              </Field>
+                </Field>
 
-              <Field label={t("브랜드명", "Brand name")} htmlFor="brandName" required>
-                <Input id="brandName" type="text" required value={brandName} onChange={(e) => setBrandName(e.target.value)} />
-              </Field>
+                <Field label={t("브랜드명", "Brand name")} htmlFor="brandName" required>
+                  <Input id="brandName" type="text" required value={brandName} onChange={(e) => setBrandName(e.target.value)} />
+                </Field>
+              </div>
 
               <Field
                 label={t("캠페인 목적", "Campaign goal")}
                 hint={t("캠페인의 주요 목표를 선택하세요. (복수 선택 가능)", "Pick the main goals. (multiple allowed)")}
               >
-                <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+                <ChoiceGrid columns={4}>
                   {GOALS.map((goal) => (
                     <OptionCard key={goal.key} option={goal} active={goals.includes(goal.key)} onToggle={() => toggleGoal(goal.key)} t={t} />
                   ))}
-                </div>
+                </ChoiceGrid>
               </Field>
 
               <Field label={t("캠페인 설명", "Campaign description")} htmlFor="description" required>
@@ -302,13 +353,17 @@ export default function NewCampaignPage() {
                   {description.length} / {DESC_MAX}
                 </p>
               </Field>
-            </div>
-          </section>
+            </FieldStack>
+          </WorkspacePanel>}
 
           {/* 02 — 필수 결과물 · 요구사항 */}
-          <section className="rounded-2xl border border-line bg-surface p-6 shadow-[0_8px_24px_rgba(0,0,0,0.06)]">
-            <SectionHead no="02" title={t("필수 결과물 · 요구사항", "Deliverables · Requirements")} />
-            <div className="space-y-5">
+          {activeSection === "brief-content" && <WorkspacePanel
+            id="brief-content"
+            number="02"
+            title={t("필수 결과물 · 요구사항", "Deliverables · Requirements")}
+            description={t("제작 범위와 검수 기준을 구체적으로 남겨주세요.", "Define the production scope and review criteria.")}
+          >
+            <FieldStack>
               <Field
                 label={t("필수 결과물 (Deliverables)", "Deliverables")}
                 hint={t("캠페인을 통해 받고자 하는 결과물을 선택하세요.", "Select the content you expect from this campaign.")}
@@ -363,18 +418,22 @@ export default function NewCampaignPage() {
                   {requirements.length} / {REQ_MAX}
                 </p>
               </Field>
-            </div>
-          </section>
+            </FieldStack>
+          </WorkspacePanel>}
 
           {/* 03 — 브랜드 톤앤매너 */}
-          <section className="rounded-2xl border border-line bg-surface p-6 shadow-[0_8px_24px_rgba(0,0,0,0.06)]">
-            <SectionHead no="03" title={t("브랜드 톤앤매너", "Brand tone & manner")} />
+          {activeSection === "brief-tone" && <WorkspacePanel
+            id="brief-tone"
+            number="03"
+            title={t("브랜드 톤앤매너", "Brand tone & manner")}
+            description={t("한 가지 기준을 선택해 콘텐츠 방향을 선명하게 만드세요.", "Choose one direction to keep content decisions clear.")}
+          >
             <Field
               label={t("추구하는 분위기", "Preferred mood")}
               optionalLabel={t("(선택)", "(optional)")}
               hint={t("브랜드가 추구하는 분위기를 선택하세요.", "Pick the mood your brand is going for.")}
             >
-              <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
+              <ChoiceGrid columns={3}>
                 {TONES.map((option) => (
                   <OptionCard
                     key={option.key}
@@ -384,14 +443,18 @@ export default function NewCampaignPage() {
                     t={t}
                   />
                 ))}
-              </div>
+              </ChoiceGrid>
             </Field>
-          </section>
+          </WorkspacePanel>}
 
           {/* 04 — 보상 · 모집 */}
-          <section className="rounded-2xl border border-line bg-surface p-6 shadow-[0_8px_24px_rgba(0,0,0,0.06)]">
-            <SectionHead no="04" title={t("보상 · 모집", "Reward · Recruitment")} />
-            <div className="space-y-5">
+          {activeSection === "brief-budget" && <WorkspacePanel
+            id="brief-budget"
+            number="04"
+            title={t("보상 · 모집", "Reward · Recruitment")}
+            description={t("1인당 보상과 모집 규모를 기준으로 총 예산을 확인합니다.", "Review the total budget from the reward and number of creators.")}
+          >
+            <FieldStack>
               <div className="grid gap-4 sm:grid-cols-2">
                 <Field label={t("1인당 보상 (원)", "Reward per creator (KRW)")} htmlFor="rewardAmount" required>
                   <Input
@@ -427,55 +490,19 @@ export default function NewCampaignPage() {
                 </Field>
 
                 <Field label={t("모집 인원", "Number of creators")} htmlFor="maxParticipants" required>
-                  {/* 킷 스테퍼 [- n +] */}
-                  <div className="flex h-11 items-stretch overflow-hidden rounded-[10px] border border-line bg-surface transition-[border-color,box-shadow] focus-within:border-primary focus-within:ring-[3px] focus-within:ring-primary-bg">
-                    <button
-                      type="button"
-                      aria-label={t("인원 줄이기", "Decrease")}
-                      onClick={() => stepParticipants(-1)}
-                      className="grid w-11 flex-shrink-0 place-items-center border-r border-line text-content-soft transition-colors hover:bg-surface-chip hover:text-primary"
-                    >
-                      <Minus className="h-4 w-4" aria-hidden="true" />
-                    </button>
-                    <input
-                      id="maxParticipants"
-                      type="number"
-                      min={1}
-                      required
-                      value={maxParticipants}
-                      onChange={(e) => setMaxParticipants(e.target.value)}
-                      className="w-full min-w-0 border-0 bg-transparent text-center text-sm font-bold text-foreground outline-none tabular-nums [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-                    />
-                    <button
-                      type="button"
-                      aria-label={t("인원 늘리기", "Increase")}
-                      onClick={() => stepParticipants(1)}
-                      className="grid w-11 flex-shrink-0 place-items-center border-l border-line text-content-soft transition-colors hover:bg-surface-chip hover:text-primary"
-                    >
-                      <Plus className="h-4 w-4" aria-hidden="true" />
-                    </button>
-                  </div>
+                  <NumberStepper
+                    id="maxParticipants"
+                    value={maxParticipants}
+                    min={1}
+                    onChange={setMaxParticipants}
+                    decreaseLabel={t("인원 줄이기", "Decrease")}
+                    increaseLabel={t("인원 늘리기", "Increase")}
+                  />
                 </Field>
               </div>
 
-              {/* 예산 요약 — 킷 라벤더 하이라이트 카드 */}
-              <div className="rounded-[10px] border border-primary/25 bg-primary-bg p-5">
-                <p className="text-xs font-semibold text-primary">{t("예상 총 예산", "Estimated total budget")}</p>
-                <p className="mt-1 text-2xl font-black tracking-tight text-foreground tabular-nums">
-                  {t(`${totalBudget.toLocaleString()}원`, `₩${totalBudget.toLocaleString()}`)}
-                </p>
-                <p className="mt-2 text-xs leading-relaxed text-content-soft">
-                  {t("등록 직후 캠페인은 ", "Right after creation, the campaign is ")}
-                  <span className="font-semibold text-warning">{t("결제 비활성", "Payment unavailable")}</span>{" "}
-                  {t(
-                    "상태로 저장됩니다. 현재 어떤 계좌로도 송금하지 마세요. 결제·모집은 PG 활성화와 계약 확인 후 진행합니다.",
-                    ". Do not transfer money to any account. Payment and recruiting begin only after PG activation and contract confirmation.",
-                  )}
-                </p>
-              </div>
-
               <Field label={t("모집 마감일", "Recruitment deadline")} htmlFor="deadline" optionalLabel={t("(선택)", "(optional)")}>
-                <div className="flex items-center gap-3">
+                <div className="flex flex-wrap items-center gap-3">
                   <Input
                     id="deadline"
                     type="datetime-local"
@@ -507,41 +534,39 @@ export default function NewCampaignPage() {
               <Field label={t("썸네일", "Thumbnail")} optionalLabel={t("(선택)", "(optional)")}>
                 <ImageUploader previewUrl={null} onChange={setThumbnailFileKey} aspect={16 / 9} />
               </Field>
-            </div>
-          </section>
-
-          {/* 버튼 영역 — 킷 09 */}
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <p className="text-xs text-muted">
-              {t("선택한 목적·톤·결과물은 캠페인 설명과 요구사항에 함께 저장됩니다.", "Selected goals, tone, and deliverables are saved into the brief text.")}
-            </p>
-            <Button type="submit" size="lg" loading={loading} className="flex-shrink-0">
-              {loading ? t("등록 중...", "Creating...") : t("캠페인 등록", "Create campaign")}
-            </Button>
-          </div>
+            </FieldStack>
+          </WorkspacePanel>}
+          </FormStack>
         </form>
+        </WorkspaceScrollArea>
 
-        {/* 입력 도움말 — 킷 사이드 패널 */}
-        <aside className="hidden xl:block">
-          <div className="sticky top-24 rounded-2xl border border-line bg-surface p-5 shadow-[0_8px_24px_rgba(0,0,0,0.06)]">
-            <h2 className="text-sm font-extrabold text-foreground">{t("입력 도움말", "Writing tips")}</h2>
-            <ul className="mt-4 space-y-4">
-              {[
-                { ko: "캠페인 제목은 80자 이내로 명확하고 간결하게 작성해 주세요.", en: "Keep the title clear and under 80 characters." },
-                { ko: "목적은 캠페인 성과와 매칭 기준이 됩니다. 가장 중요한 목표를 선택하세요.", en: "Goals guide matching and reporting — pick what matters most." },
-                { ko: "보상은 크리에이터 매칭과 지원율에 직접 영향을 줍니다.", en: "The reward directly affects matching and application rates." },
-                { ko: "정확한 마감일 설정은 일정 관리에 도움이 됩니다.", en: "An accurate deadline helps everyone plan." },
-                { ko: "상세한 브리프는 더 좋은 매칭과 콘텐츠로 이어집니다.", en: "A detailed brief leads to better matches and content." },
-              ].map((tip) => (
-                <li key={tip.ko} className="flex gap-2.5 text-xs leading-relaxed text-content-soft">
-                  <Check aria-hidden="true" className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-primary" strokeWidth={3} />
-                  {t(tip.ko, tip.en)}
-                </li>
-              ))}
-            </ul>
-          </div>
-        </aside>
-      </div>
-    </div>
+        <FormContextRail>
+          <WorkspacePanel title={t("브리프 요약", "Brief summary")} density="compact" tone="raised">
+            <SummaryRows>
+              <SummaryRow label={t("캠페인 목적", "Goals")} value={goals.length ? t(`${goals.length}개 선택`, `${goals.length} selected`) : t("미선택", "Not selected")} />
+              <SummaryRow label={t("필수 결과물", "Deliverables")} value={deliverables.length || deliverableEtc.trim() ? t(`${deliverables.length + (deliverableEtc.trim() ? 1 : 0)}개`, `${deliverables.length + (deliverableEtc.trim() ? 1 : 0)}`) : t("미선택", "Not selected")} />
+              <SummaryRow label={t("톤앤매너", "Tone")} value={tone ? t(TONES.find((item) => item.key === tone)?.ko ?? "미선택", TONES.find((item) => item.key === tone)?.en ?? "Not selected") : t("미선택", "Not selected")} />
+              <SummaryRow label={t("모집 인원", "Creators")} value={t(`${Number(maxParticipants) || 0}명`, `${Number(maxParticipants) || 0}`)} />
+              <SummaryRow label={t("마감", "Deadline")} value={remainingDays === null ? t("미정", "Not set") : remainingDays < 0 ? t("지난 날짜", "Past date") : remainingDays === 0 ? "D-DAY" : `D-${remainingDays}`} />
+              <SummaryRow label={t("예상 총 예산", "Estimated budget")} value={t(`${totalBudget.toLocaleString()}원`, `₩${totalBudget.toLocaleString()}`)} strong />
+            </SummaryRows>
+          </WorkspacePanel>
+
+          <WorkspacePanel title={t("등록 전 확인", "Before creating")} density="compact" tone="dark">
+            <p className="text-xs leading-relaxed text-zinc-300">
+              <strong className="text-[#b9a3ff]">{t("결제·정산 비활성", "Payments disabled")}</strong>{" "}
+              {t(
+                "현재 어떤 계좌로도 송금하지 마세요. 결제와 모집은 운영 계약 및 PG 연결 후 진행됩니다.",
+                "Do not transfer funds to any account. Payment and recruiting begin after contract and gateway setup.",
+              )}
+            </p>
+            <p className="mt-3 text-[11px] leading-relaxed text-zinc-400">
+              {t("선택한 목적·톤·결과물은 캠페인 설명과 요구사항에 함께 저장됩니다.", "Goals, tone, and deliverables are saved with the brief.")}
+            </p>
+          </WorkspacePanel>
+        </FormContextRail>
+      </FormLayout>
+      </WorkspaceStage>
+    </WorkspacePage>
   );
 }

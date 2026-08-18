@@ -171,7 +171,7 @@ Tailwind 기본 4px grid 사용. 토스 톤을 살리려면 **여유롭게** 잡
 |---|---|---|---|
 | Hover (color/opacity) | `transition-colors duration-200` | 기본 | 모든 인터랙티브 요소 |
 | 카드 lift | `transition-all duration-300 hover:-translate-y-0.5` | ease-out | `cursor-pointer` 인 카드 |
-| Fade-in | `useScrollAnimation` 훅 | 0.7s ease-out | 스크롤 진입 |
+| Fade-in | `CallReveal` 또는 컴포넌트 내부 `IntersectionObserver` | 0.7s ease-out | 스크롤 진입 |
 | 모달 | `duration-200` | ease-out | open/close |
 
 **Reduced motion**: `globals.css` 에 `@media (prefers-reduced-motion: reduce)` 가 모든 애니메이션 끄게 처리. 새 애니메이션 추가 시 이 블록도 같이 확장.
@@ -309,10 +309,12 @@ import { Check, X, Clock, Smartphone, Zap, Target, TrendingUp, Lock } from "luci
 - 협업·매칭 → `Users`, `Handshake`
 - 콘텐츠 → `Video`, `PenLine`, `Sparkles`
 
-## 10. 공개(시안4) 계층 정밀 규칙 — 2026-08-13 AI-tells audit 반영
+## 10. 공개 계층 정밀 규칙
 
-이 문서는 두 계층을 다룬다. §1–§7 은 **앱(토스톤) 계층**, §0 과 이 절은 **공개(시안4) 계층**이다.
-공개 페이지를 수정할 때는 이 절이 우선한다.
+§1–§7 은 앱 계층, §0 과 §10.1–10.6 은 기존 공개 페이퍼 기반을 다룬다. 루트 `/`는 이번
+서브랜딩 캐논에서 제외되며 변경하지 않는다. `/creators/[id]`도 현재 `PublicGround` 상세 계층을
+유지한다. §10.7 은 `/creators`, `/campaigns`, `/business`, `/creator`에 공통으로 적용되는 현재의
+라이브 콜시트 캐논이며, 구성 또는 반응형 규칙이 충돌하면 §10.7 이 우선한다.
 
 ### 10.1 타입 스케일 — 1.25 램프 (30px 미만 고정 크기)
 
@@ -375,6 +377,51 @@ import { Check, X, Clock, Smartphone, Zap, Target, TrendingUp, Lock } from "luci
 authored 값. **Tailwind 팔레트 hex 를 브랜드 색으로 그대로 쓰지 말 것.**
 `--violet-soft`(#d9ccff) 배경 위 보조 텍스트는 회색 알파 금지 — 전용 `--violet-ink`(#3d2a70) 사용.
 잉크 알파 하한: 페이퍼 위 본문 보조는 `ink/60` 이상(4.5:1), 잉크 배경 위는 `white/60` 이상.
+
+### 10.7 라이브 콜시트 계층 — /creators · /campaigns · /business · /creator
+
+**THESIS / STORY**: 네 페이지는 하나의 실제 프로덕션 콜시트처럼 행동하며 일반 SaaS 카드 그리드를
+거부한다. 방문 흐름은 제안 이해 → 워크플로·워크스페이스 증거 확인 → 조건·데이터 범위 검증 → 행동이다.
+형태는 후보 5/7(시드 `69640d99`), 승인된 B 라이브 콜시트 구조 + C 필름 콘택트 컷의 타이포·스크롤
+리듬이다.
+
+**WORLD / 단일 소스**: Paper `#f6f5f1`, Ink `#0a090b`, Violet `#7331e0`. 룰드 문서, 필름
+콘택트 스트립, 페이퍼·바이올렛·잉크의 단단한 씬 이음이 기본 형태다. 짧은 영문 디스플레이는
+Archivo Black, 한글·인터페이스는 Pretendard를 쓴다. 구현 단일 소스는
+`src/components/landing/callsheet/{CallSheetFrame,CallSheet.module.css,ProductProof,CreatorsIndexCallSheetPage,CampaignsCallSheetPage,BusinessCallSheetPage}`와
+`src/components/landing/apply/CreatorApplyPage`이다. 삭제된 `landing/viral` 구현은 공개 경로에 다시 도입하지 않는다.
+
+**첫 뷰포트 / 씬 구조**: 왼쪽에 페이지별 거대 타입, 가운데에 세로 테이크 스트립, 오른쪽에 기울어진
+사실 기반 콜시트를 둔다. 데스크톱은 중앙 필름 좌우에 명시적 배제 레인을 확보하고 맨 오른쪽에 번호
+씬 레일을 둔다. 모바일은 중앙 로고 상단바, 두 프레임 히어로 필름, 해당 경로의 첫 과업과 일치하는
+고정 기본 액션 독을 사용한다. 중복 히어로 액션은 숨기고 가로 오버플로를 허용하지 않는다.
+
+**경로별 서사**
+
+- `/creators`: 제안 → 공개 동의 로스터 API·검색 → 브랜드 워크스페이스 증거 → 기록 해석 기준 → 브랜드 CTA
+- `/campaigns`: 제안 → 선별 공개 피드 API·검색·상세 → 두 데스크 인계 데모(지원→선정→제출→검수→기록→정산 `OFF`) → 남는 기록과 아직 없는 기능 → CTA
+  - 인계 데모는 `CampaignDeskDemo`. 브랜드 운영 데스크와 크리에이터 작업 데스크를 나란히 두고 단계 탭(`role=tablist`, 좌우·Home·End)으로 전환한다. 화면 이름·버튼 문구·상태 라벨은 제품 값을 그대로 쓰고 수치는 만들지 않는다(em dash). 비활성 데스크는 투명도로 흐리지 않고 헤더 톤·엘리베이션으로만 구분한다(본문 대비 유지).
+  - 좌우 판을 나란히 읽어야 하는 씬은 `CallSheetFrame`의 `quietFilm`에 씬 id를 넘겨 중앙 필름 스트립을 물러나게 한다(겹치지 않게).
+- `/business`: 제안 → 브랜드 워크스페이스 증거 → 네 번의 운영 결정 → 증거·경계 → 상담
+- `/creator`: 크리에이터 제안 → 크리에이터 워크스페이스 증거 → 콘텐츠 제작 예시 → 조건·경계 → 지원
+
+**제품 진실 / 상태**: 응답 건수와 검색 범위는 현재 반환된 공개 레코드에만 한정하며 마켓플레이스
+총계로 표현하지 않는다. 원격 영역은 loading·empty·error·retry를 명시하고 성공한 부분은 보존한다.
+캠페인·회사 상세와 브랜드 상담은 실제 데이터·상호작용으로 유지하며 기존 REST, URL 안전성, 분석 이벤트,
+검증, 동의 버전, 요청 페이로드를 바꾸지 않는다.
+
+대시보드 증거는 데스크톱·모바일 모두 `SAMPLE`이 보여야 한다. KPI 값은 em dash(`—`), 결제·정산은
+`OFF`로 표시하며 인증된 실데이터처럼 보이게 하지 않는다. 필름과 콘택트 시트는 `CONTENT EXAMPLE`로
+표기하며 성과 데이터라고 부르지 않는다. 활동·트렌드·도달·매출·리뷰·마켓 규모를 꾸며내지 않는다.
+
+**모션 / 접근성**: reveal·hero·film·document 모션만 사용하고 reduced motion에서 모두 비활성화한다.
+터치 영역은 최소 `44px`, 모바일 입력은 최소 `16px`, 키보드 `focus-visible`은 명확해야 한다. 메뉴와
+모달은 focus trap, Escape 닫기, 트리거로 focus return을 제공한다.
+
+**참고 이미지 / QA**: 참고 이미지는 React/CSS로 재구성하며 잘라 붙인 UI 자산으로 쓰지 않는다.
+`hero-smoke`, `ground-mist`, `smoke-wisp`는 워크스페이스의 empty/search/account 장식 전용이며 콜시트에
+사용하지 않는다. `1440×900`, `1280×720`, `1024×768`, `390×844`, `360×800`, `320×568`,
+`844×390`에서 중앙 필름 배제 레인, 씬 레일 또는 모바일 독, 긴 한·영문, 가로 오버플로를 확인한다.
 
 ## 11. 추후 추가 예정
 

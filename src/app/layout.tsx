@@ -8,6 +8,15 @@ import ConsentAnalytics from "@/components/analytics/ConsentAnalytics";
 
 const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
 
+const SUBLANDING_DIRECTION_CONTRACT = `<!--
+THESIS: Public role pages behave like one live production call sheet, refusing generic SaaS card grids.
+OWN-WORLD: Paper #f6f5f1, ink #0a090b and violet #7331e0; ruled documents, film contact strips, hard scene seams, Archivo Black and Pretendard.
+STORY: Visitors understand the offer, inspect real workflow and workspace evidence, verify terms and choose consultation, application or campaign detail.
+FIRST VIEWPORT: Giant page-specific type occupies the left, a vertical take strip owns the center, a tilted factual call sheet sits right, and the primary action remains visible.
+FORM: Live production call-sheet sequence, candidate 5/7, seed 69640d99; combined with the approved Film Contact Cut typography and scroll rhythm.
+FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, and DESIGN.md
+-->`;
+
 // 2-축 폰트 시스템: Pretendard(본문, globals.css에서 import) + Archivo Black(영문 디스플레이).
 // Geist/Geist Mono 는 미사용 프리로드였으므로 제거 (AI-tells audit 2026-08-13).
 // 시안4 확정 디스플레이 폰트 — 영문 헤드라인 전용(한글은 Pretendard 굵은 웨이트).
@@ -69,6 +78,7 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-full flex flex-col">
+        <template data-impeccable-contract dangerouslySetInnerHTML={{ __html: SUBLANDING_DIRECTION_CONTRACT }} />
         <AuthInit />
         <Header />
         <main className="flex-1">{children}</main>

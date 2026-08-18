@@ -39,7 +39,7 @@ function subscribe(callback: () => void): () => void {
 }
 
 /** 언어를 바꾸고 쿠키에 저장한 뒤 구독 컴포넌트를 모두 갱신한다. */
-export function setLang(next: Lang): void {
+function setLang(next: Lang): void {
   if (typeof document === "undefined") return;
   document.cookie = `${COOKIE_NAME}=${next}; path=/; max-age=${ONE_YEAR_SECONDS}; samesite=lax`;
   document.documentElement.lang = next;

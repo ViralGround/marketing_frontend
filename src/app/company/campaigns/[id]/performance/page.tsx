@@ -3,28 +3,25 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
+import { BarChart3 } from "lucide-react";
 import api from "@/lib/api";
 import KPICards from "@/components/metric/KPICards";
-import Card from "@/components/ui/Card";
 import { useLang } from "@/lib/i18n";
+import PageHeader from "@/components/workspace/PageHeader";
+import {
+  StatePanel,
+  StateSkeleton,
+  WorkspacePage,
+  WorkspaceRecordCell,
+  WorkspaceRecordList,
+  WorkspaceRecordRow,
+  WorkspaceStage,
+} from "@/components/workspace/WorkspacePrimitives";
+import viewStyles from "@/components/workspace/WorkspaceViews.module.css";
 
-interface Item {
-  applicationId: number;
-  creatorId: number;
-  creatorName: string;
-  views: number;
-  likes: number;
-  comments: number;
-  externalUrl: string | null;
-  recordedAt: string | null;
-}
-
-interface Performance {
-  campaignId: number;
-  campaignTitle: string;
-  totals: { views: number; likes: number; comments: number; completedCount: number };
-  items: Item[];
-}
+interface Item { applicationId: number; creatorId: number; creatorName: string; views: number; likes: number; comments: number; externalUrl: string | null; recordedAt: string | null }
+interface Performance { campaignId: number; campaignTitle: string; totals: { views: number; likes: number; comments: number; completedCount: number }; items: Item[] }
+const COLUMNS = "minmax(12rem,1.3fr) minmax(7rem,.65fr) minmax(5rem,.45fr) minmax(5rem,.45fr) minmax(5rem,.45fr) minmax(7rem,.65fr)";
 
 export default function CampaignPerformancePage() {
   const params = useParams<{ id: string }>();
@@ -38,130 +35,19 @@ export default function CampaignPerformancePage() {
     if (!id) return;
     const controller = new AbortController();
     let active = true;
-
-    api
-      .get<Performance>(`/company/campaigns/${id}/performance`, { signal: controller.signal })
-      .then((res) => {
-        if (!active) return;
-        setData(res.data);
-        setError("");
-      })
-      .catch(() => {
-        if (!active) return;
-        setError(t("성과 정보를 불러오지 못했습니다", "Failed to load performance data"));
-      })
-      .finally(() => {
-        if (active) setLoading(false);
-      });
-
-    return () => {
-      active = false;
-      controller.abort();
-    };
+    api.get<Performance>(`/company/campaigns/${id}/performance`, { signal: controller.signal }).then((response) => { if (active) { setData(response.data); setError(""); } }).catch(() => { if (active) setError(t("성과 정보를 불러오지 못했습니다", "Failed to load performance data")); }).finally(() => { if (active) setLoading(false); });
+    return () => { active = false; controller.abort(); };
   }, [id, t]);
 
-  if (loading)
-    return (
-      <p className="mx-auto max-w-4xl px-6 py-10 text-muted">{t("불러오는 중...", "Loading...")}</p>
-    );
-  if (error || !data)
-    return (
-      <p className="mx-auto max-w-4xl px-6 py-10 text-error">
-        {error || t("데이터 없음", "No data")}
-      </p>
-    );
+  if (loading) return <WorkspacePage flow={false}><StateSkeleton label={t("성과 리포트 불러오는 중", "Loading performance report")} /></WorkspacePage>;
+  if (error || !data) return <WorkspacePage flow={false}><StatePanel tone="error" title={error || t("성과 데이터가 없습니다.", "No performance data.")} description={t("잠시 후 다시 시도하거나 캠페인 상태를 확인해주세요.", "Try again shortly or review the campaign status.")} /></WorkspacePage>;
 
-  return (
-    <div className="mx-auto max-w-4xl">
-      <Link
-        href={`/company/campaigns/${data.campaignId}`}
-        className="text-sm font-medium text-muted transition-colors hover:text-foreground"
-      >
-        &larr; {t("캠페인 상세로", "Back to campaign")}
-      </Link>
-      <h1 className="mt-3 text-3xl font-black tracking-[-0.03em] text-foreground md:text-4xl">
-        {data.campaignTitle}
-      </h1>
-      <p className="mt-2 text-sm text-muted">{t("지원 영상 성과 리포트", "Submission performance report")}</p>
+  const header = <div className={viewStyles.headerStack}><Link href={`/company/campaigns/${data.campaignId}`} className="inline-flex h-11 items-center text-sm font-bold text-muted">&larr; {t("캠페인 상세로", "Back to campaign")}</Link><PageHeader display="PERFORMANCE" subtitle={data.campaignTitle} /><KPICards items={[{ label: t("완료 지원자", "Completed applicants"), value: `${data.totals.completedCount}${t("명", "")}` }, { label: t("총 조회수", "Views"), value: data.totals.views.toLocaleString("ko-KR") }, { label: t("총 좋아요", "Likes"), value: data.totals.likes.toLocaleString("ko-KR") }, { label: t("총 댓글", "Comments"), value: data.totals.comments.toLocaleString("ko-KR") }]} /></div>;
 
-      <div className="my-10">
-        <KPICards
-          items={[
-            {
-              label: t("완료 지원자", "Completed applicants"),
-              value: `${data.totals.completedCount}${t("명", "")}`,
-            },
-            { label: t("총 조회수", "Total views"), value: data.totals.views.toLocaleString("ko-KR") },
-            { label: t("총 좋아요", "Total likes"), value: data.totals.likes.toLocaleString("ko-KR") },
-            {
-              label: t("총 댓글", "Total comments"),
-              value: data.totals.comments.toLocaleString("ko-KR"),
-            },
-          ]}
-        />
-      </div>
-
-      <section>
-        <h2 className="mb-4 text-lg font-semibold text-foreground">
-          {t("크리에이터별 성과", "Performance by creator")}
-        </h2>
-        {data.items.length === 0 ? (
-          <Card className="bg-surface-muted text-sm text-faint">
-            {t("정산 완료된 지원자가 없습니다.", "No settled applicants yet.")}
-          </Card>
-        ) : (
-          <ul className="space-y-3">
-            {data.items.map((it) => (
-              <li
-                key={it.applicationId}
-                className="rounded-2xl border border-line bg-surface p-5"
-              >
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <Link
-                    href={`/creators/${it.creatorId}`}
-                    className="font-semibold text-foreground hover:text-primary"
-                  >
-                    {it.creatorName}
-                  </Link>
-                  {it.externalUrl && isSafeHttpUrl(it.externalUrl) && (
-                    <a
-                      href={it.externalUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-xs font-medium text-primary underline-offset-2 hover:underline"
-                    >
-                      {t("게시물 보기 →", "View post →")}
-                    </a>
-                  )}
-                </div>
-                <p className="mt-1.5 text-xs text-muted">
-                  {t("조회 ", "Views ")}
-                  {it.views.toLocaleString("ko-KR")}
-                  {t(" · 좋아요 ", " · Likes ")}
-                  {it.likes.toLocaleString("ko-KR")}
-                  {t(" · 댓글 ", " · Comments ")}
-                  {it.comments.toLocaleString("ko-KR")}
-                </p>
-                {it.recordedAt && (
-                  <p className="mt-0.5 text-xs text-faint">
-                    {t("기록: ", "Recorded: ")}
-                    {new Date(it.recordedAt).toLocaleDateString("ko-KR")}
-                  </p>
-                )}
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
-    </div>
-  );
+  return <WorkspacePage size="wide" flow={false}><WorkspaceStage className={viewStyles.pageStage} header={header}>{data.items.length === 0 ? <StatePanel icon={BarChart3} title={t("정산 완료된 지원자가 없습니다.", "No settled applicants yet.")} description={t("완료된 콘텐츠의 성과가 기록되면 여기에 표시됩니다.", "Recorded results from completed content appear here.")} /> : <WorkspaceRecordList columns={COLUMNS} labels={[t("크리에이터", "Creator"), t("게시물", "Post"), t("조회", "Views"), t("좋아요", "Likes"), t("댓글", "Comments"), t("기록일", "Recorded")]}>{data.items.map((item) => <WorkspaceRecordRow key={item.applicationId} columns={COLUMNS}><WorkspaceRecordCell label={t("크리에이터", "Creator")}><span className={viewStyles.recordTitle}>{item.creatorName}</span></WorkspaceRecordCell><WorkspaceRecordCell label={t("게시물", "Post")}>{item.externalUrl && isSafeHttpUrl(item.externalUrl) ? <a href={item.externalUrl} target="_blank" rel="noopener noreferrer" className="inline-flex h-11 items-center text-xs font-bold text-primary underline">{t("게시물 보기", "View post")}</a> : "—"}</WorkspaceRecordCell><WorkspaceRecordCell label={t("조회", "Views")}><span className={viewStyles.recordStrong}>{item.views.toLocaleString("ko-KR")}</span></WorkspaceRecordCell><WorkspaceRecordCell label={t("좋아요", "Likes")}>{item.likes.toLocaleString("ko-KR")}</WorkspaceRecordCell><WorkspaceRecordCell label={t("댓글", "Comments")}>{item.comments.toLocaleString("ko-KR")}</WorkspaceRecordCell><WorkspaceRecordCell label={t("기록일", "Recorded")}>{item.recordedAt ? new Date(item.recordedAt).toLocaleDateString("ko-KR") : "—"}</WorkspaceRecordCell></WorkspaceRecordRow>)}</WorkspaceRecordList>}</WorkspaceStage></WorkspacePage>;
 }
 
 function isSafeHttpUrl(raw: string): boolean {
-  try {
-    const u = new URL(raw);
-    return u.protocol === "http:" || u.protocol === "https:";
-  } catch {
-    return false;
-  }
+  try { const url = new URL(raw); return url.protocol === "http:" || url.protocol === "https:"; }
+  catch { return false; }
 }

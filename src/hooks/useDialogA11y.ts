@@ -31,8 +31,11 @@ export function useDialogA11y<T extends HTMLElement>(open: boolean, onClose: () 
     document.body.style.overflow = "hidden";
 
     const focusFrame = window.requestAnimationFrame(() => {
+      const preferred = dialogRef.current?.querySelector<HTMLElement>(
+        "[data-dialog-initial-focus]",
+      );
       const first = dialogRef.current?.querySelector<HTMLElement>(FOCUSABLE);
-      (first ?? dialogRef.current)?.focus();
+      (preferred ?? first ?? dialogRef.current)?.focus();
     });
 
     const onKeyDown = (event: KeyboardEvent) => {

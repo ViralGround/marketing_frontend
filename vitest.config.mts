@@ -1,4 +1,4 @@
-import { defineConfig } from "vitest/config";
+import { configDefaults, defineConfig } from "vitest/config";
 import react from "@vitejs/plugin-react";
 
 export default defineConfig({
@@ -11,5 +11,11 @@ export default defineConfig({
     pool: "vmThreads",
     fileParallelism: false,
     setupFiles: ["./vitest.setup.ts"],
+    exclude: [
+      ...configDefaults.exclude,
+      "e2e/**",
+      "staging-tests/**",
+      "scripts/**/*.test.mjs",
+    ],
   },
 });

@@ -9,6 +9,7 @@ vi.mock("@/lib/api", () => ({
   default: { post: vi.fn() },
 }));
 vi.mock("@/lib/i18n", () => ({ useLang: () => ({ t: (ko: string) => ko }) }));
+vi.mock("@/lib/featureFlags", () => ({ FEATURE_UPLOADS_ENABLED: true }));
 
 class SuccessfulUploadRequest {
   upload: { onprogress: ((event: ProgressEvent) => void) | null } = { onprogress: null };
@@ -51,6 +52,7 @@ describe("direct object-storage upload completion contract", () => {
       <VideoUploader applicationId={31} onUploaded={uploaded} onCancel={vi.fn()} />,
     );
     const file = new File(["video"], "clip.mp4", { type: "video/mp4" });
+    expect(screen.getByRole("button", { name: "업로드할 영상 파일 선택" })).toBeTruthy();
     fireEvent.change(container.querySelector('input[type="file"]')!, { target: { files: [file] } });
 
     await userEvent.click(screen.getByRole("button", { name: "업로드 후 제출" }));
@@ -68,6 +70,18 @@ describe("direct object-storage upload completion contract", () => {
       videoContentType: "video/mp4",
       videoSizeBytes: file.size,
     });
+  });
+
+  it("announces invalid video files without requiring pointer input", async () => {
+    const { container } = render(
+      <VideoUploader applicationId={31} onUploaded={vi.fn()} onCancel={vi.fn()} />,
+    );
+
+    fireEvent.change(container.querySelector('input[type="file"]')!, {
+      target: { files: [new File(["text"], "notes.txt", { type: "text/plain" })] },
+    });
+
+    expect((await screen.findByRole("alert")).textContent).toContain("지원하지 않는 영상 형식");
   });
 
   it("verifies an uploaded image before exposing its key to the form", async () => {

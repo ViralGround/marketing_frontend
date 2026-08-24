@@ -125,7 +125,7 @@
   font-size: 12px;
   line-height: 1;
   text-decoration: none;
-  opacity: 0.56;
+  opacity: 0.88;
   transition: opacity 180ms ease, transform 380ms var(--ease-expo);
 }
 
@@ -2061,7 +2061,7 @@
   min-height: 78px;
   align-content: center;
   padding: 12px 14px;
-  color: rgba(10, 9, 11, 0.58);
+  color: rgba(10, 9, 11, 0.68);
   text-align: left;
   background: transparent;
   border: 0;
@@ -2121,7 +2121,7 @@
   font-size: 10.5px;
   font-weight: 780;
   letter-spacing: 0.07em;
-  opacity: 0.72;
+  opacity: 1;
 }
 
 .deskPanel {

@@ -28,6 +28,9 @@ describe("OneVideoLanding", () => {
     expect(screen.getAllByRole("link", { name: "브랜드 베타 문의" }).length).toBeGreaterThan(0);
     expect(container.querySelectorAll("main").length).toBe(0);
     expect(container.textContent).not.toContain("UP TO ₩2.5M");
+    expect(container.textContent).not.toContain("조건과 보상");
+    expect(container.textContent).not.toContain("범위·일정·보상");
+    expect(container.textContent).toContain("범위·일정·검수 기준");
     expect(HTMLMediaElement.prototype.play).not.toHaveBeenCalled();
   });
 });

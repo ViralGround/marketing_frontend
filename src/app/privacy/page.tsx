@@ -7,7 +7,8 @@ import {
 } from "@/lib/legal/privacy";
 
 export const metadata = {
-  title: "개인정보 처리방침 | Viral Ground",
+  title: "개인정보 처리방침",
+  alternates: { canonical: "/privacy" },
 };
 
 export default function PrivacyPage() {

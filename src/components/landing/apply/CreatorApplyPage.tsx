@@ -3,7 +3,7 @@
 /*
 THESIS: 크리에이터 랜딩은 설득문이 아니라 원서 그 자체다. 방문자는 문서를 내려 읽으며 조건을 확인하고 서명란에서 지원한다. 콜시트 5씬 반복을 거부한다.
 OWN-WORLD: 서류 지면(#f2efe6) 위 한 장의 시트(#fffdf7), 잉크 #131118, 마크 보라 #7331e0. 좌측 조항 번호 열, 점선 기입란, 도장 스탬프, 마지막은 검정 서명 블록. 필름·씬 레일·고정 스트립 없음.
-STORY: "무엇을 하는 일인지 → 무엇이 필요한지 → 얼마를 언제 받는지 → 지원 후 어떤 상태를 지나는지"를 조항 순서로 읽고 제출한다.
+STORY: "무엇을 하는 일인지 → 무엇이 필요한지 → 작업 범위와 검수 방식 → 지원 후 어떤 상태를 지나는지"를 조항 순서로 읽고 제출한다.
 FIRST VIEWPORT: 문서 머리(APPLICATION / 지원서) + 접수중 스탬프 + 리드 문단. 히어로 이미지 없음.
 FORM: 구조 후보 ④ 지원서 그 자체 (surface roll 77be1d7b, dealt 4·2·3, 4 리드).
 FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, and DESIGN.md
@@ -30,7 +30,7 @@ export default function CreatorApplyPage() {
     <>
       <GroundTopbar />
 
-      <main className={styles.doc}>
+      <div className={styles.doc}>
         <article className={styles.sheet}>
           <header className={styles.docHead}>
             <h1 className={styles.docTitle}>
@@ -110,27 +110,27 @@ export default function CreatorApplyPage() {
           <section className={styles.clause}>
             <span className={styles.clauseNo}>03</span>
             <div className={styles.clauseBody}>
-              <h2 className={styles.clauseTitle}>{t("보상 — 언제, 얼마를", "Reward — when and how much")}</h2>
+              <h2 className={styles.clauseTitle}>{t("작업 조건 — 범위와 일정", "Work terms — scope and timeline")}</h2>
               <dl>
                 <div className={styles.entry}>
-                  <dt>{t("금액", "Amount")}</dt>
-                  <dd>{t("캠페인마다 다르며, 기본 보상은 지원 전 캠페인 상세에 공개됩니다.", "Set per campaign; the base reward is public before you apply.")}</dd>
+                  <dt>{t("범위", "Scope")}</dt>
+                  <dd>{t("제품 사실·금지 표현·필수 결과물은 지원 전 캠페인 브리프에서 확인합니다.", "Product facts, restrictions, and required deliverables are shown in the campaign brief before you apply.")}</dd>
                 </div>
                 <div className={styles.entry}>
-                  <dt>{t("확정", "Confirmed")}</dt>
-                  <dd>{t("선정되어 참여가 확정되는 시점에 조건이 확정됩니다.", "Terms are fixed when your participation is confirmed.")}</dd>
+                  <dt>{t("일정", "Timeline")}</dt>
+                  <dd>{t("선정 시 제작·제출 일정을 다시 확인한 뒤 참여가 확정됩니다.", "Production and submission dates are reconfirmed when you are selected.")}</dd>
                 </div>
                 <div className={styles.entry}>
-                  <dt>{t("지급", "Payment")}</dt>
-                  <dd>{t("지급 방식과 일정은 참여 확정 시 운영팀이 개별 안내합니다.", "Method and schedule are shared individually at that point.")}</dd>
+                  <dt>{t("검수", "Review")}</dt>
+                  <dd>{t("제출본의 수정 요청·재제출·최종 검수 결과가 같은 캠페인 이력에 남습니다.", "Change requests, resubmissions, and the final review result stay in one campaign history.")}</dd>
                 </div>
               </dl>
               <p className={styles.notice}>
                 <CircleOff aria-hidden="true" />
                 <span>
                   {t(
-                    "플랫폼 자동 정산 기능은 아직 켜지 않았습니다. 어떤 계좌로도 송금을 요구하지 않으며, 에스크로를 제공한다고 표시하지 않습니다.",
-                    "Automated settlement is not switched on. We never request a transfer and never present escrow as live.",
+                    "현재 베타는 매칭과 작업 관리만 제공합니다. 별도 계약이나 결제는 플랫폼에서 체결·처리하지 않습니다.",
+                    "This beta provides matching and work management only. Separate contracts and payments are not executed or processed on the platform.",
                   )}
                 </span>
               </p>
@@ -210,7 +210,7 @@ export default function CreatorApplyPage() {
             <span>{t("콘텐츠 예시 · 성과 데이터 아님", "CONTENT EXAMPLES / NOT PERFORMANCE DATA")}</span>
           </footer>
         </article>
-      </main>
+      </div>
 
       <div className={styles.dock}>
         <Link href="/signup/creator" onClick={() => trackEvent("cta_click", { location: "creator_mobile_dock", target: "signup_creator" })}>

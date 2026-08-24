@@ -6,7 +6,7 @@
  * 브랜드 운영 데스크와 크리에이터 작업 데스크가 하나의 캠페인을 두고 실제로
  * 주고받는 순서를 그대로 보여준다. 화면 이름·버튼 문구·상태 라벨은 제품에서
  * 실제로 쓰는 값(ApplicationStatusBadge / 지원자 큐 / VideoUploader / MetricForm)을
- * 그대로 옮겼고, 수치는 만들어내지 않는다(em dash). 결제·정산은 OFF 로만 표기한다.
+ * 그대로 옮겼고, 수치는 만들어내지 않는다(em dash). 공개 화면은 비금융 작업 흐름만 표기한다.
  *
  * 상호작용 자체가 제품의 탭 모델(WorkspaceTabs)과 같은 규칙을 따른다:
  * role=tablist, 좌우 방향키·Home·End 이동, 선택된 단계만 패널 노출.
@@ -14,6 +14,7 @@
 
 import { useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import { ArrowRight, Minus } from "lucide-react";
+import { FEATURE_UPLOADS_ENABLED } from "@/lib/featureFlags";
 import { useLang } from "@/lib/i18n";
 import { trackEvent } from "@/lib/gtag";
 import { ProductPreviewLabel, callStyles as styles } from "./CallSheetFrame";
@@ -102,7 +103,7 @@ export default function CampaignDeskDemo() {
         desk: t("크리에이터 작업 데스크", "Creator work desk"),
         path: <>{t("탐색", "Discover")} · <b>{t("캠페인 상세", "Campaign detail")}</b></>,
         rows: [
-          { title: t("이 캠페인에 지원", "Apply to this campaign"), meta: t("보상·마감·지원 현황을 확인한 뒤 지원합니다.", "Check reward, deadline and slots before applying.") },
+          { title: t("이 캠페인에 지원", "Apply to this campaign"), meta: t("작업 범위·마감·지원 현황을 확인한 뒤 지원합니다.", "Check scope, deadline, and slots before applying.") },
           { title: t("지원 메시지 (선택)", "Application message (optional)"), meta: t("어떤 스타일의 영상을 만들 계획인지 간단히 적습니다.", "Briefly describe the video you plan to make.") },
         ],
         actions: [{ label: t("지원 제출", "Submit application"), variant: "primary" }],
@@ -168,15 +169,21 @@ export default function CampaignDeskDemo() {
       handoff: t("제출본", "CUT"),
       creator: {
         desk: t("크리에이터 작업 데스크", "Creator work desk"),
-        path: <>{t("MY WORK", "My work")} · <b>{t("영상 업로드", "Video upload")}</b></>,
-        rows: [
-          { title: t("영상 업로드", "Upload the video"), meta: t("mp4, mov, webm · 최대 500MB", "mp4, mov, webm · up to 500MB") },
-          { title: t("업로드 후 제출", "Upload, then submit"), meta: t("제출할 때마다 회차가 쌓입니다.", "Each submission is kept as a numbered take.") },
-        ],
-        actions: [
-          { label: t("업로드 후 제출", "Upload and submit"), variant: "primary" },
-          { label: t("취소", "Cancel"), variant: "quiet" },
-        ],
+        path: <>{t("MY WORK", "My work")} · <b>{FEATURE_UPLOADS_ENABLED ? t("영상 업로드", "Video upload") : t("제출 준비 중", "Submission unavailable")}</b></>,
+        rows: FEATURE_UPLOADS_ENABLED
+          ? [
+              { title: t("영상 업로드", "Upload the video"), meta: t("mp4, mov, webm · 최대 500MB", "mp4, mov, webm · up to 500MB") },
+              { title: t("업로드 후 제출", "Upload, then submit"), meta: t("제출할 때마다 회차가 쌓입니다.", "Each submission is kept as a numbered take.") },
+            ]
+          : [
+              { title: t("파일 제출 비활성화", "File submission is disabled"), meta: t("전용 저장소와 접근 정책 검증이 끝나기 전에는 사용할 수 없습니다.", "This remains unavailable until the dedicated storage and access policy are verified."), badge: "OFF", tone: "off" },
+            ],
+        actions: FEATURE_UPLOADS_ENABLED
+          ? [
+              { label: t("업로드 후 제출", "Upload and submit"), variant: "primary" },
+              { label: t("취소", "Cancel"), variant: "quiet" },
+            ]
+          : undefined,
       },
       brand: {
         desk: t("브랜드 운영 데스크", "Brand operations desk"),
@@ -228,8 +235,8 @@ export default function CampaignDeskDemo() {
       to: t("수정 요청 → 재제출", "Changes → resubmit"),
       note: (
         <>
-          <b>{t("승인·정산 버튼은 아직 없습니다.", "There is no approve or settle button yet.")}</b>{" "}
-          {t("검수 단계에서 기록되는 것은 수정 요청과 거절뿐이고, 승인·정산은 결제 연결 이후에 열립니다.", "Review records only change requests and rejections; approval and settlement open after payments are connected.")}
+          <b>{t("검수 결과는 캠페인 이력에 남습니다.", "The review result stays in the campaign history.")}</b>{" "}
+          {t("수정 요청과 거절은 사유와 함께 기록되고, 최종 검수 결과도 같은 흐름에서 확인합니다.", "Change requests and rejections include a reason, and the final review result stays in the same flow.")}
         </>
       ),
     },
@@ -245,7 +252,7 @@ export default function CampaignDeskDemo() {
         path: <>{t("PERFORMANCE", "Performance")} · <b>{t("성과 입력", "Enter metrics")}</b></>,
         rows: [
           { title: t("조회수 · 좋아요 · 댓글", "Views · likes · comments"), meta: t("게시물의 실제 수치를 직접 입력합니다.", "The creator types the real numbers from the post.") },
-          { title: t("게시물 URL (선택)", "Post URL (optional)"), meta: t("http/https 링크만 저장됩니다.", "Only http/https links are stored.") },
+          { title: t("게시물 URL (선택)", "Post URL (optional)"), meta: t("공개 HTTPS 링크만 저장됩니다.", "Only public HTTPS links are stored.") },
         ],
         actions: [{ label: t("성과 입력", "Save metrics"), variant: "primary" }],
       },
@@ -264,38 +271,6 @@ export default function CampaignDeskDemo() {
           {t("성과는 추정치가 아니라 ", "Performance is not an estimate — it is ")}
           <b>{t("크리에이터가 입력한 실제 수치", "the number the creator entered")}</b>
           {t("입니다. 입력 전에는 미입력으로 남습니다.", ". Before that it stays marked as not entered.")}
-        </>
-      ),
-    },
-    {
-      id: "settle",
-      no: "06",
-      ko: t("정산", "Settle"),
-      en: "SETTLE",
-      actor: "none",
-      handoff: "OFF",
-      brand: {
-        desk: t("브랜드 운영 데스크", "Brand operations desk"),
-        path: <>{t("캠페인 상세", "Campaign detail")} · <b>{t("결제·정산", "Payments")}</b></>,
-        rows: [
-          { title: t("결제·정산", "Payments"), meta: t("PG 연결 전까지 비활성입니다.", "Disabled until the gateway is connected."), badge: "OFF", tone: "off" },
-          { title: t("송금 안내 없음", "No transfer instructions"), meta: t("화면의 예산을 어떤 계좌로도 송금하지 마세요.", "Never transfer the shown budget to any account.") },
-        ],
-      },
-      creator: {
-        desk: t("크리에이터 작업 데스크", "Creator work desk"),
-        path: <>{t("작업 데스크", "Work desk")} · <b>{t("정산", "Settlement")}</b></>,
-        rows: [
-          { title: t("정산 현황", "Settlement status"), meta: t("완료 처리된 기록만 합산해 보여줍니다.", "Only completed records are summed."), badge: "—", tone: "off" },
-          { title: t("지급 방식·일정", "Method and schedule"), meta: t("참여 확정 시 운영팀이 개별 안내합니다.", "Shared individually when participation is confirmed.") },
-        ],
-      },
-      to: t("기능 준비 중", "In preparation"),
-      note: (
-        <>
-          {t("관리형 베타에서는 결제·정산이 ", "In the managed beta, payments and settlement are ")}
-          <b>{t("비활성", "disabled")}</b>
-          {t("입니다. 운영 계약과 PG 연결이 끝난 뒤 검증된 절차를 별도로 안내합니다.", ". A verified procedure is announced once the operating contract and gateway are in place.")}
         </>
       ),
     },

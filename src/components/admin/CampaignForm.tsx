@@ -335,12 +335,12 @@ export default function CampaignForm({
         {mode === "create" && (
           <div className="rounded-2xl border border-line bg-surface-muted p-4">
             <p className="text-sm font-medium text-foreground">
-              {t("관리 베타 · 결제 비활성", "Managed beta · payments unavailable")}
+              {t("비공개 초안으로 저장", "Saved as a private draft")}
             </p>
-            <p className="mt-2 text-xs leading-relaxed text-warning">
+            <p className="mt-2 text-xs leading-relaxed text-content-soft">
               {t(
-                "캠페인은 초안·결제 대기 상태로만 생성됩니다. 상용 PG와 운영 계약이 활성화되기 전에는 모집 시작이나 임의 입금 완료 처리를 할 수 없습니다.",
-                "Campaigns are created only as drafts awaiting payment. Recruiting and manual payment completion remain unavailable until a commercial PG and operating agreement are active.",
+                "캠페인은 검토 가능한 초안으로 생성됩니다. 공개 전 내용과 운영 권한을 다시 확인해주세요.",
+                "Campaigns are created as reviewable drafts. Check the content and operating permissions before publishing.",
               )}
             </p>
           </div>

@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import api from "@/lib/api";
 import ImageCropModal from "@/components/ui/ImageCropModal";
 import { useLang } from "@/lib/i18n";
+import { FEATURE_UPLOADS_ENABLED } from "@/lib/featureFlags";
 
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const MAX_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
@@ -32,6 +33,9 @@ export default function ImageUploader({ previewUrl, onChange, disabled, aspect }
   const [dragging, setDragging] = useState(false);
   const [error, setError] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
+  const inputId = useId();
+  const hintId = `${inputId}-hint`;
+  const errorId = `${inputId}-error`;
 
   useEffect(() => {
     return () => {
@@ -44,6 +48,15 @@ export default function ImageUploader({ previewUrl, onChange, disabled, aspect }
       if (cropSrc) URL.revokeObjectURL(cropSrc);
     };
   }, [cropSrc]);
+
+  if (!FEATURE_UPLOADS_ENABLED) {
+    return (
+      <div role="status" className="rounded-xl border border-warning/30 bg-warning/5 p-4 text-sm leading-relaxed text-content-soft">
+        <strong className="block text-foreground">{t("이미지 업로드 준비 중", "Image uploads are being prepared")}</strong>
+        <span>{t("전용 저장소 검증이 끝난 뒤 이미지를 등록하거나 교체할 수 있습니다.", "Images can be added or replaced after the dedicated storage is verified.")}</span>
+      </div>
+    );
+  }
 
   const display = localPreview ?? previewUrl;
 
@@ -171,6 +184,8 @@ export default function ImageUploader({ previewUrl, onChange, disabled, aspect }
       <button
         type="button"
         disabled={disabled || loading}
+        aria-controls={inputId}
+        aria-describedby={`${display ? "" : hintId}${error ? ` ${errorId}` : ""}`.trim() || undefined}
         aria-label={display ? t("이미지 교체", "Replace image") : t("이미지 선택", "Choose image")}
         onDragOver={(e) => {
           if (disabled || loading) return;
@@ -203,15 +218,17 @@ export default function ImageUploader({ previewUrl, onChange, disabled, aspect }
         ) : (
           <div className="flex h-full w-full flex-col items-center justify-center bg-surface-chip text-center">
             <p className="text-sm text-muted">{t("이미지를 끌어다 놓거나 클릭해서 선택해주세요", "Drag and drop an image or click to select")}</p>
-            <p className="mt-1 text-xs text-faint">{hint}</p>
+            <p id={hintId} className="mt-1 text-xs text-faint">{hint}</p>
           </div>
         )}
       </button>
       <input
+        id={inputId}
         ref={inputRef}
         type="file"
         accept={ALLOWED_TYPES.join(",")}
         hidden
+        aria-label={t("이미지 파일", "Image file")}
         onChange={(e) => handleFile(e.target.files?.[0])}
       />
 
@@ -221,7 +238,15 @@ export default function ImageUploader({ previewUrl, onChange, disabled, aspect }
             <span>{t("업로드 중", "Uploading")}</span>
             <span>{progress}%</span>
           </div>
-          <div className="h-1.5 overflow-hidden rounded bg-surface-chip">
+          <div
+            className="h-1.5 overflow-hidden rounded bg-surface-chip"
+            role="progressbar"
+            aria-label={t("이미지 업로드 진행률", "Image upload progress")}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={progress}
+            aria-valuetext={`${progress}%`}
+          >
             <div
               className="h-full bg-gray-900 transition-all"
               style={{ width: `${progress}%` }}
@@ -241,7 +266,7 @@ export default function ImageUploader({ previewUrl, onChange, disabled, aspect }
         </button>
       )}
 
-      {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+      {error && <p id={errorId} role="alert" className="mt-2 text-sm text-error">{error}</p>}
 
       {aspect && cropSrc && (
         <ImageCropModal

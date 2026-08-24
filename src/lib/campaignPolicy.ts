@@ -32,7 +32,8 @@ export function canEditBudget(
   if (role === "ADMIN") {
     return escrowStatus === "NONE" || escrowStatus === "PENDING_DEPOSIT";
   }
-  return escrowStatus === "PENDING_DEPOSIT";
+  return escrowStatus === "PENDING_DEPOSIT"
+    || (!FEATURE_PAYMENTS_ENABLED && escrowStatus === "NONE");
 }
 
 /**
@@ -52,3 +53,4 @@ export function canEditCampaignFields(
   if (escrowStatus === "REFUNDED") return false;
   return true;
 }
+import { FEATURE_PAYMENTS_ENABLED } from "@/lib/featureFlags";

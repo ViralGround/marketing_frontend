@@ -86,7 +86,9 @@ export default function EditCampaignPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
-  const budgetEditable = useMemo(() => detail ? canEditBudget("COMPANY", detail.escrowStatus) : false, [detail]);
+  const budgetEditable = useMemo(() => detail
+    ? detail.status === "DRAFT" && canEditBudget("COMPANY", detail.escrowStatus)
+    : false, [detail]);
   const readOnly = useMemo(() => detail ? !canEditCampaignFields("COMPANY", detail.escrowStatus, detail.status) : true, [detail]);
   const totalBudget = Math.max(0, Number(rewardAmount) || 0) * Math.max(0, Number(maxParticipants) || 0);
   const stepIndex = STEPS.indexOf(step);

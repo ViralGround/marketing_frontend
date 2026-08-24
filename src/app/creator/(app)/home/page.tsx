@@ -21,15 +21,16 @@ import {
   WorkspaceStage,
 } from "@/components/workspace/WorkspacePrimitives";
 import viewStyles from "@/components/workspace/WorkspaceViews.module.css";
+import { FEATURE_PAYMENTS_ENABLED } from "@/lib/featureFlags";
 
-type AppStatus = "PENDING" | "WITHDRAWN" | "APPROVED" | "REJECTED" | "SUBMITTED" | "SETTLED";
+type AppStatus = "PENDING" | "WITHDRAWN" | "APPROVED" | "REJECTED" | "SUBMITTED" | "CHANGES_REQUESTED" | "COMPLETED" | "SETTLED";
 type SortKey = "recent" | "reward" | "deadline";
 
 interface CampaignItem {
   id: number;
   title: string;
   brandName: string;
-  rewardAmount: number;
+  rewardAmount?: number | null;
   thumbnailUrl: string | null;
   deadline: string | null;
   maxParticipants: number;
@@ -39,6 +40,9 @@ interface CampaignItem {
 }
 
 const SORT_LABEL: Record<SortKey, { ko: string; en: string }> = { recent: { ko: "최신순", en: "Latest" }, reward: { ko: "보상 높은 순", en: "Highest reward" }, deadline: { ko: "마감 임박순", en: "Deadline soon" } };
+const SORT_KEYS: SortKey[] = FEATURE_PAYMENTS_ENABLED
+  ? ["recent", "reward", "deadline"]
+  : ["recent", "deadline"];
 const NEW_WINDOW_MS = 3 * 24 * 60 * 60 * 1000;
 const URGENT_WINDOW_MS = 3 * 24 * 60 * 60 * 1000;
 const COLUMNS = "minmax(14rem,1.5fr) minmax(7rem,.7fr) minmax(7rem,.65fr) minmax(7rem,.65fr) minmax(7rem,.65fr)";
@@ -80,7 +84,7 @@ export default function CreatorHomePage() {
     <div className={viewStyles.headerStack}>
       <PageHeader display="DISCOVER" subtitle={t("지금 모집 중인 캠페인을 비교하고 내 채널과 맞는 브리프를 선택하세요.", "Compare recruiting campaigns and choose a brief that fits your channel.")} />
       <FilterToolbar
-        primary={<SegmentedControl label={t("정렬", "Sort")} value={sort} options={(Object.keys(SORT_LABEL) as SortKey[]).map((value) => ({ value, label: t(SORT_LABEL[value].ko, SORT_LABEL[value].en) }))} onChange={changeSort} />}
+        primary={<SegmentedControl label={t("정렬", "Sort")} value={sort} options={SORT_KEYS.map((value) => ({ value, label: t(SORT_LABEL[value].ko, SORT_LABEL[value].en) }))} onChange={changeSort} />}
         secondary={<form onSubmit={handleSearch} className={viewStyles.searchForm}><div className={viewStyles.searchField}><Search aria-hidden="true" /><Input type="search" value={searchInput} onChange={(event) => setSearchInput(event.target.value)} placeholder={t("캠페인·브랜드 검색", "Search campaigns or brands")} aria-label={t("캠페인 검색", "Search campaigns")} /></div><Button type="submit" size="sm">{t("검색", "Search")}</Button>{search && <button type="button" className={viewStyles.resetButton} onClick={resetSearch}>{t("초기화", "Reset")}</button>}</form>}
       />
     </div>
@@ -94,7 +98,7 @@ export default function CreatorHomePage() {
         ) : campaigns.length === 0 ? (
           <StatePanel icon={SearchX} title={search ? t(`"${search}" 검색 결과가 없습니다.`, `No campaigns found for "${search}".`) : t("현재 모집 중인 캠페인이 없습니다.", "No campaigns are recruiting right now.")} description={search ? t("다른 제품명이나 브랜드명으로 검색해보세요.", "Try another product or brand name.") : t("새 브리프가 열리면 검증된 캠페인 정보가 여기에 표시됩니다.", "Verified campaign briefs appear here when they open.")} />
         ) : (
-          <WorkspaceRecordList columns={COLUMNS} labels={[t("캠페인", "Campaign"), t("지원 상태", "Application"), t("보상", "Reward"), t("모집", "Recruiting"), t("마감", "Deadline")]}>
+          <WorkspaceRecordList columns={COLUMNS} labels={[t("캠페인", "Campaign"), t("지원 상태", "Application"), t("작업 범위", "Work scope"), t("모집", "Recruiting"), t("마감", "Deadline")]}>
             {campaigns.map((campaign) => {
               const isNew = now - new Date(campaign.createdAt).getTime() < NEW_WINDOW_MS;
               const deadlineMs = campaign.deadline ? new Date(campaign.deadline).getTime() : null;
@@ -106,7 +110,7 @@ export default function CreatorHomePage() {
                     <img src={campaign.thumbnailUrl} alt="" />
                   ) : "VG"}</span><span className={viewStyles.titleCopy}><strong className={viewStyles.recordTitle}>{campaign.title}</strong><small className={viewStyles.recordMeta}>{campaign.brandName}{isNew ? ` · ${t("신규", "New")}` : ""}{isUrgent ? ` · ${t("마감 임박", "Closing soon")}` : ""}</small></span></span></WorkspaceRecordCell>
                   <WorkspaceRecordCell label={t("지원 상태", "Application")}>{campaign.myApplication ? <ApplicationStatusBadge status={campaign.myApplication.status} /> : <Badge tone={isUrgent ? "warning" : "primary"}>{isUrgent ? t("마감 임박", "Closing") : t("지원 가능", "Open")}</Badge>}</WorkspaceRecordCell>
-                  <WorkspaceRecordCell label={t("보상", "Reward")}><span className={viewStyles.recordStrong}>₩{campaign.rewardAmount.toLocaleString("ko-KR")}</span></WorkspaceRecordCell>
+                  <WorkspaceRecordCell label={t("작업 범위", "Work scope")}><span className={viewStyles.recordStrong}>{t("브리프 확인", "See brief")}</span></WorkspaceRecordCell>
                   <WorkspaceRecordCell label={t("모집", "Recruiting")}>{campaign.applicationCount} / {campaign.maxParticipants}</WorkspaceRecordCell>
                   <WorkspaceRecordCell label={t("마감", "Deadline")}>{campaign.deadline ? new Date(campaign.deadline).toLocaleDateString("ko-KR") : t("미정", "Open")}</WorkspaceRecordCell>
                 </WorkspaceRecordRow>

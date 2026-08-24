@@ -1,5 +1,21 @@
 # Brand and Creator Workspace Design
 
+## Release-environment boundary
+
+Production-mode frontend builds fail closed at build time. The sanitized candidate is allowed
+only with the exact `https://staging.viralground.kr` and
+`https://api.staging.viralground.kr` pair, disabled payment/Instagram/upload flags, and no
+browser storage origin. Unknown, local production-mode, and preview builds are rejected.
+
+The currently running legacy origins (`viralground.kr`, `www.viralground.kr`,
+`api.viralground.kr`, and `storage.viralground.kr`) are an unconditional denylist for this
+release candidate. A future new-production build needs all of the following in a protected
+production-only environment: exact `APP_ENV=production`, the confirmation phrase defined by
+`NEW_PRODUCTION_DEPLOY_CONFIRMATION`, and separately approved exact site/API/storage origins.
+Vercel Preview and Development builds remain rejected even if approval values are copied by
+mistake. Reusing a legacy origin after cutover requires a separate reviewed code change; no
+environment variable can bypass the current denylist.
+
 ## Scope and thesis
 
 This document is the source of truth for the authenticated brand and creator workspaces. The workspace is a compact editorial campaign desk: warm paper, near-black ink, electric violet, ruled hierarchy, dense factual rows, and one clearly owned scroll region at a time. It is not a generic card dashboard and it never fills empty space with invented analytics.
@@ -13,8 +29,8 @@ The root `/` is excluded and remains unchanged. `/creators`, `/campaigns`, `/bus
 ### Live call sheet — `/creators`, `/campaigns`, `/business`, `/creator`
 
 - **World and form:** warm paper `#f6f5f1`, ink `#0a090b`, and electric violet `#7331e0`; ruled documents, film contact strips, and hard paper/violet/ink scene seams. Archivo Black owns short English display; Pretendard owns Korean and interface copy. The shipped form is candidate 5/7, seed `69640d99`: approved B live-call-sheet structure with C film-contact-cut typography and scroll rhythm.
-- **Single source:** use `src/components/landing/callsheet/{CallSheetFrame,CallSheet.module.css,ProductProof,CreatorsIndexCallSheetPage,CampaignsCallSheetPage,BusinessCallSheetPage}` and `src/components/landing/apply/CreatorApplyPage`. The retired `landing/viral` implementation is not part of the public routes and must not be reintroduced.
-- **First viewport and desktop lanes:** page-specific giant type sits left, the persistent vertical take strip owns the center, and a tilted factual call sheet sits right. Desktop layouts reserve explicit exclusion lanes on both sides of the central film, with a numbered scene rail on the far right; content never slides under either element. A scene whose whole job is side-by-side reading may instead retire the film for its own scene through `CallSheetFrame`'s `quietFilm` scene-id list — the strip fades out rather than being overlapped.
+- **Single source:** `/creators` and `/campaigns` use `src/components/landing/callsheet/{CallSheetFrame,CallSheet.module.css,ProductProof,CreatorsIndexCallSheetPage,CampaignsCallSheetPage}`; `/creator` uses `src/components/landing/apply/CreatorApplyPage`; `/business` uses the approved operations-console surface at `src/components/landing/console/BusinessConsolePage`. The retired `landing/viral` implementation is not part of the public routes and must not be reintroduced.
+- **First viewport and desktop lanes:** call-sheet pages place page-specific giant type left, a persistent vertical take strip center, and a tilted factual sheet right. `/business` is the intentional exception: its dark operations rail, WATCH IT RUN offer, and SAMPLE signal-chain monitor establish the same evidence-first story without the call-sheet film. Content never slides beneath fixed chrome in either system.
 - **Mobile composition:** the centered logo top bar remains visible, the hero film reduces to two frames, and one safe-area-aware fixed primary dock matches the route's first task. Duplicated hero actions disappear. The page must not overflow horizontally.
 - **Route stories:** `/creators` is offer → opt-in public roster API/search → brand workspace proof → record-reading criteria → brand CTA. `/campaigns` is offer → curated public feed API/search/details → the two-desk handover demo (apply → select → submit → review → record → settle `OFF`) → what each handover records and what is not available yet → CTA. `/business` is offer → brand workspace proof → four operating decisions → evidence/boundary → consultation. `/creator` is creator offer → creator workspace proof → example content craft → terms/boundaries → application.
 - **Product truth:** response counts and search scope describe only currently returned public records, never marketplace totals. Remote regions expose loading, empty, error, and retry states. Campaign/company details and business consultation remain real and accessible, with existing routes, APIs, analytics, validation, consent/version fields, and request payloads unchanged.

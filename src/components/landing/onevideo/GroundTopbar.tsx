@@ -8,6 +8,7 @@
  */
 
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { usePathname } from "next/navigation";
@@ -19,7 +20,8 @@ import "./groundchrome.css";
 export default function GroundTopbar({ tone = "paper" }: { tone?: "paper" | "dark" }) {
   const pathname = usePathname();
   const { t, lang, setLang } = useLang();
-  const toggleLang = () => setLang(lang === "ko" ? "en" : "ko");
+  const isEnglish = lang === "en";
+  const toggleLang = () => setLang(isEnglish ? "ko" : "en");
   const [menuOpen, setMenuOpen] = useState(false);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
@@ -91,8 +93,7 @@ export default function GroundTopbar({ tone = "paper" }: { tone?: "paper" | "dar
       </nav>
 
       <Link className="brand" href="/" aria-label="ViralGround 홈으로">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/viral-ground-mark.png" alt="" aria-hidden="true" />
+        <Image src="/viral-ground-mark.png" alt="" aria-hidden="true" width={410} height={257} />
       </Link>
 
       <nav className="nav-right" aria-label="계정">
@@ -100,10 +101,10 @@ export default function GroundTopbar({ tone = "paper" }: { tone?: "paper" | "dar
         <button
           type="button"
           className="lang-toggle"
-          aria-label={lang === "ko" ? "Switch to English" : "한국어로 보기"}
+          aria-label={isEnglish ? "한국어로 보기" : "Switch to English"}
           onClick={toggleLang}
         >
-          {lang === "ko" ? "EN" : "KO"}
+          {isEnglish ? "KO" : "EN"}
         </button>
         <Link
           href="/login"
@@ -176,11 +177,11 @@ export default function GroundTopbar({ tone = "paper" }: { tone?: "paper" | "dar
             <button
               type="button"
               className="mobile-lang"
-              aria-label={lang === "ko" ? "Switch to English" : "한국어로 보기"}
+              aria-label={isEnglish ? "한국어로 보기" : "Switch to English"}
               onClick={toggleLang}
             >
               <Globe aria-hidden="true" />
-              {lang === "ko" ? "English" : "한국어"}
+              {isEnglish ? "한국어" : "English"}
             </button>
             <p>ViralGround / Seoul / Managed beta</p>
           </div>,

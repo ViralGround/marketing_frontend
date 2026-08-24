@@ -3,6 +3,7 @@ import CampaignsCallSheetPage from "@/components/landing/callsheet/CampaignsCall
 export const metadata = {
   title: "캠페인",
   description: "선정 공개 피드의 AI SaaS 크리에이터 캠페인 조건을 로그인 없이 확인합니다.",
+  alternates: { canonical: "/campaigns" },
   // 소프트 오픈: 실데이터가 0인 동안 색인 제외 (sitemap·robots와 정합)
   robots: { index: false, follow: false },
 };

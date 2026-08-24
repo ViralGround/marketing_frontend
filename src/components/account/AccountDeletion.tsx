@@ -21,8 +21,8 @@ const ACCOUNT_CONFIG = {
     successHref: "/login",
     campaignHref: "/company/campaigns",
     sectionDescription: {
-      ko: "진행 중인 캠페인과 미정산 건이 모두 끝난 뒤 회사 계정을 탈퇴할 수 있습니다.",
-      en: "You can delete the company account after all active campaigns and unsettled items are complete.",
+      ko: "진행 중인 캠페인과 완료되지 않은 검수·작업이 모두 끝난 뒤 회사 계정을 탈퇴할 수 있습니다.",
+      en: "You can delete the company account after all active campaigns, reviews, and work are complete.",
     },
     trigger: { ko: "회사 계정 탈퇴", en: "Delete company account" },
     dialogTitle: {
@@ -40,8 +40,8 @@ const ACCOUNT_CONFIG = {
     successHref: "/",
     campaignHref: "/creator/mypage#creator-applications",
     sectionDescription: {
-      ko: "진행 중인 캠페인과 미정산 건이 모두 끝난 뒤 크리에이터 계정을 탈퇴할 수 있습니다.",
-      en: "You can delete the creator account after all active campaigns and unsettled items are complete.",
+      ko: "진행 중인 캠페인과 완료되지 않은 제출·검수가 모두 끝난 뒤 크리에이터 계정을 탈퇴할 수 있습니다.",
+      en: "You can delete the creator account after all active campaigns, submissions, and reviews are complete.",
     },
     trigger: { ko: "크리에이터 계정 탈퇴", en: "Delete creator account" },
     dialogTitle: {
@@ -193,8 +193,8 @@ export default function AccountDeletion({ scope }: AccountDeletionProps) {
                 </p>
                 <p className="border-t border-line py-3">
                   {t(
-                    "진행 중인 캠페인 또는 미정산 건이 있으면 탈퇴할 수 없습니다.",
-                    "The account cannot be deleted while a campaign is active or an item remains unsettled.",
+                    "진행 중인 캠페인 또는 완료되지 않은 검수·작업이 있으면 탈퇴할 수 없습니다.",
+                    "The account cannot be deleted while a campaign, review, or work item remains active.",
                   )}
                 </p>
               </div>
@@ -226,8 +226,8 @@ export default function AccountDeletion({ scope }: AccountDeletionProps) {
                 >
                   <p className="font-semibold">
                     {t(
-                      "진행 중인 캠페인 또는 미정산 건이 있어 탈퇴할 수 없습니다.",
-                      "This account has an active campaign or unsettled item and cannot be deleted yet.",
+                      "진행 중인 캠페인 또는 완료되지 않은 검수·작업이 있어 탈퇴할 수 없습니다.",
+                      "This account has an active campaign, review, or work item and cannot be deleted yet.",
                     )}
                   </p>
                   <Link

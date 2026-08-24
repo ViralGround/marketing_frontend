@@ -2,7 +2,8 @@ import LegalPage from "@/components/legal/LegalPage";
 import { TERMS_BODY, TERMS_EFFECTIVE_DATE, TERMS_TITLE, TERMS_VERSION } from "@/lib/legal/terms";
 
 export const metadata = {
-  title: "이용약관 | Viral Ground",
+  title: "이용약관",
+  alternates: { canonical: "/terms" },
 };
 
 export default function TermsPage() {

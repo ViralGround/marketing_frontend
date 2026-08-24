@@ -89,7 +89,7 @@ export default function CreatorPerformancePage() {
     <WorkspacePage size="wide" flow={false}>
       <WorkspaceStage className={viewStyles.pageStage} header={header}>
         {data.items.length === 0 ? (
-          <StatePanel icon={BarChart3} title={t("정산 완료된 작업이 없어요.", "No settled work yet.")} description={t("완료한 캠페인의 실제 성과를 입력하면 작품별 기록이 표시됩니다.", "Enter real results from completed campaigns to see them here.")} />
+          <StatePanel icon={BarChart3} title={t("완료된 작업이 없어요.", "No completed work yet.")} description={t("완료한 캠페인의 실제 성과를 입력하면 작품별 기록이 표시됩니다.", "Enter real results from completed campaigns to see them here.")} />
         ) : (
           <WorkspaceRecordList columns={COLUMNS} labels={[t("작품", "Content"), t("입력", "Edit"), t("조회", "Views"), t("좋아요", "Likes"), t("댓글", "Comments"), t("기록일", "Recorded")]}>
             {data.items.map((item) => (

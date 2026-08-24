@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useLang } from "@/lib/i18n";
 
 interface AuthSurfaceProps {
@@ -23,8 +24,7 @@ export default function AuthSurface({ title, description, children, wide = false
       <div className={`relative mx-auto grid max-w-6xl gap-10 ${wide ? "lg:grid-cols-[minmax(260px,0.7fr)_minmax(520px,1.3fr)]" : "lg:grid-cols-[minmax(260px,0.9fr)_minmax(360px,1.1fr)]"} lg:items-start`}>
         <aside className="pt-3 lg:sticky lg:top-28 lg:pt-12">
           <Link href="/" className="hidden min-h-11 items-center lg:inline-flex" aria-label="ViralGround 홈">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/viral-ground-logo.png" alt="ViralGround" className="w-44 md:w-52" />
+            <Image src="/viral-ground-logo.png" alt="ViralGround" width={410} height={326} sizes="(min-width: 768px) 208px, 176px" className="h-auto w-44 md:w-52" />
           </Link>
           <p className="font-display text-[clamp(36px,11vw,88px)] uppercase leading-[0.76] tracking-[-0.04em] lg:mt-8">
             AI SaaS

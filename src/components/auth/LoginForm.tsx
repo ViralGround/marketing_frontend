@@ -10,29 +10,12 @@ import { useAuthStore } from "@/store/useAuthStore";
 import { setSessionHint } from "@/lib/sessionHint";
 import { setGaUser, trackEvent } from "@/lib/gtag";
 import { useLang } from "@/lib/i18n";
-import AlertModal from "@/components/ui/AlertModal";
 import type { Member, UserRole } from "@/types";
 
 type LoginRole = Extract<UserRole, "CREATOR" | "COMPANY">;
 
-const DEMO_ALIAS_ENABLED = process.env.NODE_ENV !== "production";
-
-export function resolveLoginCredentials(
-  expectedRole: LoginRole,
-  loginId: string,
-  password: string,
-  demoAliasEnabled = DEMO_ALIAS_ENABLED,
-) {
-  if (demoAliasEnabled && loginId.trim() === "1" && password === "1") {
-    return {
-      email:
-        expectedRole === "CREATOR"
-          ? "creator.demo@viralground.local"
-          : "company.demo@viralground.local",
-      password: "DemoLogin!2026",
-    };
-  }
-  return { email: loginId.trim(), password };
+export function normalizeLoginEmail(email: string): string {
+  return email.trim();
 }
 
 export default function LoginForm({ expectedRole }: { expectedRole: LoginRole }) {
@@ -40,7 +23,6 @@ export default function LoginForm({ expectedRole }: { expectedRole: LoginRole })
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [warning, setWarning] = useState("");
   const [loading, setLoading] = useState(false);
   const [passwordVisible, setPasswordVisible] = useState(false);
   const { setUser } = useAuthStore();
@@ -50,7 +32,6 @@ export default function LoginForm({ expectedRole }: { expectedRole: LoginRole })
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    setWarning("");
     setLoading(true);
 
     try {
@@ -59,15 +40,17 @@ export default function LoginForm({ expectedRole }: { expectedRole: LoginRole })
       if (!Cookies.get("XSRF-TOKEN")) {
         await api.get("/auth/csrf");
       }
-      const credentials = resolveLoginCredentials(expectedRole, email, password);
-      await api.post("/auth/login", credentials);
+      await api.post("/auth/login", {
+        email: normalizeLoginEmail(email),
+        password,
+      });
       await api.get("/auth/csrf");
       const { data: member } = await api.get<Member>("/auth/me");
       const role = member.role;
       setUser(member);
       setSessionHint();
       setGaUser(member.id, role);
-      trackEvent("login_success", { role });
+      trackEvent("login_success", { role, expected_role: expectedRole });
 
       const homeByRole: Record<UserRole, string> = {
         ADMIN: "/admin/members",
@@ -130,18 +113,18 @@ export default function LoginForm({ expectedRole }: { expectedRole: LoginRole })
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       {error && (
-        <div className="rounded bg-red-50 p-3 text-sm text-red-600">{error}</div>
+        <div role="alert" aria-live="polite" className="rounded bg-red-50 p-3 text-sm text-red-700 dark:bg-red-950/40 dark:text-red-300">{error}</div>
       )}
       <div>
         <label htmlFor="email" className="block text-sm font-medium text-content-soft">
-          {DEMO_ALIAS_ENABLED ? t("아이디 또는 이메일", "ID or email") : t("이메일", "Email")}
+          {t("이메일", "Email")}
         </label>
         <input
           id="email"
-          type={DEMO_ALIAS_ENABLED ? "text" : "email"}
+          type="email"
           required
           autoComplete="username"
-          placeholder={DEMO_ALIAS_ENABLED ? "1" : "example@email.com"}
+          placeholder="example@email.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           className="mt-1 block min-h-12 w-full rounded-lg border border-line-strong bg-surface px-3 py-2 text-foreground placeholder-faint focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
@@ -187,18 +170,6 @@ export default function LoginForm({ expectedRole }: { expectedRole: LoginRole })
         {loading ? t("로그인 중...", "Logging in...") : t("로그인", "Log in")}
       </button>
 
-      {DEMO_ALIAS_ENABLED && (
-        <p className="rounded-lg border border-primary/20 bg-primary/5 px-3 py-2 text-center text-xs font-medium text-primary">
-          {t("테스트 로그인 · 아이디 1 / 비밀번호 1", "Test login · ID 1 / Password 1")}
-        </p>
-      )}
-
-      <AlertModal
-        open={!!warning}
-        title={t("로그인 실패", "Login failed")}
-        message={warning}
-        onClose={() => setWarning("")}
-      />
     </form>
   );
 }

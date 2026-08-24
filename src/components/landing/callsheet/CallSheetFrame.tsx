@@ -150,7 +150,7 @@ export function CallSheetFrame({
         <span className={styles.takeEdgeLabel}>CONTENT EXAMPLE / NOT PERFORMANCE DATA</span>
       </aside>
 
-      <main className={`${styles.main}${dock ? ` ${styles.dockPad}` : ""}`}>{children}</main>
+      <div className={`${styles.main}${dock ? ` ${styles.dockPad}` : ""}`}>{children}</div>
       {dock ? <div className={styles.mobileDock}>{dock}</div> : null}
       <GroundFooter />
     </div>

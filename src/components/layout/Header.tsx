@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { useAuthStore } from "@/store/useAuthStore";
@@ -37,16 +38,34 @@ export default function Header() {
   const router = useRouter();
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
+  const [logoutError, setLogoutError] = useState("");
 
   const { t } = useLang();
 
   const handleLogout = async () => {
-    trackEvent("logout", { role: user?.role ?? null });
-    clearGaUser();
-    await removeTokens();
-    logout();
-    setMenuOpen(false);
-    router.push("/login");
+    if (loggingOut) return;
+    setLoggingOut(true);
+    setLogoutError("");
+    trackEvent("logout_attempt", { role: user?.role ?? null });
+    try {
+      await removeTokens();
+      clearGaUser();
+      logout();
+      setMenuOpen(false);
+      trackEvent("logout_success", { role: user?.role ?? null });
+      router.push("/login");
+    } catch {
+      setLogoutError(
+        t(
+          "로그아웃을 완료하지 못했습니다. 연결을 확인한 뒤 다시 시도해주세요.",
+          "We couldn't complete logout. Check your connection and try again.",
+        ),
+      );
+      trackEvent("logout_fail", { role: user?.role ?? null });
+    } finally {
+      setLoggingOut(false);
+    }
   };
 
   const logoHref = isAuthenticated && user ? ROLE_HOME[user.role] : "/";
@@ -60,11 +79,12 @@ export default function Header() {
         {/* 좌측: 로고 */}
         <Link href={logoHref} aria-label="Viral Ground" className="inline-flex items-center gap-2.5">
           {/* 다크모드: 다크 마크를 흰색 실루엣으로 반전(brightness-0→invert). 이름은 텍스트로 병기. */}
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+          <Image
             src="/viral-ground-mark.png"
             alt=""
             aria-hidden="true"
+            width={410}
+            height={257}
             className="h-7 w-auto md:h-8 dark:brightness-0 dark:invert"
           />
           <span className="text-xl font-extrabold tracking-tight text-foreground md:text-2xl">
@@ -85,9 +105,11 @@ export default function Header() {
               <span className="text-sm text-muted">{user.name}</span>
               <button
                 onClick={handleLogout}
+                disabled={loggingOut}
+                aria-busy={loggingOut}
                 className="rounded-lg px-4 py-2 text-sm font-medium text-foreground transition-colors hover:text-primary"
               >
-                {t("로그아웃", "Log out")}
+                {loggingOut ? t("로그아웃 중...", "Logging out...") : t("로그아웃", "Log out")}
               </button>
             </>
           ) : (
@@ -122,6 +144,12 @@ export default function Header() {
         </div>
       </div>
 
+      {logoutError && (
+        <p role="alert" className="border-t border-error/20 bg-red-50 px-6 py-3 text-sm font-medium text-red-700 dark:bg-red-950/40 dark:text-red-300 md:px-10">
+          {logoutError}
+        </p>
+      )}
+
       {/* 모바일 메뉴 패널 */}
       {menuOpen && (
         <div className="border-t border-line bg-surface px-6 py-4 lg:hidden">
@@ -141,9 +169,11 @@ export default function Header() {
                 </Link>
                 <button
                   onClick={handleLogout}
+                  disabled={loggingOut}
+                  aria-busy={loggingOut}
                   className="rounded-lg px-2 py-2.5 text-left text-sm font-medium text-content-soft hover:bg-surface-muted hover:text-primary"
                 >
-                  {t("로그아웃", "Log out")}
+                  {loggingOut ? t("로그아웃 중...", "Logging out...") : t("로그아웃", "Log out")}
                 </button>
               </>
             ) : (

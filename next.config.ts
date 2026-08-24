@@ -1,6 +1,12 @@
 import type { NextConfig } from "next";
+import {
+  deploymentBuildViolation,
+  isPreproductionSite,
+  preproductionSentryViolation,
+} from "./src/lib/deploymentEnvironment";
 
 const isProductionBuild = process.env.NODE_ENV === "production";
+const noindexAllRoutes = isPreproductionSite(process.env.NEXT_PUBLIC_SITE_URL);
 const PLACEHOLDER_MARKERS = [
   "draft", "placeholder", "todo", "tbd", "sample", "replace", "yourdomain", "your-", "xxxxxxxx",
 ];
@@ -58,9 +64,28 @@ function requireProductionOrigin(name: string): string {
   return validateProductionOrigin(name, value);
 }
 
+function requireProductionBoolean(name: string): boolean {
+  const value = requireProductionValue(name);
+  if (value !== "true" && value !== "false") {
+    throw new Error(`[production-config] ${name} must be either true or false`);
+  }
+  return value === "true";
+}
+
+function productionOriginList(name: string, rawValue: string | undefined): string[] {
+  const value = rawValue?.trim() ?? "";
+  if (!value) return [];
+  const origins = value.split(",").map((origin, index) =>
+    validateProductionOrigin(`${name}[${index}]`, origin.trim()));
+  if (new Set(origins).size !== origins.length) {
+    throw new Error(`[production-config] ${name} must not contain duplicate origins`);
+  }
+  return origins;
+}
+
 if (isProductionBuild) {
-  requireProductionOrigin("NEXT_PUBLIC_SITE_URL");
-  requireProductionOrigin("NEXT_PUBLIC_API_URL");
+  const siteOrigin = requireProductionOrigin("NEXT_PUBLIC_SITE_URL");
+  const apiOrigin = requireProductionOrigin("NEXT_PUBLIC_API_URL");
   requireProductionUrl("NEXT_PUBLIC_SENTRY_DSN");
   for (const name of [
     "NEXT_PUBLIC_LEGAL_TERMS_VERSION",
@@ -70,6 +95,7 @@ if (isProductionBuild) {
     "NEXT_PUBLIC_LEGAL_MARKETING_VERSION",
     "NEXT_PUBLIC_PRIVACY_OFFICER_NAME",
     "NEXT_PUBLIC_PRIVACY_OFFICER_CONTACT",
+    "NEXT_PUBLIC_RELEASE_ID",
     // 사업자 정보 표기(전자상거래법 필수 고지) — 푸터 렌더에 사용
     "NEXT_PUBLIC_BUSINESS_NAME",
     "NEXT_PUBLIC_BUSINESS_CEO",
@@ -78,10 +104,71 @@ if (isProductionBuild) {
     "NEXT_PUBLIC_BUSINESS_CONTACT",
   ]) requireProductionValue(name);
 
-  const storageOrigins = requireProductionValue("NEXT_PUBLIC_STORAGE_ORIGINS").split(",");
-  storageOrigins.forEach((origin, index) => {
-    validateProductionOrigin(`NEXT_PUBLIC_STORAGE_ORIGINS[${index}]`, origin.trim());
+  const commitSha =
+    process.env.VERCEL_GIT_COMMIT_SHA?.trim() || process.env.GITHUB_SHA?.trim() || "";
+  if (!/^[0-9a-f]{7,40}$/i.test(commitSha)) {
+    throw new Error(
+      "[production-config] VERCEL_GIT_COMMIT_SHA or GITHUB_SHA must identify the release commit",
+    );
+  }
+
+  const paymentsEnabled = requireProductionBoolean("NEXT_PUBLIC_FEATURE_PAYMENTS");
+  const instagramEnabled = requireProductionBoolean("NEXT_PUBLIC_FEATURE_INSTAGRAM");
+  const uploadsEnabled = requireProductionBoolean("NEXT_PUBLIC_FEATURE_UPLOADS");
+  if (paymentsEnabled) {
+    throw new Error(
+      "[production-config] NEXT_PUBLIC_FEATURE_PAYMENTS must remain false until a commercial payment gateway is implemented",
+    );
+  }
+
+  const storageOrigins = productionOriginList(
+    "NEXT_PUBLIC_STORAGE_ORIGINS",
+    process.env.NEXT_PUBLIC_STORAGE_ORIGINS,
+  );
+  const approvedProductionStorageOrigins = productionOriginList(
+    "APPROVED_NEW_PRODUCTION_STORAGE_ORIGINS",
+    process.env.APPROVED_NEW_PRODUCTION_STORAGE_ORIGINS,
+  );
+  const deploymentViolation = deploymentBuildViolation({
+    siteOrigin,
+    apiOrigin,
+    storageOrigins,
+    paymentsEnabled,
+    instagramEnabled,
+    uploadsEnabled,
+    appEnvironment: process.env.APP_ENV,
+    productionConfirmation: process.env.NEW_PRODUCTION_DEPLOY_CONFIRMATION,
+    approvedProductionSiteOrigin: process.env.APPROVED_NEW_PRODUCTION_SITE_ORIGIN,
+    approvedProductionApiOrigin: process.env.APPROVED_NEW_PRODUCTION_API_ORIGIN,
+    approvedProductionStorageOrigins,
+    vercelEnvironment: process.env.VERCEL_ENV,
   });
+  if (deploymentViolation) {
+    throw new Error(`[production-config] ${deploymentViolation}`);
+  }
+
+  if (isPreproductionSite(siteOrigin) && process.env.APP_ENV === "preproduction") {
+    const sentryViolation = preproductionSentryViolation({
+      clientDsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
+      serverDsn: process.env.SENTRY_DSN,
+      clientEnvironment: process.env.NEXT_PUBLIC_SENTRY_ENV,
+      serverEnvironment: process.env.SENTRY_ENV,
+      clientRelease: process.env.NEXT_PUBLIC_SENTRY_RELEASE,
+      serverRelease: process.env.SENTRY_RELEASE,
+      commitSha,
+      approvedFrontendIdentity:
+        process.env.APPROVED_STAGING_FRONTEND_SENTRY_DSN_IDENTITY,
+      approvedBackendIdentity:
+        process.env.APPROVED_STAGING_BACKEND_SENTRY_DSN_IDENTITY,
+    });
+    if (sentryViolation) {
+      throw new Error(`[production-config] ${sentryViolation}`);
+    }
+  }
+
+  if (noindexAllRoutes && process.env.NEXT_PUBLIC_GA_ID?.trim()) {
+    throw new Error("[production-config] NEXT_PUBLIC_GA_ID must be empty for preproduction builds");
+  }
 
   // 결정: GA 는 빌드 차단 사유가 아니다 — 비어 있으면 경고만 남기고 수집 없이 배포한다.
   if (!process.env.NEXT_PUBLIC_GA_ID?.trim()) {
@@ -133,14 +220,16 @@ const nextConfig: NextConfig = {
     // /creator 공개 랜딩은 제외되도록 하위 경로에만 건다.
     const noindexHeader = [{ key: "X-Robots-Tag", value: "noindex, nofollow" }];
     return [
-      { source: "/(.*)", headers: securityHeaders },
-      { source: "/admin", headers: noindexHeader },
-      { source: "/admin/:path*", headers: noindexHeader },
-      { source: "/company", headers: noindexHeader },
-      { source: "/company/:path*", headers: noindexHeader },
-      { source: "/creator/:path*", headers: noindexHeader },
-      { source: "/profile", headers: noindexHeader },
-      { source: "/profile/:path*", headers: noindexHeader },
+      { source: "/(.*)", headers: [...securityHeaders, ...(noindexAllRoutes ? noindexHeader : [])] },
+      ...(!noindexAllRoutes ? [
+        { source: "/admin", headers: noindexHeader },
+        { source: "/admin/:path*", headers: noindexHeader },
+        { source: "/company", headers: noindexHeader },
+        { source: "/company/:path*", headers: noindexHeader },
+        { source: "/creator/:path*", headers: noindexHeader },
+        { source: "/profile", headers: noindexHeader },
+        { source: "/profile/:path*", headers: noindexHeader },
+      ] : []),
     ];
   },
 };

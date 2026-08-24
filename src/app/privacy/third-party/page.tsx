@@ -7,7 +7,8 @@ import {
 } from "@/lib/legal/thirdParty";
 
 export const metadata = {
-  title: "개인정보 제3자 제공 동의 | Viral Ground",
+  title: "개인정보 제3자 제공 동의",
+  alternates: { canonical: "/privacy/third-party" },
 };
 
 export default function ThirdPartyPage() {

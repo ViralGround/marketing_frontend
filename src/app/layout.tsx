@@ -5,8 +5,14 @@ import Header from "@/components/layout/Header";
 import ConditionalFooter from "@/components/layout/ConditionalFooter";
 import AuthInit from "@/components/auth/AuthInit";
 import ConsentAnalytics from "@/components/analytics/ConsentAnalytics";
+import LanguageDocumentSync from "@/components/layout/LanguageDocumentSync";
+import { isPreproductionSite } from "@/lib/deploymentEnvironment";
 
-const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
+// Staging must remain analytics-free even if a provider project accidentally
+// inherits a production NEXT_PUBLIC_GA_ID.
+const GA_ID = isPreproductionSite(process.env.NEXT_PUBLIC_SITE_URL)
+  ? undefined
+  : process.env.NEXT_PUBLIC_GA_ID;
 
 const SUBLANDING_DIRECTION_CONTRACT = `<!--
 THESIS: Public role pages behave like one live production call sheet, refusing generic SaaS card grids.
@@ -35,7 +41,6 @@ export const metadata: Metadata = {
     template: "%s | Viral Ground",
   },
   description: "AI SaaS를 이해하는 크리에이터와 브랜드를 연결하고 콘텐츠 성과를 함께 운영합니다.",
-  alternates: { canonical: "/" },
   verification: {
     other: {
       "naver-site-verification": "a59b53171d2e2a259c4912e2d9490bbc0cd28384",
@@ -84,6 +89,7 @@ export default function RootLayout({
           <template data-impeccable-contract dangerouslySetInnerHTML={{ __html: SUBLANDING_DIRECTION_CONTRACT }} />
         )}
         <AuthInit />
+        <LanguageDocumentSync />
         <Header />
         <main className="flex-1">{children}</main>
         <ConditionalFooter />

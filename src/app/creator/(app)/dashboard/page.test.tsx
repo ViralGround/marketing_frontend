@@ -9,7 +9,7 @@ vi.mock("@/lib/api", () => ({ default: { get: vi.fn() } }));
 afterEach(() => vi.resetAllMocks());
 
 describe("CreatorDashboardPage", () => {
-  it("combines real application, campaign, settlement, and performance data", async () => {
+  it("combines real application, campaign, and performance data with payments hidden", async () => {
     vi.mocked(api.get).mockImplementation((url) => {
       if (url === "/me/stats") return Promise.resolve({ data: { totalEarned: 350000, completedCount: 2, activeCount: 1 } }) as never;
       if (url === "/me/applications") return Promise.resolve({ data: { applications: [{ id: 3, status: "CHANGES_REQUESTED", appliedAt: "2026-08-01", campaign: { id: 8, title: "AI 보이스 캠페인", brandName: "Demo SaaS", rewardAmount: 180000 } }] } }) as never;
@@ -23,8 +23,10 @@ describe("CreatorDashboardPage", () => {
     expect(screen.getByText("수정 필요")).toBeTruthy();
     // 새 캠페인 목록과 다가오는 일정(마감 D-day) 양쪽에 나타날 수 있다
     expect(screen.getAllByText("새 AI 브리프").length).toBeGreaterThan(0);
-    // 핵심 지표와 정산 현황 카드 양쪽에 나타난다
-    expect(screen.getAllByText("₩350,000").length).toBeGreaterThan(0);
+    expect(screen.queryByText("₩350,000")).toBeNull();
+    expect(screen.queryByText("₩180,000")).toBeNull();
+    expect(screen.queryByText("₩220,000")).toBeNull();
+    expect(screen.queryByRole("tab", { name: "정산" })).toBeNull();
     expect(screen.getByText(/12,500/)).toBeTruthy();
   });
 

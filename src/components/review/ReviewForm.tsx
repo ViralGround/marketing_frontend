@@ -38,25 +38,34 @@ export default function ReviewForm({ applicationId, onSubmitted, onCancel }: Pro
 
   return (
     <div>
-      <label className="block text-sm font-medium text-content-soft">{t("평점", "Rating")}</label>
-      <div className="mt-1.5 flex items-center gap-1.5">
+      <fieldset>
+      <legend className="block text-sm font-medium text-content-soft">{t("평점", "Rating")}</legend>
+      <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
         {[1, 2, 3, 4, 5].map((n) => (
-          <button
+          <label
             key={n}
-            type="button"
-            onClick={() => setRating(n)}
-            className={`h-10 w-10 rounded-lg text-xl transition-colors ${
+            className={`inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-lg text-xl transition-colors focus-within:outline focus-within:outline-3 focus-within:outline-offset-2 focus-within:outline-primary ${
               n <= rating
                 ? "bg-warning text-white"
                 : "border border-line-strong text-faint hover:border-primary/40"
             }`}
-            aria-label={t(`${n}점`, `${n} stars`)}
           >
-            ★
-          </button>
+            <input
+              className="sr-only"
+              type="radio"
+              name="review-rating"
+              value={n}
+              checked={rating === n}
+              onChange={() => setRating(n)}
+              aria-label={t(`${n}점`, `${n} stars`)}
+              disabled={loading}
+            />
+            <span aria-hidden="true">★</span>
+          </label>
         ))}
-        <span className="ml-2 text-sm font-medium text-muted">{t(`${rating}점`, `${rating} stars`)}</span>
+        <output className="ml-2 text-sm font-medium text-muted" aria-live="polite">{t(`${rating}점`, `${rating} stars`)}</output>
       </div>
+      </fieldset>
 
       <label
         htmlFor="review-comment"
@@ -73,7 +82,7 @@ export default function ReviewForm({ applicationId, onSubmitted, onCancel }: Pro
         className="mt-1.5"
       />
 
-      {error && <p className="mt-3 text-sm text-error">{error}</p>}
+      {error && <p role="alert" className="mt-3 text-sm text-error">{error}</p>}
 
       <div className="mt-5 flex justify-end gap-2">
         <Button variant="secondary" size="sm" onClick={onCancel} disabled={loading}>

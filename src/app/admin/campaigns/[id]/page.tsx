@@ -6,6 +6,7 @@ import Link from "next/link";
 import api from "@/lib/api";
 import CampaignForm from "@/components/admin/CampaignForm";
 import ApplicationStatusBadge from "@/components/campaign/ApplicationStatusBadge";
+import { FEATURE_PAYMENTS_ENABLED } from "@/lib/featureFlags";
 import AlertModal from "@/components/ui/AlertModal";
 import Badge from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
@@ -21,6 +22,7 @@ type AppStatus =
   | "REJECTED"
   | "SUBMITTED"
   | "CHANGES_REQUESTED"
+  | "COMPLETED"
   | "SETTLED";
 type EscrowStatus =
   | "NONE"
@@ -374,8 +376,8 @@ export default function AdminCampaignDetailPage() {
         </Card>
       </div>
 
-      {/* 예치금 */}
-      <Card className="mb-6 p-5">
+      {/* 예치금은 상용 결제 기능이 명시적으로 켜진 빌드에서만 노출한다. */}
+      {FEATURE_PAYMENTS_ENABLED && <Card className="mb-6 p-5">
         <div className="mb-3 flex items-center justify-between">
           <p className="text-sm font-semibold text-content-soft">{t("예치금", "Deposit")}</p>
           <Badge tone={ESCROW_TONE[campaign.escrowStatus]}>
@@ -405,7 +407,7 @@ export default function AdminCampaignDetailPage() {
             )}
           </p>
         )}
-      </Card>
+      </Card>}
 
       {/* 상태 변경 */}
       <Card className="mb-6 p-5">
@@ -559,7 +561,7 @@ export default function AdminCampaignDetailPage() {
                   </div>
                 )}
 
-                {app.rewardPaidAmount !== null && (
+                {FEATURE_PAYMENTS_ENABLED && app.rewardPaidAmount !== null && (
                   <p className="mb-3 text-sm text-content-soft">
                     {t("정산액:", "Payout:")}{" "}
                     <span className="font-semibold text-foreground">
@@ -606,7 +608,7 @@ export default function AdminCampaignDetailPage() {
                         {t("수정 요청", "Request changes")}
                       </Button>
                       <span className="self-center text-xs text-warning">
-                        {t("승인·정산은 PG 활성화 후 제공", "Approval and payout require an active PG")}
+                        {t("결제·정산 작업은 현재 차단됨", "Payment and settlement actions are blocked")}
                       </span>
                       <Button
                         variant="ghost"

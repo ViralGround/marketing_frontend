@@ -14,6 +14,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import GroundTopbar from "./GroundTopbar";
 import GroundFooter from "./GroundFooter";
 import { trackEvent } from "@/lib/gtag";
@@ -400,8 +401,7 @@ export default function OneVideoLanding() {
           <span className="dynamic-island" aria-hidden="true" />
           <span className="home-indicator" aria-hidden="true" />
           <span className="film-stamp">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/viral-ground-mark-white.png" alt="" aria-hidden="true" />
+            <Image src="/viral-ground-mark-white.png" alt="" aria-hidden="true" width={410} height={257} />
             <span>{currentReel === 0 ? "real creator film" : REELS[currentReel].stamp}</span>
           </span>
         </div>
@@ -427,8 +427,7 @@ export default function OneVideoLanding() {
             <h1 className="hero-title" id="hero-title">
               <span>AI SaaS</span>
               <span>× Creators</span>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img className="hero-word-logo" src="/viral-ground-logo.png" alt="Viral Ground" />
+              <Image className="hero-word-logo" src="/viral-ground-logo.png" alt="Viral Ground" width={410} height={326} sizes="(max-width: 900px) 52vw, 24vw" preload />
               <span className="hero-sticker" aria-hidden="true">
                 Managed beta
                 <br />
@@ -508,16 +507,16 @@ export default function OneVideoLanding() {
             <div className="proof-right front-copy">
               <p>
                 <span className="copy-line">지금은 운영팀이 함께하는 관리형 베타입니다.</span>
-                <span className="copy-line">조건과 보상은 캠페인별로 먼저 공개하고,</span>
+                <span className="copy-line">작업 범위와 일정은 캠페인별로 먼저 공개하고,</span>
                 <span className="copy-line">동의한 범위 안에서만 진행합니다.</span>
               </p>
-              <ul className="reward-lines" aria-label="크리에이터 보상">
+              <ul className="reward-lines" aria-label="캠페인 운영 원칙">
                 <li>
                   <span>AI 제품 적합 크리에이터 검토</span>
                   <b>MATCH</b>
                 </li>
                 <li>
-                  <span>범위·일정·보상 사전 공개</span>
+                  <span>범위·일정·검수 기준 사전 공개</span>
                   <b>CLEAR</b>
                 </li>
                 <li>
@@ -605,8 +604,7 @@ export default function OneVideoLanding() {
                       onClick={() => swapReel(index)}
                     >
                       <span className="reel-thumb">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={reel.poster} alt="" loading="lazy" />
+                        <Image src={reel.poster} alt="" width={361} height={640} sizes="72px" />
                       </span>
                       <span className="reel-name">
                         <strong>{reel.name}</strong>
@@ -645,8 +643,7 @@ export default function OneVideoLanding() {
             </div>
 
             <div className="final-copy">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img className="final-brand-mark" src="/viral-ground-logo.png" alt="Viral Ground" />
+              <Image className="final-brand-mark" src="/viral-ground-logo.png" alt="Viral Ground" width={410} height={326} sizes="(max-width: 900px) 48vw, 22vw" />
               <h2 id="final-title">
                 Make it<span>Viral.</span>
               </h2>

@@ -9,7 +9,7 @@ vi.mock("@/lib/api", () => ({ default: { get: vi.fn() } }));
 afterEach(() => vi.resetAllMocks());
 
 describe("CompanyDashboardPage", () => {
-  it("renders verified campaign values and keeps payment instructions fail-closed", async () => {
+  it("renders verified campaign values and hides disabled payment surfaces", async () => {
     vi.mocked(api.get).mockImplementation((url) => {
       if (url === "/company/dashboard") {
         return Promise.resolve({ data: { totalCampaigns: 2, pendingDeposit: 1, depositConfirming: 0, funded: 1, closed: 0 } }) as never;
@@ -22,8 +22,9 @@ describe("CompanyDashboardPage", () => {
     // 최근 캠페인 테이블·지원 현황 차트·마감 일정에 모두 나타날 수 있다
     expect((await screen.findAllByText("AI 편집 도구 런칭")).length).toBeGreaterThan(0);
     expect(screen.getByText("4명 지원")).toBeTruthy();
-    expect(screen.getByText("OFF")).toBeTruthy();
-    expect(screen.getByText(/현재 어떤 계좌로도 송금하지 마세요/)).toBeTruthy();
+    expect(screen.queryByText("OFF")).toBeNull();
+    expect(screen.queryByText(/결제·정산/)).toBeNull();
+    expect(screen.queryByText(/현재 어떤 계좌로도 송금하지 마세요/)).toBeNull();
     expect(screen.queryByText(/000-00-0000-000/)).toBeNull();
   });
 

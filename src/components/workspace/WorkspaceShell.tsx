@@ -16,6 +16,7 @@ import {
   LayoutDashboard,
   LogOut,
   Search,
+  ScrollText,
   Settings2,
   UsersRound,
   X,
@@ -26,6 +27,8 @@ import { removeTokens } from "@/lib/auth";
 import { useDialogA11y } from "@/hooks/useDialogA11y";
 import { useLang } from "@/lib/i18n";
 import { useAuthStore } from "@/store/useAuthStore";
+import { FEATURE_INSTAGRAM_ENABLED, FEATURE_PAYMENTS_ENABLED } from "@/lib/featureFlags";
+import { clearGaUser } from "@/lib/gtag";
 import type { UserRole } from "@/types";
 import styles from "./WorkspaceShell.module.css";
 
@@ -78,6 +81,7 @@ const NAV: Record<WorkspaceRole, NavItem[]> = {
     { href: "/admin/analytics", labelKo: "릴스 분석", labelEn: "Reel analytics", shortKo: "분석", shortEn: "Reels", icon: BarChart3 },
     { href: "/admin/escrow", labelKo: "예치금 확인", labelEn: "Deposits", shortKo: "예치", shortEn: "Deposits", icon: Landmark },
     { href: "/admin/contacts", labelKo: "상담 신청", labelEn: "Consultations", shortKo: "상담", shortEn: "Inbox", icon: Inbox },
+    { href: "/admin/audit-logs", labelKo: "감사로그", labelEn: "Audit logs", shortKo: "감사", shortEn: "Audit", icon: ScrollText },
   ],
 };
 
@@ -98,6 +102,8 @@ export default function WorkspaceShell({ role, children }: { role: WorkspaceRole
   const [searchOpen, setSearchOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
   const [query, setQuery] = useState("");
+  const [loggingOut, setLoggingOut] = useState(false);
+  const [logoutError, setLogoutError] = useState("");
   const searchDialogRef = useDialogA11y<HTMLElement>(searchOpen, () => setSearchOpen(false));
   const accountDialogRef = useDialogA11y<HTMLElement>(accountOpen, () => setAccountOpen(false));
   const roleLabel =
@@ -110,6 +116,11 @@ export default function WorkspaceShell({ role, children }: { role: WorkspaceRole
     : "/creator/dashboard";
   // 관리자 목록 페이지들은 검색 파라미터를 받지 않으므로 검색 UI 자체를 숨긴다(가짜 어포던스 방지).
   const searchEnabled = role !== "ADMIN";
+  const navItems = NAV[role].filter((item) => {
+    if (!FEATURE_PAYMENTS_ENABLED && item.href === "/admin/escrow") return false;
+    if (!FEATURE_INSTAGRAM_ENABLED && item.href === "/admin/analytics") return false;
+    return true;
+  });
 
   const toggleSidebar = () => {
     window.localStorage.setItem(SIDEBAR_KEY, String(!sidebarCollapsed));
@@ -117,10 +128,25 @@ export default function WorkspaceShell({ role, children }: { role: WorkspaceRole
   };
 
   const handleLogout = async () => {
-    await removeTokens();
-    logout();
-    router.replace("/login");
-    router.refresh();
+    if (loggingOut) return;
+    setLoggingOut(true);
+    setLogoutError("");
+    try {
+      await removeTokens();
+      clearGaUser();
+      logout();
+      router.replace("/login");
+      router.refresh();
+    } catch {
+      setLogoutError(
+        t(
+          "로그아웃을 완료하지 못했습니다. 연결을 확인한 뒤 다시 시도해주세요.",
+          "We couldn't complete logout. Check your connection and try again.",
+        ),
+      );
+    } finally {
+      setLoggingOut(false);
+    }
   };
 
   const handleSearch = (event: React.FormEvent) => {
@@ -174,7 +200,7 @@ export default function WorkspaceShell({ role, children }: { role: WorkspaceRole
             <button type="submit">{t("검색", "Search")}</button>
           </form>
           <nav className={styles.quickLinks} aria-label={t("빠른 이동", "Quick navigation")}>
-            {NAV[role].map((item, index) => (
+            {navItems.map((item, index) => (
               <Link key={item.href} href={item.href} onClick={() => setSearchOpen(false)}>
                 <span>{String(index + 1).padStart(2, "0")}</span>
                 <strong>{t(item.labelKo, item.labelEn)}</strong>
@@ -205,7 +231,7 @@ export default function WorkspaceShell({ role, children }: { role: WorkspaceRole
             </div>
             <div className={styles.betaNote}>
               <strong>MANAGED BETA</strong>
-              <p>{t("결제·정산은 운영 계약과 PG 연결 후 활성화됩니다.", "Payments activate after the operating contract and gateway are ready.")}</p>
+              <p>{t("현재 서비스에서는 결제·에스크로·정산을 처리하지 않습니다.", "This service does not process payments, escrow, or settlements.")}</p>
             </div>
             {role !== "ADMIN" && (
               <Link className={styles.accountLink} href={role === "COMPANY" ? "/company/profile" : "/creator/profile"} onClick={() => setAccountOpen(false)}>
@@ -215,8 +241,9 @@ export default function WorkspaceShell({ role, children }: { role: WorkspaceRole
               </Link>
             )}
           </div>
+          {logoutError && <p role="alert" className={styles.logoutError}>{logoutError}</p>}
           <footer className={styles.accountActions}>
-            <button type="button" onClick={handleLogout}><LogOut aria-hidden="true" />{t("로그아웃", "Log out")}</button>
+            <button type="button" onClick={handleLogout} disabled={loggingOut} aria-busy={loggingOut}><LogOut aria-hidden="true" />{loggingOut ? t("로그아웃 중...", "Logging out...") : t("로그아웃", "Log out")}</button>
           </footer>
         </section>
       )}
@@ -259,7 +286,7 @@ export default function WorkspaceShell({ role, children }: { role: WorkspaceRole
       <div className={styles.body}>
         <aside aria-label={t(`${roleLabel} 워크스페이스 메뉴`, `${roleLabel} workspace menu`)} className={styles.sidebar}>
           <nav className={styles.nav} aria-label={t("주요 메뉴", "Primary navigation")}>
-            {NAV[role].map((item, index) => {
+            {navItems.map((item, index) => {
               const Icon = item.icon;
               const active = isActive(pathname, item);
               return (
@@ -278,11 +305,11 @@ export default function WorkspaceShell({ role, children }: { role: WorkspaceRole
             </button>
           </div>
         </aside>
-        <main className={styles.content}>{children}</main>
+        <div className={styles.content}>{children}</div>
       </div>
 
       <nav className={styles.bottomNav} aria-label={t("모바일 주요 메뉴", "Mobile primary navigation")}>
-        {NAV[role].map((item) => {
+        {navItems.map((item) => {
           const Icon = item.icon;
           const active = isActive(pathname, item);
           return (

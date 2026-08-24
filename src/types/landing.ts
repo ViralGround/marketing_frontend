@@ -4,7 +4,8 @@ export interface FeaturedCampaign {
   id: number;
   title: string;
   brandName: string;
-  rewardAmount: number;
+  /** 결제 기능이 비활성인 공개 응답에서는 서버가 필드 자체를 생략한다. */
+  rewardAmount?: number | null;
   deadline: string | null;
   maxParticipants: number;
   applicationCount: number;
@@ -20,7 +21,8 @@ export interface FeaturedCampaign {
 export interface CompanyOpenCampaign {
   id: number;
   title: string;
-  rewardAmount: number;
+  /** 결제 기능이 비활성인 공개 응답에서는 서버가 필드 자체를 생략한다. */
+  rewardAmount?: number | null;
   deadline: string | null;
 }
 

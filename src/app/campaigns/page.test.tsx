@@ -28,4 +28,29 @@ describe("PublicCampaignsPage", () => {
     await waitFor(() => expect(screen.getByText("다음 캠페인을 준비 중이에요")).toBeTruthy());
     expect(api.get).toHaveBeenCalledTimes(2);
   });
+
+  it("does not render a monetary offer from a legacy-shaped landing payload", async () => {
+    vi.mocked(api.get).mockResolvedValue({ data: { campaigns: [{
+      id: 1,
+      title: "AI 제품 소개",
+      brandName: "테스트 브랜드",
+      rewardAmount: 500000,
+      deadline: null,
+      maxParticipants: 3,
+      applicationCount: 1,
+      thumbnailUrl: null,
+      companyMemberId: null,
+      logoUrl: null,
+      brandIntroduction: null,
+    }] } });
+
+    const { container } = render(<PublicCampaignsPage />);
+
+    await screen.findByText("AI 제품 소개");
+    expect(container.textContent).toContain("작업 범위");
+    expect(container.textContent).not.toContain("₩");
+    expect(container.textContent).not.toContain("기본 보상");
+    expect(container.textContent).not.toContain("지급 방식");
+    expect(container.textContent).not.toContain("결제·정산");
+  });
 });

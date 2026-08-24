@@ -29,7 +29,7 @@ export function ScopeSheet() {
   ];
 
   const excluded = [
-    t("결제·정산 집행 — PG 연결 전까지 제공하지 않습니다", "Payment execution — not provided until the gateway is live"),
+    t("플랫폼 내 계약·결제 — 현재 서비스 범위에 포함하지 않습니다", "Contracts and payments — not handled by the current platform service"),
     t("성과 보장 — 도달·전환 수치를 약속하지 않습니다", "Guaranteed results — no reach or conversion promises"),
     t("광고 매체 집행과 대행 — 캠페인 운영 범위 밖입니다", "Paid media buying — outside the campaign scope"),
   ];

@@ -30,12 +30,13 @@ import {
   WorkspaceTabs,
 } from "@/components/workspace/WorkspacePrimitives";
 import viewStyles from "@/components/workspace/WorkspaceViews.module.css";
+import { FEATURE_INSTAGRAM_ENABLED, FEATURE_PAYMENTS_ENABLED, FEATURE_UPLOADS_ENABLED } from "@/lib/featureFlags";
 
-type AppStatus = "PENDING" | "WITHDRAWN" | "APPROVED" | "REJECTED" | "SUBMITTED" | "CHANGES_REQUESTED" | "SETTLED";
+type AppStatus = "PENDING" | "WITHDRAWN" | "APPROVED" | "REJECTED" | "SUBMITTED" | "CHANGES_REQUESTED" | "COMPLETED" | "SETTLED";
 type Filter = "ALL" | AppStatus;
 type WorkTab = "applications" | "instagram" | "account";
 
-interface Stats { totalEarned: number; completedCount: number; activeCount: number }
+interface Stats { totalEarned?: number; completedCount: number; activeCount: number }
 interface ApplicationItem {
   id: number;
   status: AppStatus;
@@ -43,17 +44,24 @@ interface ApplicationItem {
   videoFileKey?: string | null;
   resubmissionCount?: number | null;
   reviewComment?: string | null;
-  rewardPaidAmount: number | null;
+  rewardPaidAmount?: number | null;
   appliedAt: string;
   settledAt: string | null;
-  campaign: { id: number; title: string; brandName: string; rewardAmount: number; thumbnailUrl: string | null };
+  campaign: { id: number; title: string; brandName: string; rewardAmount?: number | null; thumbnailUrl: string | null };
 }
 
 const FILTER_LABEL: Record<Filter, { ko: string; en: string }> = {
-  ALL: { ko: "전체", en: "All" }, PENDING: { ko: "대기", en: "Pending" }, WITHDRAWN: { ko: "철회", en: "Withdrawn" }, APPROVED: { ko: "참여", en: "Approved" }, SUBMITTED: { ko: "제출", en: "Submitted" }, CHANGES_REQUESTED: { ko: "수정 요청", en: "Changes" }, SETTLED: { ko: "완료", en: "Settled" }, REJECTED: { ko: "미선정", en: "Rejected" },
+  ALL: { ko: "전체", en: "All" }, PENDING: { ko: "대기", en: "Pending" }, WITHDRAWN: { ko: "철회", en: "Withdrawn" }, APPROVED: { ko: "참여", en: "Approved" }, SUBMITTED: { ko: "제출", en: "Submitted" }, CHANGES_REQUESTED: { ko: "수정 요청", en: "Changes" }, COMPLETED: { ko: "완료", en: "Completed" }, SETTLED: { ko: "완료", en: "Settled" }, REJECTED: { ko: "미선정", en: "Rejected" },
 };
-const FILTERS = ["ALL", "PENDING", "WITHDRAWN", "APPROVED", "SUBMITTED", "CHANGES_REQUESTED", "SETTLED", "REJECTED"] as Filter[];
-const COLUMNS = "minmax(14rem,1.4fr) minmax(10rem,.9fr) minmax(7rem,.6fr) minmax(7rem,.6fr)";
+const FILTERS = [
+  "ALL", "PENDING", "WITHDRAWN", "APPROVED", "SUBMITTED",
+  "CHANGES_REQUESTED", "COMPLETED",
+  ...(FEATURE_PAYMENTS_ENABLED ? ["SETTLED" as const] : []),
+  "REJECTED",
+] as Filter[];
+const COLUMNS = FEATURE_PAYMENTS_ENABLED
+  ? "minmax(14rem,1.4fr) minmax(10rem,.9fr) minmax(7rem,.6fr) minmax(7rem,.6fr)"
+  : "minmax(14rem,1.4fr) minmax(10rem,.9fr) minmax(7rem,.6fr)";
 
 export default function CreatorMyPage() {
   const { user } = useAuthStore();
@@ -98,10 +106,13 @@ export default function CreatorMyPage() {
 
   const actionFor = (application: ApplicationItem) => {
     if (["APPROVED", "SUBMITTED", "CHANGES_REQUESTED"].includes(application.status)) {
+      if (!FEATURE_UPLOADS_ENABLED) {
+        return <span className="text-xs font-semibold text-warning">{t("업로드 준비 중", "Uploads unavailable")}</span>;
+      }
       const label = application.status === "APPROVED" ? t("영상 업로드", "Upload video") : application.status === "CHANGES_REQUESTED" ? t("재제출", "Resubmit") : t("영상 재업로드", "Re-upload");
       return <Button size="sm" onClick={() => setSubmitModal({ id: application.id, campaignTitle: application.campaign.title })}>{label}</Button>;
     }
-    if (application.status === "SETTLED") return <Button size="sm" variant="secondary" onClick={() => setReviewModal({ id: application.id, campaignTitle: application.campaign.title })}>{t("리뷰 작성", "Write review")}</Button>;
+    if (application.status === "COMPLETED" || application.status === "SETTLED") return <Button size="sm" variant="secondary" onClick={() => setReviewModal({ id: application.id, campaignTitle: application.campaign.title })}>{t("리뷰 작성", "Write review")}</Button>;
     if (!application.videoFileKey && application.submissionUrl && isSafeExternalLink(application.submissionUrl)) return <a href={application.submissionUrl} target="_blank" rel="noopener noreferrer" className="inline-flex h-11 items-center rounded-full border border-line-strong px-3 text-xs font-bold text-content-soft">{t("외부 링크", "External link")}</a>;
     return null;
   };
@@ -110,7 +121,7 @@ export default function CreatorMyPage() {
     <div className={viewStyles.headerStack}>
       <PageHeader display="MY WORK" subtitle={t(`${user?.name ?? "크리에이터"}님의 지원, 콘텐츠 제출과 계정 연결을 관리하세요.`, `Manage ${user?.name ?? "your"} applications, submissions, and account connections.`)} />
       {statsLoading || !stats ? <div className="h-[68px] animate-pulse bg-surface-chip" /> : <StatCards totalEarned={stats.totalEarned} completedCount={stats.completedCount} activeCount={stats.activeCount} />}
-      <WorkspaceTabs label={t("내 작업 메뉴", "My work sections")} value={tab} onChange={setTab} options={[{ value: "applications", label: t("지원·콘텐츠", "Applications & content"), count: applications.length }, { value: "instagram", label: "Instagram" }, { value: "account", label: t("계정", "Account") }]} />
+      <WorkspaceTabs label={t("내 작업 메뉴", "My work sections")} value={tab} onChange={setTab} options={[{ value: "applications", label: t("지원·콘텐츠", "Applications & content"), count: applications.length }, ...(FEATURE_INSTAGRAM_ENABLED ? [{ value: "instagram" as const, label: "Instagram" }] : []), { value: "account", label: t("계정", "Account") }]} />
     </div>
   );
 
@@ -121,16 +132,16 @@ export default function CreatorMyPage() {
           <div id="creator-applications" className={viewStyles.tabBody}>
             <FilterToolbar primary={<SegmentedControl label={t("지원 상태 필터", "Application status filter")} value={filter} options={FILTERS.map((value) => ({ value, label: t(FILTER_LABEL[value].ko, FILTER_LABEL[value].en) }))} onChange={(value) => { if (value !== filter) { setAppsLoading(true); setFilter(value); } }} />} secondary={<Link href="/creator/home" className="inline-flex h-11 items-center rounded-full bg-primary px-4 text-xs font-bold text-white">{t("캠페인 탐색", "Discover campaigns")}</Link>} />
             {appsLoading ? <StateSkeleton label={t("지원 현황 불러오는 중", "Loading applications")} /> : appsError ? <StatePanel tone="error" title={t("지원 현황을 불러오지 못했습니다.", "Applications are unavailable.")} description={t("필터를 유지한 채 다시 시도할 수 있습니다.", "Retry without losing the selected filter.")} action={<Button onClick={loadApps}>{t("다시 불러오기", "Retry")}</Button>} /> : applications.length === 0 ? <StatePanel title={t("아직 지원한 캠페인이 없어요.", "You haven't applied to any campaigns yet.")} description={t("내 채널에 맞는 캠페인을 찾아 첫 지원을 시작하세요.", "Find a campaign that fits your channel and start your first application.")} action={<Link href="/creator/home" className="inline-flex h-11 items-center rounded-full bg-primary px-4 text-xs font-bold text-white">{t("캠페인 탐색", "Browse campaigns")}</Link>} /> : (
-              <WorkspaceRecordList columns={COLUMNS} labels={[t("캠페인", "Campaign"), t("상태·작업", "Status & action"), t("지원일", "Applied"), t("정산", "Settled")]}>
+              <WorkspaceRecordList columns={COLUMNS} labels={[t("캠페인", "Campaign"), t("상태·작업", "Status & action"), t("지원일", "Applied"), ...(FEATURE_PAYMENTS_ENABLED ? [t("정산", "Settled")] : [])]}>
                 {applications.map((application) => (
                   <WorkspaceRecordRow key={application.id} columns={COLUMNS}>
                     <WorkspaceRecordCell label={t("캠페인", "Campaign")}><span className={viewStyles.applicationRowTitle}><span className={viewStyles.thumbnail}>{application.campaign.thumbnailUrl ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={application.campaign.thumbnailUrl} alt="" />
-                    ) : "VG"}</span><span className={viewStyles.titleCopy}><Link href={`/creator/campaigns/${application.campaign.id}`} className={viewStyles.recordTitle}>{application.campaign.title}</Link><small className={viewStyles.recordMeta}>{application.campaign.brandName} · ₩{application.campaign.rewardAmount.toLocaleString("ko-KR")}</small>{application.status === "CHANGES_REQUESTED" && application.reviewComment && <small className={viewStyles.applicationNote}>{t("수정 요청", "Changes")}: {application.reviewComment}</small>}</span></span></WorkspaceRecordCell>
+                    ) : "VG"}</span><span className={viewStyles.titleCopy}><Link href={`/creator/campaigns/${application.campaign.id}`} className={viewStyles.recordTitle}>{application.campaign.title}</Link><small className={viewStyles.recordMeta}>{application.campaign.brandName}</small>{application.status === "CHANGES_REQUESTED" && application.reviewComment && <small className={viewStyles.applicationNote}>{t("수정 요청", "Changes")}: {application.reviewComment}</small>}</span></span></WorkspaceRecordCell>
                     <WorkspaceRecordCell label={t("상태·작업", "Status & action")}><span className={viewStyles.applicationStatus}><ApplicationStatusBadge status={application.status} />{actionFor(application)}</span></WorkspaceRecordCell>
                     <WorkspaceRecordCell label={t("지원일", "Applied")}>{new Date(application.appliedAt).toLocaleDateString("ko-KR")}</WorkspaceRecordCell>
-                    <WorkspaceRecordCell label={t("정산", "Settled")}><span className={viewStyles.recordStrong}>{application.rewardPaidAmount !== null ? `₩${application.rewardPaidAmount.toLocaleString("ko-KR")}` : "—"}</span></WorkspaceRecordCell>
+                    {FEATURE_PAYMENTS_ENABLED && <WorkspaceRecordCell label={t("정산", "Settled")}><span className={viewStyles.recordStrong}>{application.rewardPaidAmount != null ? `₩${application.rewardPaidAmount.toLocaleString("ko-KR")}` : "—"}</span></WorkspaceRecordCell>}
                   </WorkspaceRecordRow>
                 ))}
               </WorkspaceRecordList>
@@ -138,9 +149,11 @@ export default function CreatorMyPage() {
           </div>
         </WorkspaceTabPanel>
 
-        <WorkspaceTabPanel value="instagram" activeValue={tab}>
-          <WorkspaceScrollArea padded label={t("Instagram 연결 설정", "Instagram connection settings")}><div className={viewStyles.settingsStack}><InstagramConnectCard /></div></WorkspaceScrollArea>
-        </WorkspaceTabPanel>
+        {FEATURE_INSTAGRAM_ENABLED && (
+          <WorkspaceTabPanel value="instagram" activeValue={tab}>
+            <WorkspaceScrollArea padded label={t("Instagram 연결 설정", "Instagram connection settings")}><div className={viewStyles.settingsStack}><InstagramConnectCard /></div></WorkspaceScrollArea>
+          </WorkspaceTabPanel>
+        )}
 
         <WorkspaceTabPanel value="account" activeValue={tab}>
           <WorkspaceScrollArea padded label={t("계정 설정", "Account settings")}><div className={viewStyles.settingsStack}><MarketingConsentSettings /><CreatorAccountDeletion /></div></WorkspaceScrollArea>

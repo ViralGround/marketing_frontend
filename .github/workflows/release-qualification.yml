@@ -1,0 +1,119 @@
+name: Final release qualification
+
+on:
+  workflow_dispatch:
+    inputs:
+      evidence_run_id:
+        description: "Same-repository Actions run containing the sealed qualification evidence bundle"
+        required: true
+        type: string
+      evidence_artifact_name:
+        description: "Artifact containing qualification-evidence-index.json and every indexed file"
+        required: true
+        type: string
+      confirmation:
+        description: "Type QUALIFY_RELEASE_CANDIDATE (this workflow never deploys)"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: final-release-qualification
+  cancel-in-progress: false
+
+jobs:
+  qualify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: release-qualification
+    env:
+      QUALIFICATION_APPROVED_RELEASE_MANIFEST_SHA256: ${{ vars.APPROVED_QUALIFIED_RELEASE_MANIFEST_SHA256 }}
+      QUALIFICATION_APPROVED_EVIDENCE_INDEX_SHA256: ${{ vars.APPROVED_QUALIFICATION_EVIDENCE_INDEX_SHA256 }}
+      QUALIFICATION_EXPECTED_RELEASE_ID: ${{ vars.APPROVED_RELEASE_ID }}
+      QUALIFICATION_EXPECTED_FRONTEND_SHA: ${{ vars.APPROVED_FRONTEND_SHA }}
+      QUALIFICATION_EXPECTED_BACKEND_SHA: ${{ vars.APPROVED_BACKEND_SHA }}
+    steps:
+      - name: Refuse an unapproved qualification invocation
+        shell: bash
+        env:
+          CONFIRMATION: ${{ inputs.confirmation }}
+          EVIDENCE_RUN_ID: ${{ inputs.evidence_run_id }}
+          EVIDENCE_ARTIFACT_NAME: ${{ inputs.evidence_artifact_name }}
+          QUALIFICATION_APPROVAL_CONTEXT: ${{ secrets.QUALIFICATION_APPROVAL_CONTEXT }}
+        run: |
+          [[ "$CONFIRMATION" == "QUALIFY_RELEASE_CANDIDATE" ]]
+          [[ "$EVIDENCE_RUN_ID" =~ ^[1-9][0-9]*$ ]]
+          [[ "$EVIDENCE_ARTIFACT_NAME" =~ ^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$ ]]
+          [[ "$QUALIFICATION_APPROVAL_CONTEXT" == "RELEASE_QUALIFICATION_APPROVED" ]]
+          [[ "$QUALIFICATION_APPROVED_RELEASE_MANIFEST_SHA256" =~ ^[0-9a-f]{64}$ ]]
+          [[ "$QUALIFICATION_APPROVED_EVIDENCE_INDEX_SHA256" =~ ^[0-9a-f]{64}$ ]]
+          [[ "$QUALIFICATION_EXPECTED_RELEASE_ID" =~ ^rc-[0-9]{8}-[A-Za-z0-9][A-Za-z0-9._-]*$ ]]
+          [[ "$QUALIFICATION_EXPECTED_FRONTEND_SHA" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$QUALIFICATION_EXPECTED_BACKEND_SHA" =~ ^[0-9a-f]{40}$ ]]
+
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ vars.APPROVED_FRONTEND_SHA }}
+          persist-credentials: false
+
+      - name: Bind the validator code to the protected approved frontend commit
+        shell: bash
+        run: test "$(git rev-parse HEAD)" = "$QUALIFICATION_EXPECTED_FRONTEND_SHA"
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - run: npm ci --ignore-scripts
+
+      - name: Download the immutable evidence bundle selected for approval
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: ${{ inputs.evidence_artifact_name }}
+          run-id: ${{ inputs.evidence_run_id }}
+          github-token: ${{ github.token }}
+          path: ${{ runner.temp }}/qualification-evidence
+
+      - name: Validate approved manifest bytes and every actual evidence checksum
+        shell: bash
+        env:
+          APPROVED_QUALIFIED_RELEASE_MANIFEST_YAML_B64: ${{ secrets.APPROVED_QUALIFIED_RELEASE_MANIFEST_YAML_B64 }}
+          QUALIFICATION_APPROVAL_CONTEXT: ${{ secrets.QUALIFICATION_APPROVAL_CONTEXT }}
+        run: |
+          [[ -n "$APPROVED_QUALIFIED_RELEASE_MANIFEST_YAML_B64" ]]
+          umask 077
+          manifest_path="${RUNNER_TEMP}/approved-qualified-release-manifest.yaml"
+          evidence_root="${RUNNER_TEMP}/qualification-evidence"
+          evidence_index="${evidence_root}/qualification-evidence-index.json"
+          trap 'rm -f "$manifest_path"' EXIT
+          printf '%s' "$APPROVED_QUALIFIED_RELEASE_MANIFEST_YAML_B64" \
+            | base64 --decode >"$manifest_path"
+          test -f "$evidence_index"
+          npm run verify:release-manifest:qualified -- \
+            "$manifest_path" "$evidence_index" "$evidence_root"
+
+          mkdir -p qualification-receipt
+          cat > qualification-receipt/receipt.txt <<EOF
+          releaseId=${QUALIFICATION_EXPECTED_RELEASE_ID}
+          frontendSha=${QUALIFICATION_EXPECTED_FRONTEND_SHA}
+          backendSha=${QUALIFICATION_EXPECTED_BACKEND_SHA}
+          approvedManifestSha256=${QUALIFICATION_APPROVED_RELEASE_MANIFEST_SHA256}
+          approvedEvidenceIndexSha256=${QUALIFICATION_APPROVED_EVIDENCE_INDEX_SHA256}
+          evidenceSourceRunId=${{ inputs.evidence_run_id }}
+          evidenceArtifactName=${{ inputs.evidence_artifact_name }}
+          qualificationRunId=${GITHUB_RUN_ID}
+          qualificationRunAttempt=${GITHUB_RUN_ATTEMPT}
+          EOF
+          sha256sum qualification-receipt/receipt.txt > qualification-receipt/SHA256SUMS
+
+      - name: Preserve the successful qualification receipt
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: release-qualification-${{ vars.APPROVED_RELEASE_ID }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: qualification-receipt/
+          if-no-files-found: error
+          retention-days: 90

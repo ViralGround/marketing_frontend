@@ -1,0 +1,72 @@
+name: Staging five-minute synthetic
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: "Type RUN_STAGING_SYNTHETIC"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: staging-five-minute-synthetic
+  cancel-in-progress: true
+
+jobs:
+  synthetic:
+    if: >-
+      (github.event_name == 'schedule' && vars.STAGING_SYNTHETIC_ENABLED == 'true') ||
+      github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment: staging-synthetic
+    env:
+      SYNTHETIC_CHECK_ENABLED: RUN_STAGING_SYNTHETIC
+      DISPATCH_CONFIRMATION: ${{ inputs.confirmation }}
+      STAGING_EXPECTED_RELEASE_ID: ${{ vars.STAGING_EXPECTED_RELEASE_ID }}
+      STAGING_EXPECTED_FRONTEND_SHA: ${{ vars.STAGING_EXPECTED_FRONTEND_SHA }}
+      STAGING_EXPECTED_BACKEND_SHA: ${{ vars.STAGING_EXPECTED_BACKEND_SHA }}
+      STAGING_EXPECTED_SCHEMA_VERSION: ${{ vars.STAGING_EXPECTED_SCHEMA_VERSION }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ vars.STAGING_EXPECTED_FRONTEND_SHA }}
+          persist-credentials: false
+
+      - name: Refuse an unconfirmed or malformed synthetic target
+        shell: bash
+        run: |
+          if [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" ]]; then
+            [[ "$DISPATCH_CONFIRMATION" == "RUN_STAGING_SYNTHETIC" ]]
+          fi
+          [[ "$STAGING_EXPECTED_FRONTEND_SHA" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$STAGING_EXPECTED_BACKEND_SHA" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$(git rev-parse HEAD)" == "$STAGING_EXPECTED_FRONTEND_SHA" ]]
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - run: npm ci --ignore-scripts
+
+      - name: Validate the synthetic runner without account secrets
+        run: |
+          node --check scripts/staging/synthetic-check.mjs
+          node --test scripts/staging/runtime-safety-contract.test.mjs
+
+      - name: Run browser home to CSRF to login to role surface to logout journey
+        env:
+          CLONE_EVIDENCE_SEAL_SHA256: ${{ secrets.STAGING_EXPECTED_EVIDENCE_SEAL_SHA256 }}
+          CLONE_E2E_BEFORE_EVIDENCE_SEAL_SHA256: ${{ secrets.STAGING_EXPECTED_E2E_BEFORE_SEAL_SHA256 }}
+          SYNTHETIC_COMPANY_EMAIL: ${{ secrets.STAGING_SYNTHETIC_COMPANY_EMAIL }}
+          SYNTHETIC_COMPANY_PASSWORD: ${{ secrets.STAGING_SYNTHETIC_COMPANY_PASSWORD }}
+          SYNTHETIC_CREATOR_EMAIL: ${{ secrets.STAGING_SYNTHETIC_CREATOR_EMAIL }}
+          SYNTHETIC_CREATOR_PASSWORD: ${{ secrets.STAGING_SYNTHETIC_CREATOR_PASSWORD }}
+          SYNTHETIC_BROWSER_CHANNEL: chrome
+        run: node scripts/staging/synthetic-check.mjs

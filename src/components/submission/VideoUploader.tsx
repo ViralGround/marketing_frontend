@@ -1,9 +1,10 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useId, useRef, useState } from "react";
 import api from "@/lib/api";
 import Button from "@/components/ui/Button";
 import { useLang } from "@/lib/i18n";
+import { FEATURE_UPLOADS_ENABLED } from "@/lib/featureFlags";
 
 const ALLOWED_TYPES = ["video/mp4", "video/quicktime", "video/webm"];
 const MAX_SIZE_BYTES = 500 * 1024 * 1024; // 500MB
@@ -29,6 +30,18 @@ export default function VideoUploader({ applicationId, onUploaded, onCancel }: P
   const [loading, setLoading] = useState(false);
   const [dragging, setDragging] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const inputId = useId();
+  const hintId = `${inputId}-hint`;
+  const errorId = `${inputId}-error`;
+
+  if (!FEATURE_UPLOADS_ENABLED) {
+    return (
+      <div role="status" className="rounded-xl border border-warning/30 bg-warning/5 p-4 text-sm leading-relaxed text-content-soft">
+        <strong className="block text-foreground">{t("파일 업로드 준비 중", "File uploads are being prepared")}</strong>
+        <span>{t("전용 저장소와 접근 정책 검증이 끝난 뒤 사용할 수 있습니다.", "This becomes available after the dedicated storage and access policy are verified.")}</span>
+      </div>
+    );
+  }
 
   const validateAndSet = (candidate: File | null | undefined) => {
     setError("");
@@ -119,7 +132,12 @@ export default function VideoUploader({ applicationId, onUploaded, onCancel }: P
 
   return (
     <div>
-      <div
+      <button
+        type="button"
+        aria-controls={inputId}
+        aria-describedby={`${file ? "" : hintId}${error ? ` ${errorId}` : ""}`.trim() || undefined}
+        aria-label={t("업로드할 영상 파일 선택", "Choose a video file to upload")}
+        disabled={loading}
         onDragOver={(e) => {
           e.preventDefault();
           setDragging(true);
@@ -131,15 +149,15 @@ export default function VideoUploader({ applicationId, onUploaded, onCancel }: P
           validateAndSet(e.dataTransfer.files[0]);
         }}
         onClick={() => !loading && inputRef.current?.click()}
-        className={`cursor-pointer rounded-2xl border-2 border-dashed p-8 text-center transition-colors ${
+        className={`w-full cursor-pointer rounded-2xl border-2 border-dashed p-8 text-center transition-colors ${
           dragging
             ? "border-primary bg-primary-bg"
             : "border-line-strong hover:border-primary/40 hover:bg-surface-muted"
-        } ${loading ? "pointer-events-none opacity-60" : ""}`}
+        } ${loading ? "cursor-wait opacity-60" : ""}`}
       >
         {file ? (
           <div>
-            <p className="text-sm font-semibold text-foreground">{file.name}</p>
+            <p className="break-all text-sm font-semibold text-foreground" aria-live="polite">{file.name}</p>
             <p className="mt-1 text-xs text-muted">
               {formatSize(file.size)} · {file.type}
             </p>
@@ -149,15 +167,17 @@ export default function VideoUploader({ applicationId, onUploaded, onCancel }: P
             <p className="text-sm text-muted">
               {t("영상 파일을 끌어다 놓거나 클릭해서 선택해주세요", "Drag and drop a video file or click to select")}
             </p>
-            <p className="mt-1 text-xs text-faint">{t("mp4, mov, webm · 최대 500MB", "mp4, mov, webm · Max 500MB")}</p>
+            <p id={hintId} className="mt-1 text-xs text-faint">{t("mp4, mov, webm · 최대 500MB", "mp4, mov, webm · Max 500MB")}</p>
           </div>
         )}
-      </div>
+      </button>
       <input
+        id={inputId}
         ref={inputRef}
         type="file"
         accept={ALLOWED_TYPES.join(",")}
         hidden
+        aria-label={t("영상 파일", "Video file")}
         onChange={(e) => validateAndSet(e.target.files?.[0])}
       />
 
@@ -167,7 +187,15 @@ export default function VideoUploader({ applicationId, onUploaded, onCancel }: P
             <span>{t("업로드 중", "Uploading")}</span>
             <span>{progress}%</span>
           </div>
-          <div className="h-2 overflow-hidden rounded-full bg-surface-chip">
+          <div
+            className="h-2 overflow-hidden rounded-full bg-surface-chip"
+            role="progressbar"
+            aria-label={t("영상 업로드 진행률", "Video upload progress")}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={progress}
+            aria-valuetext={`${progress}%`}
+          >
             <div
               className="h-full bg-primary transition-all"
               style={{ width: `${progress}%` }}
@@ -176,7 +204,7 @@ export default function VideoUploader({ applicationId, onUploaded, onCancel }: P
         </div>
       )}
 
-      {error && <p className="mt-3 text-sm text-error">{error}</p>}
+      {error && <p id={errorId} role="alert" className="mt-3 text-sm text-error">{error}</p>}
 
       <div className="mt-5 flex justify-end gap-2">
         <Button variant="secondary" size="sm" onClick={onCancel} disabled={loading}>

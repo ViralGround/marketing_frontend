@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import api from "@/lib/api";
 import KPICards from "@/components/metric/KPICards";
 import { useLang } from "@/lib/i18n";
+import { FEATURE_PAYMENTS_ENABLED } from "@/lib/featureFlags";
 
 interface Kpi {
   gmv: number;
@@ -82,7 +83,7 @@ export default function AdminDashboardPage() {
         </h1>
       </div>
 
-      <section className="mb-10">
+      {FEATURE_PAYMENTS_ENABLED && <section className="mb-10">
         <h2 className="mb-4 text-sm font-semibold text-muted">{t("거래", "Transactions")}</h2>
         <KPICards
           items={[
@@ -94,7 +95,7 @@ export default function AdminDashboardPage() {
             { label: t("환불", "Refunded"), value: `₩${kpi.refunded.toLocaleString("ko-KR")}` },
           ]}
         />
-      </section>
+      </section>}
 
       <section className="mb-10">
         <h2 className="mb-4 text-sm font-semibold text-muted">{t("참여", "Engagement")}</h2>

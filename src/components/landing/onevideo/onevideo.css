@@ -996,7 +996,7 @@
 }
 
 .vg4 .flow-steps li.is-current {
-  color: var(--violet);
+  color: var(--violet-ink);
 }
 
 .vg4 .flow-steps li.is-current > * {
@@ -1308,7 +1308,7 @@
 }
 
 .vg4 .reel-line.is-current .reel-name small {
-  color: rgba(154, 100, 245, 0.85);
+  color: var(--violet-bright);
 }
 
 .vg4 .reel-views {
@@ -1332,7 +1332,7 @@
 }
 
 .vg4 .reel-line.is-current .reel-views i {
-  color: rgba(154, 100, 245, 0.75);
+  color: var(--violet-bright);
 }
 
 /* now playing 원형 스탬프 — proof-stamp와 같은 문법 */

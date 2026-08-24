@@ -7,7 +7,8 @@ import {
 } from "@/lib/legal/marketing";
 
 export const metadata = {
-  title: "마케팅 정보 수신 동의 | Viral Ground",
+  title: "마케팅 정보 수신 동의",
+  alternates: { canonical: "/marketing" },
 };
 
 export default function MarketingPage() {

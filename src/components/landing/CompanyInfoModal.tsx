@@ -17,10 +17,6 @@ interface Props {
   onClose: () => void;
 }
 
-function rewardText(amount: number): string {
-  return `₩${amount.toLocaleString("ko-KR")}`;
-}
-
 function safePublicUrl(raw: string | null | undefined): string | null {
   if (!raw) return null;
   try {
@@ -160,8 +156,8 @@ export default function CompanyInfoModal({ open, campaign, onClose }: Props) {
               <h3>{t("캠페인 조건", "Campaign terms")}</h3>
               <dl className={groundStyles.sheetInfoList}>
                 <div className={groundStyles.sheetInfoRow}>
-                  <dt>{t("기본 보상", "Base reward")}</dt>
-                  <dd>{rewardText(campaign.rewardAmount)}</dd>
+                  <dt>{t("작업 범위", "Work scope")}</dt>
+                  <dd>{t("캠페인 브리프에서 확인", "See the campaign brief")}</dd>
                 </div>
                 <div className={groundStyles.sheetInfoRow}>
                   <dt>{t("모집 인원", "Slots")}</dt>
@@ -186,7 +182,7 @@ export default function CompanyInfoModal({ open, campaign, onClose }: Props) {
                     {company.openCampaigns.map((openCampaign) => (
                       <li key={openCampaign.id}>
                         <strong>{openCampaign.title}</strong>
-                        <span>{rewardText(openCampaign.rewardAmount)} · {deadlineText(openCampaign.deadline, t)}</span>
+                        <span>{t("모집 중", "Recruiting")} · {deadlineText(openCampaign.deadline, t)}</span>
                       </li>
                     ))}
                   </ul>

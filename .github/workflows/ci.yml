@@ -17,39 +17,55 @@ jobs:
   quality-and-build:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    env:
+      NEXT_PUBLIC_SITE_URL: https://staging.viralground.kr
+      NEXT_PUBLIC_API_URL: https://api.staging.viralground.kr
+      NEXT_PUBLIC_STORAGE_ORIGINS: ""
+      NEXT_PUBLIC_LEGAL_TERMS_VERSION: terms-ci-2026-08-22
+      NEXT_PUBLIC_LEGAL_PRIVACY_VERSION: privacy-ci-2026-08-22
+      NEXT_PUBLIC_LEGAL_AGE14_VERSION: age14-ci-2026-08-22
+      NEXT_PUBLIC_LEGAL_CREATOR_THIRD_PARTY_VERSION: third-party-ci-2026-08-22
+      NEXT_PUBLIC_LEGAL_MARKETING_VERSION: marketing-ci-2026-08-22
+      NEXT_PUBLIC_PRIVACY_OFFICER_NAME: ViralGround Privacy Officer
+      NEXT_PUBLIC_PRIVACY_OFFICER_CONTACT: privacy@viralground.kr
+      NEXT_PUBLIC_SENTRY_DSN: https://0123456789abcdef@o123.ingest.sentry.io/1
+      NEXT_PUBLIC_SENTRY_ENV: ci
+      NEXT_PUBLIC_BUSINESS_NAME: Viral Ground CI
+      NEXT_PUBLIC_BUSINESS_CEO: CI Representative
+      NEXT_PUBLIC_BUSINESS_REG_NO: 000-00-00000
+      NEXT_PUBLIC_BUSINESS_ADDRESS: Seoul, Korea
+      NEXT_PUBLIC_BUSINESS_CONTACT: ci@viralground.kr
+      NEXT_PUBLIC_FEATURE_PAYMENTS: "false"
+      NEXT_PUBLIC_FEATURE_INSTAGRAM: "false"
+      NEXT_PUBLIC_FEATURE_UPLOADS: "false"
+      NEXT_PUBLIC_RELEASE_ID: frontend-ci-${{ github.sha }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: "22"
           cache: npm
       - run: npm ci
       - run: npm run lint
+      - run: npm run typecheck
       - run: npm test
+      - run: npm run test:staging:safety-contract
+      - run: npm run test:staging:manifest-contract
       - run: npm run build
-        env:
-          NEXT_PUBLIC_SITE_URL: https://viralground.kr
-          NEXT_PUBLIC_API_URL: https://api.viralground.kr
-          NEXT_PUBLIC_STORAGE_ORIGINS: https://storage.viralground.kr
-          NEXT_PUBLIC_CALENDLY_URL: https://calendly.com/viralground-ci/intro
-          NEXT_PUBLIC_LEGAL_TERMS_VERSION: terms-ci-2026-08-13
-          NEXT_PUBLIC_LEGAL_PRIVACY_VERSION: privacy-ci-2026-08-13
-          NEXT_PUBLIC_LEGAL_AGE14_VERSION: age14-ci-2026-08-13
-          NEXT_PUBLIC_LEGAL_CREATOR_THIRD_PARTY_VERSION: third-party-ci-2026-08-13
-          NEXT_PUBLIC_LEGAL_MARKETING_VERSION: marketing-ci-2026-08-13
-          NEXT_PUBLIC_PRIVACY_OFFICER_NAME: ViralGround Privacy Officer
-          NEXT_PUBLIC_PRIVACY_OFFICER_CONTACT: privacy@viralground.kr
-          NEXT_PUBLIC_SENTRY_DSN: https://0123456789abcdef@o123.ingest.sentry.io/1
-          NEXT_PUBLIC_SENTRY_ENV: ci
-      - name: Reject high-severity production dependency vulnerabilities
-        run: npm audit --omit=dev --audit-level=high
+      - run: npm run verify:production-bundle
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+      - name: Reject high-severity dependency vulnerabilities
+        run: npm audit --audit-level=high
       - name: Upload test coverage and reports
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: frontend-test-reports
           path: |
             coverage/**
             test-results/**
+            playwright-report/**
           if-no-files-found: ignore
           retention-days: 14

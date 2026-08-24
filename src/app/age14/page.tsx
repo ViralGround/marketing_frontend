@@ -7,7 +7,8 @@ import {
 } from "@/lib/legal/age14";
 
 export const metadata = {
-  title: "만 14세 이상 확인 | Viral Ground",
+  title: "만 14세 이상 확인",
+  alternates: { canonical: "/age14" },
 };
 
 export default function Age14Page() {

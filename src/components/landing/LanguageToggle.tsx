@@ -11,7 +11,7 @@ export default function LanguageToggle({ className = "" }: { className?: string 
 
   const base = "rounded-full px-3 py-1 text-xs font-semibold transition-colors";
   const active = "bg-surface text-foreground shadow-sm";
-  const inactive = "text-muted hover:text-foreground";
+  const inactive = "text-content-soft hover:text-foreground";
 
   return (
     <div className={`inline-flex items-center rounded-full bg-surface-chip p-0.5 ${className}`}>

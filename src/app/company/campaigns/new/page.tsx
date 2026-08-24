@@ -554,10 +554,10 @@ export default function NewCampaignPage() {
 
           <WorkspacePanel title={t("등록 전 확인", "Before creating")} density="compact" tone="dark">
             <p className="text-xs leading-relaxed text-zinc-300">
-              <strong className="text-[#b9a3ff]">{t("결제·정산 비활성", "Payments disabled")}</strong>{" "}
+              <strong className="text-[#b9a3ff]">{t("초안으로 저장", "Saved as a draft")}</strong>{" "}
               {t(
-                "현재 어떤 계좌로도 송금하지 마세요. 결제와 모집은 운영 계약 및 PG 연결 후 진행됩니다.",
-                "Do not transfer funds to any account. Payment and recruiting begin after contract and gateway setup.",
+                "작성한 브리프는 검토 가능한 비공개 초안으로 등록됩니다. 공개 전 조건과 권한을 다시 확인해주세요.",
+                "Your brief is registered as a private, reviewable draft. Check its conditions and permissions before publishing.",
               )}
             </p>
             <p className="mt-3 text-[11px] leading-relaxed text-zinc-400">

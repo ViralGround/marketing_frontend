@@ -65,7 +65,7 @@ describe("ProfileSetupPage", () => {
       name: /공개 크리에이터 풀에 내 프로필 노출/,
     });
     expect((publicOptIn as HTMLInputElement).checked).toBe(true);
-    expect(screen.getByText(/연락처, 제출 파일, 지급액은 공개되지 않습니다/)).toBeTruthy();
+    expect(screen.getByText(/연락처와 제출 파일은 공개되지 않습니다/)).toBeTruthy();
     expect(screen.getByText(/동의하지 않아도 프로필 저장과 캠페인 참여가 가능/)).toBeTruthy();
 
     await user.click(screen.getByRole("button", { name: "프로필 저장" }));

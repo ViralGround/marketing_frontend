@@ -9,6 +9,7 @@ import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import AlertModal from "@/components/ui/AlertModal";
 import { useLang } from "@/lib/i18n";
+import { FEATURE_PAYMENTS_ENABLED } from "@/lib/featureFlags";
 
 type CampaignStatus = "DRAFT" | "OPEN" | "CLOSED";
 type EscrowStatus =
@@ -41,7 +42,7 @@ type Filter = "ALL" | CampaignStatus;
 type Tone = "primary" | "success" | "warning" | "error" | "info" | "neutral";
 
 const STATUS_LABEL: Record<CampaignStatus, { ko: string; en: string }> = {
-  DRAFT: { ko: "예치금 대기", en: "Awaiting deposit" },
+  DRAFT: { ko: "초안", en: "Draft" },
   OPEN: { ko: "모집중", en: "Recruiting" },
   CLOSED: { ko: "마감", en: "Closed" },
 };
@@ -162,7 +163,7 @@ export default function AdminCampaignsPage() {
         )}
       </p>
 
-      {pendingEscrow > 0 && (
+      {FEATURE_PAYMENTS_ENABLED && pendingEscrow > 0 && (
         <Card className="mb-5 flex flex-wrap items-center justify-between gap-3 border-warning/30 bg-warning/5 p-4">
           <span className="text-sm text-warning">
             {t("예치금 확인 대기 캠페인이 ", "")}
@@ -227,7 +228,7 @@ export default function AdminCampaignsPage() {
                   <th className="px-5 py-3 font-medium">{t("보상", "Reward")}</th>
                   <th className="px-5 py-3 font-medium">{t("지원자", "Applicants")}</th>
                   <th className="px-5 py-3 font-medium">{t("상태", "Status")}</th>
-                  <th className="px-5 py-3 font-medium">{t("예치금", "Deposit")}</th>
+                  {FEATURE_PAYMENTS_ENABLED && <th className="px-5 py-3 font-medium">{t("예치금", "Deposit")}</th>}
                   <th className="px-5 py-3 font-medium">{t("마감일", "Deadline")}</th>
                   <th className="px-5 py-3 font-medium">{t("생성일", "Created")}</th>
                   <th className="px-5 py-3 text-center font-medium">{t("대표", "Featured")}</th>
@@ -264,11 +265,11 @@ export default function AdminCampaignsPage() {
                         {t(STATUS_LABEL[c.status].ko, STATUS_LABEL[c.status].en)}
                       </Badge>
                     </td>
-                    <td className="px-5 py-3">
+                    {FEATURE_PAYMENTS_ENABLED && <td className="px-5 py-3">
                       <Badge tone={ESCROW_TONE[c.escrowStatus]}>
                         {t(ESCROW_LABEL[c.escrowStatus].ko, ESCROW_LABEL[c.escrowStatus].en)}
                       </Badge>
-                    </td>
+                    </td>}
                     <td className="px-5 py-3 text-muted">
                       {c.deadline ? new Date(c.deadline).toLocaleDateString("ko-KR") : "-"}
                     </td>

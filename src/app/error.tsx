@@ -22,7 +22,7 @@ export default function RouteError({
   }, [error]);
 
   return (
-    <main className="grid min-h-[calc(100svh-65px)] place-items-center bg-paper px-5 py-16 text-ink">
+    <div className="grid min-h-[calc(100svh-65px)] place-items-center bg-paper px-5 py-16 text-ink">
       <div className="w-full max-w-[560px] rounded-3xl border border-ink/20 bg-white p-8 shadow-[0_24px_80px_rgba(10,9,11,0.08)] sm:p-12">
         <p className="mb-3 text-[13px] font-extrabold tracking-[0.12em] text-violet">VIRAL GROUND</p>
         <h1 className="font-display text-[clamp(32px,8vw,52px)] leading-[1.04] tracking-[-0.04em]">
@@ -49,6 +49,6 @@ export default function RouteError({
           </Link>
         </div>
       </div>
-    </main>
+    </div>
   );
 }

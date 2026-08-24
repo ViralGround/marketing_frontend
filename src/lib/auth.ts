@@ -3,11 +3,11 @@
 import { clearSessionHint } from "./sessionHint";
 
 export async function removeTokens() {
-  clearSessionHint();
   try {
     const { default: api } = await import("./api");
     await api.post("/auth/logout");
-  } catch {
-    // Navigation still proceeds; server-side expiry remains authoritative.
+    clearSessionHint();
+  } catch (cause) {
+    throw new Error("The server did not confirm logout.", { cause });
   }
 }

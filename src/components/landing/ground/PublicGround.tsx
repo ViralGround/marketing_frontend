@@ -69,7 +69,7 @@ export function PublicGroundFrame({
           </a>
         ))}
       </nav>
-      <main className={styles.main}>{children}</main>
+      <div className={styles.main}>{children}</div>
       {mobileDock && <div className={styles.mobileDock}>{mobileDock}</div>}
       <GroundFooter />
     </div>

@@ -1,0 +1,296 @@
+name: Sanitized staging RC validation
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: "Type RUN_SANITIZED_STAGING_RC"
+        required: true
+        type: string
+      email_safety:
+        description: "Type ROLE_E2E_DISABLED_RESEND_SEPARATE_ALLOWLIST"
+        required: true
+        type: string
+      release_id:
+        description: "Approved release ID exposed by both deployments"
+        required: true
+        type: string
+      frontend_sha:
+        description: "Expected frontend commit SHA"
+        required: true
+        type: string
+      backend_sha:
+        description: "Expected backend commit SHA"
+        required: true
+        type: string
+      schema_version:
+        description: "Expected Flyway schema version"
+        required: true
+        type: string
+      release_manifest_sha256:
+        description: "SHA-256 of the approved immutable release manifest"
+        required: true
+        type: string
+      load_duration:
+        description: "Read-only k6 duration (for example 10m)"
+        required: true
+        default: "10m"
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sanitized-staging-rc
+  cancel-in-progress: false
+
+jobs:
+  guarded-role-e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: staging-sanitized-rc
+    env:
+      STAGING_RC_CONFIRMATION: ${{ inputs.confirmation }}
+      STAGING_EMAIL_SAFETY_ATTESTATION: ${{ inputs.email_safety }}
+      STAGING_EXPECTED_RELEASE_ID: ${{ inputs.release_id }}
+      STAGING_EXPECTED_FRONTEND_SHA: ${{ inputs.frontend_sha }}
+      STAGING_EXPECTED_BACKEND_SHA: ${{ inputs.backend_sha }}
+      STAGING_EXPECTED_SCHEMA_VERSION: ${{ inputs.schema_version }}
+      STAGING_APPROVED_RELEASE_MANIFEST_SHA256: ${{ inputs.release_manifest_sha256 }}
+      APPROVED_RELEASE_ID: ${{ vars.APPROVED_RELEASE_ID }}
+      APPROVED_FRONTEND_SHA: ${{ vars.APPROVED_FRONTEND_SHA }}
+      APPROVED_BACKEND_SHA: ${{ vars.APPROVED_BACKEND_SHA }}
+      APPROVED_SCHEMA_VERSION: ${{ vars.APPROVED_SCHEMA_VERSION }}
+      APPROVED_RELEASE_MANIFEST_SHA256: ${{ vars.APPROVED_RELEASE_MANIFEST_SHA256 }}
+      STAGING_RUN_ID: gha-${{ github.run_id }}-${{ github.run_attempt }}
+    steps:
+      - name: Refuse inputs that are not the protected approved manifest contract
+        env:
+          CLONE_EVIDENCE_SEAL_SHA256: ${{ secrets.APPROVED_MIGRATION_SEAL_SHA256 }}
+          CLONE_E2E_BEFORE_EVIDENCE_SEAL_SHA256: ${{ secrets.APPROVED_E2E_BEFORE_SEAL_SHA256 }}
+        shell: bash
+        run: |
+          [[ "$STAGING_RC_CONFIRMATION" == "RUN_SANITIZED_STAGING_RC" ]]
+          [[ "$STAGING_EXPECTED_FRONTEND_SHA" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$STAGING_EXPECTED_BACKEND_SHA" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$CLONE_EVIDENCE_SEAL_SHA256" =~ ^[0-9a-f]{64}$ ]]
+          [[ "$CLONE_E2E_BEFORE_EVIDENCE_SEAL_SHA256" =~ ^[0-9a-f]{64}$ ]]
+          [[ "$STAGING_APPROVED_RELEASE_MANIFEST_SHA256" =~ ^[0-9a-f]{64}$ ]]
+          [[ "$STAGING_EMAIL_SAFETY_ATTESTATION" == "ROLE_E2E_DISABLED_RESEND_SEPARATE_ALLOWLIST" ]]
+          [[ "$STAGING_EXPECTED_RELEASE_ID" == "$APPROVED_RELEASE_ID" ]]
+          [[ "$STAGING_EXPECTED_FRONTEND_SHA" == "$APPROVED_FRONTEND_SHA" ]]
+          [[ "$STAGING_EXPECTED_BACKEND_SHA" == "$APPROVED_BACKEND_SHA" ]]
+          [[ "$STAGING_EXPECTED_SCHEMA_VERSION" == "$APPROVED_SCHEMA_VERSION" ]]
+          [[ "$STAGING_APPROVED_RELEASE_MANIFEST_SHA256" == "$APPROVED_RELEASE_MANIFEST_SHA256" ]]
+
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ vars.APPROVED_FRONTEND_SHA }}
+          persist-credentials: false
+
+      - name: Bind the validation code to the approved frontend commit
+        shell: bash
+        run: |
+          [[ "$STAGING_EXPECTED_FRONTEND_SHA" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$STAGING_EXPECTED_BACKEND_SHA" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$(git rev-parse HEAD)" == "$STAGING_EXPECTED_FRONTEND_SHA" ]]
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - run: npm ci --ignore-scripts
+
+      - name: Verify the actual approved release manifest bytes and bound fields
+        env:
+          APPROVED_RELEASE_MANIFEST_YAML_B64: ${{ secrets.APPROVED_RELEASE_MANIFEST_YAML_B64 }}
+          CLONE_EVIDENCE_SEAL_SHA256: ${{ secrets.APPROVED_MIGRATION_SEAL_SHA256 }}
+          CLONE_E2E_BEFORE_EVIDENCE_SEAL_SHA256: ${{ secrets.APPROVED_E2E_BEFORE_SEAL_SHA256 }}
+        shell: bash
+        run: |
+          [[ -n "$APPROVED_RELEASE_MANIFEST_YAML_B64" ]]
+          umask 077
+          manifest_path="${RUNNER_TEMP}/approved-release-manifest.yaml"
+          trap 'rm -f "$manifest_path"' EXIT
+          printf '%s' "$APPROVED_RELEASE_MANIFEST_YAML_B64" \
+            | base64 --decode >"$manifest_path"
+          node scripts/staging/validate-release-manifest.mjs "$manifest_path"
+          rm -f "$manifest_path"
+          trap - EXIT
+
+      - name: Install Chromium for staging accessibility and API tests
+        run: npx playwright install --with-deps chromium
+
+      - name: Create the immutable-result workspace
+        run: mkdir -p test-results
+
+      - name: Verify backend-owned runtime safety contract before any mutation test
+        env:
+          CLONE_EVIDENCE_SEAL_SHA256: ${{ secrets.APPROVED_MIGRATION_SEAL_SHA256 }}
+          CLONE_E2E_BEFORE_EVIDENCE_SEAL_SHA256: ${{ secrets.APPROVED_E2E_BEFORE_SEAL_SHA256 }}
+          PLAYWRIGHT_JUNIT_OUTPUT_FILE: test-results/staging-runtime-safety.xml
+        run: npm run test:staging:safety
+
+      - name: Prove deployed frontend and backend legal versions match
+        env:
+          CLONE_EVIDENCE_SEAL_SHA256: ${{ secrets.APPROVED_MIGRATION_SEAL_SHA256 }}
+          CLONE_E2E_BEFORE_EVIDENCE_SEAL_SHA256: ${{ secrets.APPROVED_E2E_BEFORE_SEAL_SHA256 }}
+          PLAYWRIGHT_JUNIT_OUTPUT_FILE: test-results/staging-legal-version-contract.xml
+        run: >-
+          npx playwright test --config=playwright.staging.config.ts
+          --project=staging-legal-version-contract
+
+      - name: Run guarded role and refresh-replay validation
+        env:
+          CLONE_EVIDENCE_SEAL_SHA256: ${{ secrets.APPROVED_MIGRATION_SEAL_SHA256 }}
+          CLONE_E2E_BEFORE_EVIDENCE_SEAL_SHA256: ${{ secrets.APPROVED_E2E_BEFORE_SEAL_SHA256 }}
+          PLAYWRIGHT_JUNIT_OUTPUT_FILE: test-results/staging-role-security.xml
+          STAGING_COMPANY_EMAIL: ${{ secrets.STAGING_E2E_COMPANY_EMAIL }}
+          STAGING_COMPANY_PASSWORD: ${{ secrets.STAGING_E2E_COMPANY_PASSWORD }}
+          STAGING_CREATOR_EMAIL: ${{ secrets.STAGING_E2E_CREATOR_EMAIL }}
+          STAGING_CREATOR_PASSWORD: ${{ secrets.STAGING_E2E_CREATOR_PASSWORD }}
+          STAGING_ADMIN_EMAIL: ${{ secrets.STAGING_E2E_ADMIN_EMAIL }}
+          STAGING_ADMIN_PASSWORD: ${{ secrets.STAGING_E2E_ADMIN_PASSWORD }}
+          STAGING_REFRESH_EMAIL: ${{ secrets.STAGING_E2E_REFRESH_EMAIL }}
+          STAGING_REFRESH_PASSWORD: ${{ secrets.STAGING_E2E_REFRESH_PASSWORD }}
+        shell: bash
+        run: |
+          for name in STAGING_COMPANY_EMAIL STAGING_COMPANY_PASSWORD STAGING_CREATOR_EMAIL STAGING_CREATOR_PASSWORD STAGING_ADMIN_EMAIL STAGING_ADMIN_PASSWORD STAGING_REFRESH_EMAIL STAGING_REFRESH_PASSWORD; do
+            [[ -n "${!name:-}" ]] || { echo "Missing required synthetic account secret: ${name}"; exit 1; }
+          done
+          npx playwright test --config=playwright.staging.config.ts --project=staging-api
+
+      - name: Run guarded browser role journey
+        env:
+          CLONE_EVIDENCE_SEAL_SHA256: ${{ secrets.APPROVED_MIGRATION_SEAL_SHA256 }}
+          CLONE_E2E_BEFORE_EVIDENCE_SEAL_SHA256: ${{ secrets.APPROVED_E2E_BEFORE_SEAL_SHA256 }}
+          PLAYWRIGHT_JUNIT_OUTPUT_FILE: test-results/staging-browser-role.xml
+          STAGING_COMPANY_EMAIL: ${{ secrets.STAGING_E2E_COMPANY_EMAIL }}
+          STAGING_COMPANY_PASSWORD: ${{ secrets.STAGING_E2E_COMPANY_PASSWORD }}
+          STAGING_CREATOR_EMAIL: ${{ secrets.STAGING_E2E_CREATOR_EMAIL }}
+          STAGING_CREATOR_PASSWORD: ${{ secrets.STAGING_E2E_CREATOR_PASSWORD }}
+          STAGING_ADMIN_EMAIL: ${{ secrets.STAGING_E2E_ADMIN_EMAIL }}
+          STAGING_ADMIN_PASSWORD: ${{ secrets.STAGING_E2E_ADMIN_PASSWORD }}
+        shell: bash
+        run: |
+          for name in STAGING_COMPANY_EMAIL STAGING_COMPANY_PASSWORD STAGING_CREATOR_EMAIL STAGING_CREATOR_PASSWORD STAGING_ADMIN_EMAIL STAGING_ADMIN_PASSWORD; do
+            [[ -n "${!name:-}" ]] || { echo "Missing required synthetic account secret: ${name}"; exit 1; }
+          done
+          npx playwright test --config=playwright.staging.config.ts --project=staging-browser-role
+
+      - name: Run desktop and mobile staging accessibility validation
+        env:
+          PLAYWRIGHT_JUNIT_OUTPUT_FILE: test-results/staging-accessibility.xml
+        run: >-
+          npx playwright test --config=playwright.staging.config.ts
+          --project=staging-desktop-a11y --project=staging-mobile-a11y
+
+      - name: Hash staging result evidence
+        if: always()
+        env:
+          CLONE_EVIDENCE_SEAL_SHA256: ${{ secrets.APPROVED_MIGRATION_SEAL_SHA256 }}
+          CLONE_E2E_BEFORE_EVIDENCE_SEAL_SHA256: ${{ secrets.APPROVED_E2E_BEFORE_SEAL_SHA256 }}
+        shell: bash
+        run: |
+          evidence_fingerprint="$(printf '%s' "$CLONE_EVIDENCE_SEAL_SHA256" | sha256sum | awk '{print $1}')"
+          e2e_before_fingerprint="$(printf '%s' "$CLONE_E2E_BEFORE_EVIDENCE_SEAL_SHA256" | sha256sum | awk '{print $1}')"
+          cat > test-results/release-contract.txt <<EOF
+          releaseId=${STAGING_EXPECTED_RELEASE_ID}
+          frontendSha=${STAGING_EXPECTED_FRONTEND_SHA}
+          backendSha=${STAGING_EXPECTED_BACKEND_SHA}
+          schemaVersion=${STAGING_EXPECTED_SCHEMA_VERSION}
+          approvedReleaseManifestSha256=${STAGING_APPROVED_RELEASE_MANIFEST_SHA256}
+          migrationEvidenceSealFingerprint=${evidence_fingerprint}
+          e2eBeforeEvidenceSealFingerprint=${e2e_before_fingerprint}
+          githubRunId=${GITHUB_RUN_ID}
+          githubRunAttempt=${GITHUB_RUN_ATTEMPT}
+          EOF
+          find test-results -maxdepth 1 -type f ! -name 'SHA256SUMS' -print0 \
+            | sort -z \
+            | xargs -0 -r sha256sum > test-results/SHA256SUMS
+
+      - name: Upload staging role, security, and accessibility evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: sanitized-staging-rc-${{ github.run_id }}-${{ github.run_attempt }}
+          path: test-results/
+          if-no-files-found: error
+          retention-days: 30
+
+  readonly-load:
+    needs: guarded-role-e2e
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: staging-sanitized-rc
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ vars.APPROVED_FRONTEND_SHA }}
+          persist-credentials: false
+
+      - name: Bind the load script to the approved frontend commit
+        shell: bash
+        env:
+          EXPECTED_FRONTEND_SHA: ${{ inputs.frontend_sha }}
+        run: |
+          [[ "$EXPECTED_FRONTEND_SHA" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$(git rev-parse HEAD)" == "$EXPECTED_FRONTEND_SHA" ]]
+
+      - name: Refuse a non-staging or malformed load request
+        shell: bash
+        env:
+          CONFIRMATION: ${{ inputs.confirmation }}
+          LOAD_DURATION: ${{ inputs.load_duration }}
+          EVIDENCE_SEAL_SHA256: ${{ secrets.APPROVED_MIGRATION_SEAL_SHA256 }}
+          E2E_BEFORE_SEAL_SHA256: ${{ secrets.APPROVED_E2E_BEFORE_SEAL_SHA256 }}
+        run: |
+          [[ "$CONFIRMATION" == "RUN_SANITIZED_STAGING_RC" ]]
+          [[ "$EVIDENCE_SEAL_SHA256" =~ ^[0-9a-f]{64}$ ]]
+          [[ "$E2E_BEFORE_SEAL_SHA256" =~ ^[0-9a-f]{64}$ ]]
+          [[ "$LOAD_DURATION" =~ ^([0-9]{1,4})([smh])$ ]]
+          amount=$((10#${BASH_REMATCH[1]}))
+          unit="${BASH_REMATCH[2]}"
+          case "$unit" in
+            s) seconds="$amount" ;;
+            m) seconds=$((amount * 60)) ;;
+            h) seconds=$((amount * 3600)) ;;
+          esac
+          (( seconds >= 300 && seconds <= 1200 ))
+
+      - name: Run 20 RPS read-only load with a 50 VU ceiling
+        env:
+          K6_STAGING_CONFIRMATION: RUN_READONLY_STAGING_LOAD
+          K6_EXPECTED_RELEASE_ID: ${{ inputs.release_id }}
+          K6_EXPECTED_FRONTEND_SHA: ${{ inputs.frontend_sha }}
+          K6_EXPECTED_BACKEND_SHA: ${{ inputs.backend_sha }}
+          K6_EXPECTED_SCHEMA_VERSION: ${{ inputs.schema_version }}
+          K6_EXPECTED_EVIDENCE_SEAL_SHA256: ${{ secrets.APPROVED_MIGRATION_SEAL_SHA256 }}
+          K6_EXPECTED_E2E_BEFORE_SEAL_SHA256: ${{ secrets.APPROVED_E2E_BEFORE_SEAL_SHA256 }}
+          K6_DURATION: ${{ inputs.load_duration }}
+        run: |
+          mkdir -p test-results
+          docker run --rm --user "$(id -u):$(id -g)" \
+            -e K6_STAGING_CONFIRMATION \
+            -e K6_EXPECTED_RELEASE_ID \
+            -e K6_EXPECTED_FRONTEND_SHA \
+            -e K6_EXPECTED_BACKEND_SHA \
+            -e K6_EXPECTED_SCHEMA_VERSION \
+            -e K6_EXPECTED_EVIDENCE_SEAL_SHA256 \
+            -e K6_EXPECTED_E2E_BEFORE_SEAL_SHA256 \
+            -e K6_DURATION \
+            -v "$PWD/load:/work/load:ro" \
+            -v "$PWD/test-results:/evidence" \
+            grafana/k6:0.57.0@sha256:70af91f86cd8e142e0544a4edaf79835a80033f71974b92edd5ac36fd4442a7b \
+            run --summary-export=/evidence/k6-summary.json /work/load/k6-readonly.js
+          sha256sum test-results/k6-summary.json > test-results/k6-summary.json.sha256
+
+      - name: Upload read-only load evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: sanitized-staging-load-${{ github.run_id }}-${{ github.run_attempt }}
+          path: test-results/
+          if-no-files-found: error
+          retention-days: 30

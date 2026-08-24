@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import api from "@/lib/api";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
@@ -26,6 +26,7 @@ export default function MetricForm({ applicationId, initial, onSaved, onCancel }
   const [externalUrl, setExternalUrl] = useState(initial?.externalUrl ?? "");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const fieldPrefix = useId();
 
   const submit = async () => {
     setError("");
@@ -51,9 +52,9 @@ export default function MetricForm({ applicationId, initial, onSaved, onCancel }
   return (
     <div>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <NumberField label={t("조회수", "Views")} value={views} onChange={setViews} />
-        <NumberField label={t("좋아요", "Likes")} value={likes} onChange={setLikes} />
-        <NumberField label={t("댓글", "Comments")} value={comments} onChange={setComments} />
+        <NumberField id={`${fieldPrefix}-views`} label={t("조회수", "Views")} value={views} onChange={setViews} />
+        <NumberField id={`${fieldPrefix}-likes`} label={t("좋아요", "Likes")} value={likes} onChange={setLikes} />
+        <NumberField id={`${fieldPrefix}-comments`} label={t("댓글", "Comments")} value={comments} onChange={setComments} />
       </div>
 
       <label
@@ -61,7 +62,7 @@ export default function MetricForm({ applicationId, initial, onSaved, onCancel }
         className="mt-5 block text-sm font-medium text-content-soft"
       >
         {t("게시물 URL", "Post URL")}{" "}
-        <span className="text-faint">{t("(선택, http/https)", "(optional, http/https)")}</span>
+        <span className="text-faint">{t("(선택, 공개 HTTPS)", "(optional, public HTTPS)")}</span>
       </label>
       <Input
         id="metric-url"
@@ -72,7 +73,7 @@ export default function MetricForm({ applicationId, initial, onSaved, onCancel }
         className="mt-1.5"
       />
 
-      {error && <p className="mt-3 text-sm text-error">{error}</p>}
+      {error && <p role="alert" className="mt-3 text-sm text-error">{error}</p>}
 
       <div className="mt-5 flex justify-end gap-2">
         <Button variant="secondary" size="sm" onClick={onCancel} disabled={loading}>
@@ -87,18 +88,21 @@ export default function MetricForm({ applicationId, initial, onSaved, onCancel }
 }
 
 function NumberField({
+  id,
   label,
   value,
   onChange,
 }: {
+  id: string;
   label: string;
   value: number;
   onChange: (n: number) => void;
 }) {
   return (
     <div>
-      <label className="block text-sm font-medium text-content-soft">{label}</label>
+      <label htmlFor={id} className="block text-sm font-medium text-content-soft">{label}</label>
       <Input
+        id={id}
         type="number"
         min={0}
         value={value}

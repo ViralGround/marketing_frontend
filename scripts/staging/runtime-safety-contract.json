@@ -1,0 +1,37 @@
+{
+  "cloneKind": "sanitized",
+  "sentinel": {
+    "releaseIdMatched": true,
+    "migrationEvidenceComplete": true,
+    "evidenceSealMatched": true,
+    "e2eBeforeEvidenceSealMatched": true
+  },
+  "emailDeliveryMode": "disabled",
+  "scheduling": {
+    "globalEnabled": false,
+    "jobs": {
+      "instagramSync": false,
+      "instagramOauthStateCleanup": false,
+      "instagramWebhookCleanup": false,
+      "notificationOutboxDispatch": false,
+      "uploadOrphanCleanup": false
+    }
+  },
+  "outbox": {
+    "enabled": true,
+    "dispatchEnabled": false
+  },
+  "features": {
+    "payments": false,
+    "instagram": false,
+    "uploads": false
+  },
+  "adminBootstrap": {
+    "enabled": false,
+    "credentialsConfigured": false
+  },
+  "mutationMode": {
+    "accountProvisioningEnabled": false,
+    "e2eEnabled": true
+  }
+}

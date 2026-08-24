@@ -89,7 +89,7 @@ describe("AccountDeletion", () => {
     await user.click(within(dialog).getByRole("button", { name: "계정 탈퇴" }));
 
     const alert = await within(dialog).findByRole("alert");
-    expect(alert.textContent).toContain("진행 중인 캠페인 또는 미정산 건");
+    expect(alert.textContent).toContain("진행 중인 캠페인 또는 완료되지 않은 검수·작업");
     expect(
       within(alert).getByRole("link", { name: "내 캠페인 현황 확인" }).getAttribute("href"),
     ).toBe("/creator/mypage#creator-applications");

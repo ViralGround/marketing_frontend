@@ -15,11 +15,12 @@ import {
   WorkspaceTabs,
 } from "@/components/workspace/WorkspacePrimitives";
 import styles from "@/components/workspace/Dashboard.module.css";
+import { FEATURE_PAYMENTS_ENABLED } from "@/lib/featureFlags";
 
-type AppStatus = "PENDING" | "WITHDRAWN" | "APPROVED" | "REJECTED" | "SUBMITTED" | "CHANGES_REQUESTED" | "SETTLED";
-type Stats = { totalEarned: number; completedCount: number; activeCount: number };
-type Application = { id: number; status: AppStatus; appliedAt: string; campaign: { id: number; title: string; brandName: string; rewardAmount: number } };
-type Campaign = { id: number; title: string; brandName: string; rewardAmount: number; deadline: string | null; applicationCount: number; myApplication: { status: AppStatus } | null };
+type AppStatus = "PENDING" | "WITHDRAWN" | "APPROVED" | "REJECTED" | "SUBMITTED" | "CHANGES_REQUESTED" | "COMPLETED" | "SETTLED";
+type Stats = { totalEarned?: number; completedCount: number; activeCount: number };
+type Application = { id: number; status: AppStatus; appliedAt: string; campaign: { id: number; title: string; brandName: string; rewardAmount?: number | null } };
+type Campaign = { id: number; title: string; brandName: string; rewardAmount?: number | null; deadline: string | null; applicationCount: number; myApplication: { status: AppStatus } | null };
 type PerformanceItem = { applicationId: number; campaignTitle: string; brandName: string; views: number };
 type Performance = { totals: { views: number; likes: number; comments: number; completedCount: number }; items?: PerformanceItem[] };
 type DashboardTab = "todo" | "performance" | "discover" | "settlement";
@@ -32,6 +33,7 @@ const STATUS: Record<AppStatus, { ko: string; en: string; className: string }> =
   REJECTED: { ko: "미선정", en: "Not selected", className: styles.statusNeutral },
   SUBMITTED: { ko: "검수 중", en: "In review", className: styles.statusOrange },
   CHANGES_REQUESTED: { ko: "수정 필요", en: "Changes needed", className: styles.statusOrange },
+  COMPLETED: { ko: "완료", en: "Complete", className: styles.statusGreen },
   SETTLED: { ko: "완료", en: "Complete", className: styles.statusGreen },
 };
 
@@ -94,7 +96,7 @@ export default function CreatorDashboardPage() {
     { label: t("진행 중", "Active work"), value: statsState === "ready" ? stats!.activeCount.toLocaleString() : "—", hint: t("선정 이후 작업", "Post-selection work"), tone: "accent" as const },
     { label: t("검토 중 지원", "Pending"), value: applicationsState === "ready" ? pendingCount.toLocaleString() : "—", hint: t("브랜드 검토 대기", "Awaiting review") },
     { label: t("수정 요청", "Revisions"), value: applicationsState === "ready" ? revisionCount.toLocaleString() : "—", hint: t("확인 필요", "Needs attention"), tone: revisionCount > 0 ? "warning" as const : "default" as const },
-    { label: t("누적 정산 기록", "Settled"), value: statsState === "ready" ? `₩${stats!.totalEarned.toLocaleString("ko-KR")}` : "—", hint: t("완료 기록 기준", "Completed records") },
+    ...(FEATURE_PAYMENTS_ENABLED ? [{ label: t("누적 정산 기록", "Settled"), value: statsState === "ready" && stats?.totalEarned != null ? `₩${stats.totalEarned.toLocaleString("ko-KR")}` : "—", hint: t("완료 기록 기준", "Completed records") }] : []),
     { label: t("누적 조회수", "Total views"), value: performanceState === "ready" ? performance!.totals.views.toLocaleString("ko-KR") : "—", hint: t("입력된 실제 성과", "Recorded performance") },
   ];
 
@@ -115,7 +117,7 @@ export default function CreatorDashboardPage() {
           { value: "todo", label: t("할 일", "To do"), count: activeApplications.length + revisionCount },
           { value: "performance", label: t("성과", "Performance") },
           { value: "discover", label: t("탐색", "Discover"), count: campaigns.length },
-          { value: "settlement", label: t("정산", "Settlement") },
+          ...(FEATURE_PAYMENTS_ENABLED ? [{ value: "settlement" as const, label: t("정산", "Settlement") }] : []),
         ]}
       />
     </>
@@ -132,14 +134,14 @@ export default function CreatorDashboardPage() {
               <Link href="/creator/profile"><span><strong>{t("크리에이터 프로필 정리", "Complete creator profile")}</strong><small>{t("활동 정보와 공개 범위 관리", "Manage activity details and visibility")}</small></span><UserRound aria-hidden="true" /></Link>
               <Link href="/creator/performance"><span><strong>{t("실제 성과 입력", "Record real performance")}</strong><small>{t("완료 콘텐츠의 조회·반응 기록", "Record views and engagement")}</small></span><BarChart3 aria-hidden="true" /></Link>
             </div>
-            <div className={styles.paymentNotice}><Banknote aria-hidden="true" /><p><strong>MANAGED BETA</strong>{t("지급 방식과 일정은 캠페인 참여 확정 시 운영팀이 개별 안내합니다.", "Payout method and timing are confirmed with our team when participation is finalized.")}</p></div>
+            {FEATURE_PAYMENTS_ENABLED && <div className={styles.paymentNotice}><Banknote aria-hidden="true" /><p><strong>MANAGED BETA</strong>{t("지급 방식과 일정은 캠페인 참여 확정 시 운영팀이 개별 안내합니다.", "Payout method and timing are confirmed with our team when participation is finalized.")}</p></div>}
           </section>
           <section className={styles.workPanel}>
             <header><h2>{t("지금 진행할 작업", "Work in progress")}</h2><Link href="/creator/mypage#creator-applications">{t("전체 보기", "View all")}</Link></header>
             {applicationsState === "error" ? failure(t("지원 현황을 불러오지 못했습니다.", "Applications are unavailable."), () => void loadApplications()) : applicationsState === "loading" ? <div className={styles.innerLoading} /> : activeApplications.length === 0 ? (
               <StatePanel icon={BriefcaseBusiness} title={t("진행 중인 제작 작업이 없습니다.", "No production work is active.")} description={t("새 캠페인을 살펴보고 내 채널과 맞는 브리프에 지원해보세요.", "Explore campaigns and apply to a fitting brief.")} action={<Link className={styles.inlineAction} href="/creator/home">{t("캠페인 둘러보기", "Browse campaigns")}</Link>} />
             ) : (
-              <WorkspaceScrollArea label={t("진행 중 작업 목록", "Active work list")}><div className={styles.tableHead}><span>{t("캠페인", "Campaign")}</span><span>{t("보상", "Reward")}</span><span>{t("상태", "Status")}</span></div><div className={styles.list}>{activeApplications.map((application) => <Link href="/creator/mypage#creator-applications" className={styles.row} key={application.id}><span><span className={styles.rowTitle}>{application.campaign.title}</span><span className={styles.rowMeta}>{application.campaign.brandName} · {new Date(application.appliedAt).toLocaleDateString("ko-KR")}</span></span><span className={styles.rowNumber}>₩{application.campaign.rewardAmount.toLocaleString("ko-KR")}</span><span className={`${styles.status} ${STATUS[application.status].className}`}>{t(STATUS[application.status].ko, STATUS[application.status].en)}</span></Link>)}</div></WorkspaceScrollArea>
+              <WorkspaceScrollArea label={t("진행 중 작업 목록", "Active work list")}><div className={styles.tableHead}><span>{t("캠페인", "Campaign")}</span><span>{t("작업", "Work")}</span><span>{t("상태", "Status")}</span></div><div className={styles.list}>{activeApplications.map((application) => <Link href="/creator/mypage#creator-applications" className={styles.row} key={application.id}><span><span className={styles.rowTitle}>{application.campaign.title}</span><span className={styles.rowMeta}>{application.campaign.brandName} · {new Date(application.appliedAt).toLocaleDateString("ko-KR")}</span></span><span className={styles.rowNumber}>{t("제작·검수", "Create · review")}</span><span className={`${styles.status} ${STATUS[application.status].className}`}>{t(STATUS[application.status].ko, STATUS[application.status].en)}</span></Link>)}</div></WorkspaceScrollArea>
             )}
           </section>
         </div>
@@ -165,7 +167,7 @@ export default function CreatorDashboardPage() {
           <div className={styles.splitGrid}>
             <section className={styles.workPanel}>
               <header><h2>{t("새 캠페인", "New campaigns")}</h2><Link href="/creator/home">{t("전체 캠페인", "All campaigns")}</Link></header>
-              {campaigns.length === 0 ? <StatePanel icon={Search} title={t("현재 모집 중인 캠페인이 없습니다.", "No campaigns are recruiting right now.")} description={t("새 브리프가 열리면 실제 캠페인 정보가 표시됩니다.", "New briefs appear here when they open.")} /> : <WorkspaceScrollArea label={t("새 캠페인 목록", "New campaign list")}><div className={styles.list}>{campaigns.map((campaign) => <Link href={`/creator/campaigns/${campaign.id}`} className={styles.row} key={campaign.id}><span><span className={styles.rowTitle}>{campaign.title}</span><span className={styles.rowMeta}>{campaign.brandName} · {campaign.deadline ? new Date(campaign.deadline).toLocaleDateString("ko-KR") : t("마감일 미정", "No deadline")}</span></span><span className={styles.rowNumber}>₩{campaign.rewardAmount.toLocaleString("ko-KR")}</span><span className={`${styles.status} ${campaign.myApplication ? styles.statusNeutral : styles.statusViolet}`}>{campaign.myApplication ? t("지원함", "Applied") : t("모집 중", "Open")}</span></Link>)}</div></WorkspaceScrollArea>}
+              {campaigns.length === 0 ? <StatePanel icon={Search} title={t("현재 모집 중인 캠페인이 없습니다.", "No campaigns are recruiting right now.")} description={t("새 브리프가 열리면 실제 캠페인 정보가 표시됩니다.", "New briefs appear here when they open.")} /> : <WorkspaceScrollArea label={t("새 캠페인 목록", "New campaign list")}><div className={styles.list}>{campaigns.map((campaign) => <Link href={`/creator/campaigns/${campaign.id}`} className={styles.row} key={campaign.id}><span><span className={styles.rowTitle}>{campaign.title}</span><span className={styles.rowMeta}>{campaign.brandName}</span></span><span className={styles.rowNumber}>{campaign.deadline ? new Date(campaign.deadline).toLocaleDateString("ko-KR") : t("마감일 미정", "No deadline")}</span><span className={`${styles.status} ${campaign.myApplication ? styles.statusNeutral : styles.statusViolet}`}>{campaign.myApplication ? t("지원함", "Applied") : t("모집 중", "Open")}</span></Link>)}</div></WorkspaceScrollArea>}
             </section>
             <section className={styles.workPanel}>
               <header><h2>{t("다가오는 일정", "Upcoming deadlines")}</h2><CircleDot aria-hidden="true" /></header>
@@ -175,18 +177,18 @@ export default function CreatorDashboardPage() {
         )}
       </WorkspaceTabPanel>
 
-      <WorkspaceTabPanel value="settlement" activeValue={tab}>
+      {FEATURE_PAYMENTS_ENABLED && <WorkspaceTabPanel value="settlement" activeValue={tab}>
         <div className={styles.splitGrid}>
           <section className={`${styles.workPanel} ${styles.settlementPanel}`}>
             <header><h2>{t("정산 현황", "Settlement")}</h2><Banknote aria-hidden="true" /></header>
-            {statsState === "error" ? failure(t("정산 기록을 불러오지 못했습니다.", "Settlement records are unavailable."), () => void loadStats()) : <div className={styles.settlementTotal}><span>{t("누적 정산 기록", "Total settled")}</span><strong>₩{stats?.totalEarned.toLocaleString("ko-KR") ?? "—"}</strong><p>{t("완료(SETTLED) 처리된 캠페인 보상 합계", "Rewards from campaigns marked SETTLED")}</p></div>}
+            {statsState === "error" ? failure(t("정산 기록을 불러오지 못했습니다.", "Settlement records are unavailable."), () => void loadStats()) : <div className={styles.settlementTotal}><span>{t("누적 정산 기록", "Total settled")}</span><strong>{stats?.totalEarned != null ? `₩${stats.totalEarned.toLocaleString("ko-KR")}` : "—"}</strong><p>{t("결제 기능이 활성화된 완료 기록", "Completed records with payments enabled")}</p></div>}
           </section>
           <section className={styles.workPanel}>
             <header><h2>{t("완료 내역", "Completed records")}</h2><Link href="/creator/mypage#creator-applications">{t("전체 내역", "Full history")}</Link></header>
-            {applicationsState === "error" ? failure(t("완료 내역을 불러오지 못했습니다.", "Completed records are unavailable."), () => void loadApplications()) : settledApplications.length === 0 ? <StatePanel title={t("아직 정산 완료된 캠페인이 없습니다.", "No settled campaigns yet.")} description={t("첫 캠페인을 완주하면 내역이 표시됩니다.", "Finish your first campaign to see records.")} /> : <WorkspaceScrollArea label={t("정산 완료 내역", "Settled campaign records")}><div className={styles.settleList}>{settledApplications.map((application) => <div className={styles.settleRow} key={application.id}><span>{application.campaign.title}</span><strong>+₩{application.campaign.rewardAmount.toLocaleString("ko-KR")}</strong></div>)}</div></WorkspaceScrollArea>}
+            {applicationsState === "error" ? failure(t("완료 내역을 불러오지 못했습니다.", "Completed records are unavailable."), () => void loadApplications()) : settledApplications.length === 0 ? <StatePanel title={t("아직 정산 완료된 캠페인이 없습니다.", "No settled campaigns yet.")} description={t("첫 캠페인을 완주하면 내역이 표시됩니다.", "Finish your first campaign to see records.")} /> : <WorkspaceScrollArea label={t("정산 완료 내역", "Settled campaign records")}><div className={styles.settleList}>{settledApplications.map((application) => <div className={styles.settleRow} key={application.id}><span>{application.campaign.title}</span><strong>{application.campaign.rewardAmount != null ? `+₩${application.campaign.rewardAmount.toLocaleString("ko-KR")}` : "—"}</strong></div>)}</div></WorkspaceScrollArea>}
           </section>
         </div>
-      </WorkspaceTabPanel>
+      </WorkspaceTabPanel>}
     </WorkspaceStage>
   );
 }

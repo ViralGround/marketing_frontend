@@ -20,9 +20,10 @@ import {
   WorkspaceStage,
 } from "@/components/workspace/WorkspacePrimitives";
 import viewStyles from "@/components/workspace/WorkspaceViews.module.css";
+import { FEATURE_PAYMENTS_ENABLED } from "@/lib/featureFlags";
 
 type CampaignStatus = "DRAFT" | "OPEN" | "CLOSED";
-type EscrowStatus = "NONE" | "PENDING_DEPOSIT" | "DEPOSIT_CONFIRMING" | "FUNDED" | "PARTIALLY_RELEASED" | "REFUNDED";
+type EscrowStatus = "NONE" | "PENDING_DEPOSIT" | "DEPOSIT_CONFIRMING" | "FUNDED" | "PARTIALLY_RELEASED" | "RELEASED" | "REFUNDED";
 type Tone = "primary" | "success" | "warning" | "error" | "info" | "neutral";
 type Label = { ko: string; en: string };
 
@@ -47,13 +48,16 @@ const ESCROW_LABEL: Record<EscrowStatus, Label> = {
   DEPOSIT_CONFIRMING: { ko: "기존 확인 기록", en: "Legacy review" },
   FUNDED: { ko: "기존 예치 기록", en: "Legacy funded" },
   PARTIALLY_RELEASED: { ko: "기존 지급 기록", en: "Legacy payout" },
+  RELEASED: { ko: "기존 지급 완료", en: "Legacy released" },
   REFUNDED: { ko: "기존 환불 기록", en: "Legacy refund" },
 };
 
-const ESCROW_TONE: Record<EscrowStatus, Tone> = { NONE: "neutral", PENDING_DEPOSIT: "warning", DEPOSIT_CONFIRMING: "warning", FUNDED: "success", PARTIALLY_RELEASED: "primary", REFUNDED: "error" };
+const ESCROW_TONE: Record<EscrowStatus, Tone> = { NONE: "neutral", PENDING_DEPOSIT: "warning", DEPOSIT_CONFIRMING: "warning", FUNDED: "success", PARTIALLY_RELEASED: "primary", RELEASED: "primary", REFUNDED: "error" };
 const STATUS_LABEL: Record<CampaignStatus, Label> = { DRAFT: { ko: "작성 중", en: "Draft" }, OPEN: { ko: "모집 중", en: "Recruiting" }, CLOSED: { ko: "종료", en: "Closed" } };
 const STATUS_TONE: Record<CampaignStatus, Tone> = { DRAFT: "warning", OPEN: "success", CLOSED: "neutral" };
-const COLUMNS = "minmax(14rem,1.45fr) minmax(5.5rem,.55fr) minmax(4.5rem,.45fr) minmax(8rem,.8fr) minmax(7rem,.7fr) minmax(7rem,.7fr)";
+const COLUMNS = FEATURE_PAYMENTS_ENABLED
+  ? "minmax(14rem,1.45fr) minmax(5.5rem,.55fr) minmax(4.5rem,.45fr) minmax(8rem,.8fr) minmax(7rem,.7fr) minmax(7rem,.7fr)"
+  : "minmax(14rem,1.45fr) minmax(5.5rem,.55fr) minmax(4.5rem,.45fr) minmax(8rem,.8fr) minmax(7rem,.7fr)";
 
 export default function CompanyCampaignsPage() {
   const { t } = useLang();
@@ -81,7 +85,9 @@ export default function CompanyCampaignsPage() {
     <div className={viewStyles.headerStack}>
       <PageHeader
         display="CAMPAIGNS"
-        subtitle={t("등록 캠페인, 지원 현황과 관리 베타 결제 기록을 한곳에서 확인하세요.", "Review campaigns, applications, and managed-beta payment records in one place.")}
+        subtitle={FEATURE_PAYMENTS_ENABLED
+          ? t("등록 캠페인, 지원 현황과 관리 베타 결제 기록을 한곳에서 확인하세요.", "Review campaigns, applications, and managed-beta payment records in one place.")
+          : t("등록 캠페인과 지원 현황을 한곳에서 확인하세요.", "Review campaigns and applications in one place.")}
         action={<Link href="/company/campaigns/new" className="inline-flex h-11 items-center gap-2 rounded-full bg-primary px-4 text-sm font-bold text-white hover:bg-primary-dark"><FilePlus2 className="h-4 w-4" aria-hidden="true" />{t("새 캠페인", "New campaign")}</Link>}
       />
       <FilterToolbar
@@ -104,7 +110,7 @@ export default function CompanyCampaignsPage() {
         ) : visibleCampaigns.length === 0 ? (
           <StatePanel icon={FilePlus2} title={search ? t(`"${search}" 검색 결과가 없습니다.`, `No campaigns match "${search}".`) : t("아직 등록한 캠페인이 없습니다.", "No campaigns yet.")} description={search ? t("검색어를 바꾸거나 전체 목록으로 돌아가세요.", "Try another search or return to the full list.") : t("첫 브리프를 작성하면 캠페인 상태와 지원 현황을 여기서 관리할 수 있습니다.", "Create your first brief to manage campaign status and applications here.")} action={!search ? <Link href="/company/campaigns/new" className="inline-flex h-11 items-center rounded-full bg-primary px-4 text-sm font-bold text-white">{t("첫 캠페인 등록", "Create first campaign")}</Link> : undefined} />
         ) : (
-          <WorkspaceRecordList columns={COLUMNS} labels={[t("캠페인", "Campaign"), t("상태", "Status"), t("지원", "Applications"), t("보상 × 모집", "Reward × slots"), t("총 예산", "Total budget"), t("결제 기록", "Payment record")]}>
+          <WorkspaceRecordList columns={COLUMNS} labels={[t("캠페인", "Campaign"), t("상태", "Status"), t("지원", "Applications"), t("보상 × 모집", "Reward × slots"), t("총 예산", "Total budget"), ...(FEATURE_PAYMENTS_ENABLED ? [t("결제 기록", "Payment record")] : [])]}>
             {visibleCampaigns.map((campaign) => (
               <WorkspaceRecordRow key={campaign.id} href={`/company/campaigns/${campaign.id}`} columns={COLUMNS}>
                 <WorkspaceRecordCell label={t("캠페인", "Campaign")}><span className={viewStyles.titleCell}><span className={viewStyles.thumbnail}>{campaign.thumbnailUrl ? (
@@ -115,7 +121,7 @@ export default function CompanyCampaignsPage() {
                 <WorkspaceRecordCell label={t("지원", "Applications")}><span className={viewStyles.recordStrong}>{t(`${campaign.applicationCount}명`, `${campaign.applicationCount}`)}</span></WorkspaceRecordCell>
                 <WorkspaceRecordCell label={t("보상 × 모집", "Reward × slots")}>{t(`${campaign.rewardAmount.toLocaleString()}원 × ${campaign.maxParticipants}명`, `₩${campaign.rewardAmount.toLocaleString()} × ${campaign.maxParticipants}`)}</WorkspaceRecordCell>
                 <WorkspaceRecordCell label={t("총 예산", "Total budget")}><span className={viewStyles.recordStrong}>{t(`${campaign.totalBudget.toLocaleString()}원`, `₩${campaign.totalBudget.toLocaleString()}`)}</span></WorkspaceRecordCell>
-                <WorkspaceRecordCell label={t("결제 기록", "Payment record")}><Badge tone={ESCROW_TONE[campaign.escrowStatus]}>{t(ESCROW_LABEL[campaign.escrowStatus].ko, ESCROW_LABEL[campaign.escrowStatus].en)}</Badge></WorkspaceRecordCell>
+                {FEATURE_PAYMENTS_ENABLED && <WorkspaceRecordCell label={t("결제 기록", "Payment record")}><Badge tone={ESCROW_TONE[campaign.escrowStatus]}>{t(ESCROW_LABEL[campaign.escrowStatus].ko, ESCROW_LABEL[campaign.escrowStatus].en)}</Badge></WorkspaceRecordCell>}
               </WorkspaceRecordRow>
             ))}
           </WorkspaceRecordList>

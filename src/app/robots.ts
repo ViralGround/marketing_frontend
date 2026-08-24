@@ -1,9 +1,17 @@
 import type { MetadataRoute } from "next";
-
-const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL?.trim() || "https://viralground.kr";
+import { isPreproductionSite } from "@/lib/deploymentEnvironment";
 
 export default function robots(): MetadataRoute.Robots {
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim() || "https://viralground.kr";
+  if (isPreproductionSite(siteUrl)) {
+    return {
+      rules: {
+        userAgent: "*",
+        disallow: "/",
+      },
+    };
+  }
+
   return {
     rules: {
       userAgent: "*",
@@ -21,6 +29,6 @@ export default function robots(): MetadataRoute.Robots {
         "/signup",
       ],
     },
-    sitemap: `${SITE_URL}/sitemap.xml`,
+    sitemap: `${siteUrl}/sitemap.xml`,
   };
 }

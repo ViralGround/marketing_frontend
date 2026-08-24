@@ -21,7 +21,7 @@ import {
 } from "@/components/workspace/WorkspacePrimitives";
 import viewStyles from "@/components/workspace/WorkspaceViews.module.css";
 
-type AppStatus = "PENDING" | "WITHDRAWN" | "APPROVED" | "REJECTED" | "SUBMITTED" | "SETTLED";
+type AppStatus = "PENDING" | "WITHDRAWN" | "APPROVED" | "REJECTED" | "SUBMITTED" | "CHANGES_REQUESTED" | "COMPLETED" | "SETTLED";
 type DetailTab = "overview" | "requirements";
 
 interface CampaignDetail {
@@ -29,7 +29,7 @@ interface CampaignDetail {
   title: string;
   description: string;
   brandName: string;
-  rewardAmount: number;
+  rewardAmount?: number | null;
   thumbnailUrl: string | null;
   requirements: string | null;
   deadline: string | null;
@@ -86,7 +86,7 @@ export default function CreatorCampaignDetailPage() {
       <BackButton href="/creator/campaigns" labelKo="캠페인 목록으로" labelEn="Back to campaigns" className="!mb-0" />
       <div className={viewStyles.detailTitleRow}><div><p>{campaign.brandName}</p><h1>{campaign.title}</h1></div>{campaign.myApplication && <ApplicationStatusBadge status={campaign.myApplication.status} />}</div>
       <MetricStrip label={t("캠페인 핵심 정보", "Campaign key information")} items={[
-        { label: t("보상", "Reward"), value: `₩${campaign.rewardAmount.toLocaleString(locale)}`, tone: "accent" },
+        { label: t("작업 범위", "Work scope"), value: t("브리프 확인", "See brief"), tone: "accent" },
         { label: t("마감일", "Deadline"), value: campaign.deadline ? new Date(campaign.deadline).toLocaleDateString(locale) : "—" },
         { label: t("지원 현황", "Applicants"), value: `${campaign.applicationCount} / ${campaign.maxParticipants}` },
       ]} />

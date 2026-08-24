@@ -15,6 +15,7 @@ import {
   WorkspaceTabs,
 } from "@/components/workspace/WorkspacePrimitives";
 import styles from "@/components/workspace/Dashboard.module.css";
+import { FEATURE_PAYMENTS_ENABLED } from "@/lib/featureFlags";
 
 type CampaignStatus = "DRAFT" | "OPEN" | "CLOSED";
 type Summary = { totalCampaigns: number; pendingDeposit: number; depositConfirming: number; funded: number; closed: number };
@@ -97,7 +98,7 @@ export default function CompanyDashboardPage() {
     { label: t("모집 중", "Recruiting"), value: summaryState === "ready" ? summary!.funded.toLocaleString() : "—", hint: t("현재 공개", "Currently open"), tone: "accent" as const },
     { label: t("누적 지원", "Applications"), value: campaignState === "ready" ? totalApplications.toLocaleString() : "—", hint: t("전체 캠페인 합계", "Across campaigns") },
     { label: t("종료", "Closed"), value: summaryState === "ready" ? summary!.closed.toLocaleString() : "—", hint: t("종료 기록", "Closed records") },
-    { label: t("결제·정산", "Payments"), value: "OFF", hint: t("PG 연결 전 비활성", "Gateway not connected"), tone: "warning" as const },
+    ...(FEATURE_PAYMENTS_ENABLED ? [{ label: t("결제·정산", "Payments"), value: "OFF", hint: t("PG 연결 전 비활성", "Gateway not connected"), tone: "warning" as const }] : []),
   ];
 
   const header = (
@@ -144,7 +145,7 @@ export default function CompanyDashboardPage() {
               <Link href="/company/campaigns"><span><strong>{t("지원자와 콘텐츠 확인", "Review applicants and content")}</strong><small>{t("주의가 필요한 진행 상태부터 확인", "Start with work that needs attention")}</small></span><ArrowRight aria-hidden="true" /></Link>
               <Link href="/company/profile"><span><strong>{t("브랜드 공개 정보 점검", "Review public brand details")}</strong><small>{t("크리에이터에게 보이는 정보를 관리", "Manage what creators can see")}</small></span><ArrowRight aria-hidden="true" /></Link>
             </div>
-            <div className={styles.paymentNotice}><CircleOff aria-hidden="true" /><p><strong>{t("결제·정산 비활성", "Payments disabled")}</strong>{t("현재 어떤 계좌로도 송금하지 마세요. 운영 계약과 PG 연결 완료 후 검증된 절차가 안내됩니다.", "Do not transfer funds to any account. A verified flow will be provided after the operating contract and gateway setup.")}</p></div>
+            {FEATURE_PAYMENTS_ENABLED && <div className={styles.paymentNotice}><CircleOff aria-hidden="true" /><p><strong>{t("결제·정산 비활성", "Payments disabled")}</strong>{t("현재 서비스는 결제·에스크로·정산을 처리하지 않습니다. 어떤 계좌로도 송금하지 마세요.", "This service does not process payments, escrow, or settlements. Do not transfer funds to any account.")}</p></div>}
           </section>
 
           <section className={styles.workPanel}>

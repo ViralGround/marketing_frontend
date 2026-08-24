@@ -1,0 +1,985 @@
+/*
+ * /business — "관제 콘솔" 월드 (seed 77be1d7b 배치, 재료까지 분화).
+ *
+ * 잉크가 콘솔 하우징이 된다: 공개 페이지 중 유일한 전면 다크 지면.
+ * 페이퍼 #f6f5f1 은 판독 텍스트, 바이올렛 #7331e0 은 활성 신호.
+ * 모노스페이스는 코스튬이 아니라 실측 데이터(타임코드·상태·채널 코드) 전용.
+ * 램프 색(초록·앰버)은 다크 지면 위에서만 쓴다 — 흰 배경 텍스트 실격 실측 준수.
+ */
+
+.page {
+  --ops-ink: #0a090b;
+  --ops-housing: #100f13;
+  --ops-panel: #17151c;
+  --ops-panel-raised: #1e1b24;
+  --ops-paper: #f6f5f1;
+  --ops-dim: rgba(246, 245, 241, 0.68);
+  --ops-faint: rgba(246, 245, 241, 0.68);
+  --ops-line: rgba(246, 245, 241, 0.14);
+  --ops-line-strong: rgba(246, 245, 241, 0.34);
+  --ops-violet: #7331e0;
+  --ops-violet-bright: #9a64f5;
+  --ops-violet-soft: rgba(115, 49, 224, 0.16);
+  --ops-ok: #4ade80;
+  --ops-warn: #fbbf24;
+  --mono: ui-monospace, "SF Mono", "Cascadia Mono", Consolas, monospace;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+
+  min-height: 100dvh;
+  /* 고정 GroundTopbar(65px) 아래에서 콘솔 레일이 시작한다 */
+  padding-top: 65px;
+  color: var(--ops-paper);
+  background:
+    radial-gradient(rgba(246, 245, 241, 0.045) 1px, transparent 1.4px) 0 0 / 26px 26px,
+    var(--ops-ink);
+  font-family: var(--font-sans);
+  word-break: keep-all;
+}
+
+.page ::selection {
+  color: var(--ops-ink);
+  background: var(--ops-violet-bright);
+}
+
+.page :focus-visible {
+  outline: 3px solid var(--ops-violet-bright);
+  outline-offset: 3px;
+}
+
+.inner {
+  width: min(1240px, 100%);
+  margin: 0 auto;
+  padding: 0 clamp(18px, 4vw, 44px);
+}
+
+/* ── 콘솔 헤더 레일 ── */
+
+.rail {
+  border-top: 1px solid var(--ops-line);
+  border-bottom: 1px solid var(--ops-line);
+  background: var(--ops-housing);
+}
+
+.railInner {
+  display: flex;
+  gap: clamp(14px, 2.5vw, 30px);
+  align-items: center;
+  width: min(1240px, 100%);
+  min-height: 46px;
+  margin: 0 auto;
+  padding: 0 clamp(18px, 4vw, 44px);
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.09em;
+}
+
+.railName {
+  color: var(--ops-paper);
+  font-weight: 700;
+}
+
+.railLamps {
+  display: flex;
+  gap: clamp(10px, 1.8vw, 22px);
+  align-items: center;
+  color: var(--ops-dim);
+}
+
+.railLamps span {
+  display: inline-flex;
+  gap: 7px;
+  align-items: center;
+}
+
+.lamp {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--ops-ok);
+  box-shadow: 0 0 8px 1px rgba(74, 222, 128, 0.5);
+}
+
+.lampViolet {
+  background: var(--ops-violet-bright);
+  box-shadow: 0 0 8px 1px rgba(154, 100, 245, 0.55);
+  animation: lampPulse 2.4s ease-in-out infinite;
+}
+
+.lampWarn {
+  background: var(--ops-warn);
+  box-shadow: 0 0 8px 1px rgba(251, 191, 36, 0.45);
+}
+
+.lampHollow {
+  background: transparent;
+  border: 1.5px solid var(--ops-faint);
+  box-shadow: none;
+}
+
+@keyframes lampPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+.railClock {
+  margin-left: auto;
+  color: var(--ops-dim);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── 히어로 ── */
+
+.hero {
+  padding: clamp(56px, 9vh, 110px) 0 clamp(52px, 8vh, 96px);
+}
+
+.heroGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.04fr) minmax(0, 0.96fr);
+  gap: clamp(28px, 4.5vw, 72px);
+  align-items: center;
+}
+
+.display {
+  margin: 0;
+  font-family: var(--display);
+  font-size: clamp(56px, 8.6vw, 132px);
+  line-height: 0.88;
+  letter-spacing: -0.035em;
+  text-transform: uppercase;
+}
+
+.display span {
+  display: block;
+}
+
+.displayAccent {
+  color: var(--ops-violet-bright);
+}
+
+.heroLede {
+  max-width: 34rem;
+  margin: clamp(20px, 3vh, 32px) 0 0;
+  font-size: clamp(16px, 1.6vw, 19px);
+  line-height: 1.65;
+}
+
+.heroLede strong {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--ops-paper);
+  font-weight: 800;
+}
+
+.heroLede span {
+  display: block;
+  color: var(--ops-dim);
+  font-weight: 500;
+}
+
+.heroActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: clamp(24px, 4vh, 40px);
+}
+
+/* 콘솔 액션 키 — 각진 하우징, 아랫면 단차로 눌리는 물성 */
+
+.key {
+  display: inline-flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+  min-height: 52px;
+  padding: 0 26px;
+  border: 1px solid var(--ops-violet-bright);
+  color: #fff;
+  font-size: 15.5px;
+  font-weight: 800;
+  text-decoration: none;
+  background: var(--ops-violet);
+  box-shadow: 0 4px 0 0 rgba(0, 0, 0, 0.55), 0 14px 34px rgba(115, 49, 224, 0.35);
+  cursor: pointer;
+  transition: transform 0.16s var(--ease-out), box-shadow 0.16s var(--ease-out), background-color 0.16s ease;
+}
+
+.key:hover {
+  background: #8140ee;
+}
+
+.key:active {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 0 rgba(0, 0, 0, 0.55), 0 8px 20px rgba(115, 49, 224, 0.3);
+}
+
+.key svg {
+  width: 17px;
+  height: 17px;
+}
+
+.keyGhost {
+  border-color: var(--ops-line-strong);
+  color: var(--ops-paper);
+  background: transparent;
+  box-shadow: 0 4px 0 0 rgba(0, 0, 0, 0.4);
+}
+
+.keyGhost:hover {
+  border-color: var(--ops-paper);
+  background: rgba(246, 245, 241, 0.06);
+}
+
+.keyLight {
+  border-color: var(--ops-paper);
+  color: var(--ops-ink);
+  background: var(--ops-paper);
+  box-shadow: 0 4px 0 0 rgba(0, 0, 0, 0.55), 0 14px 34px rgba(246, 245, 241, 0.18);
+}
+
+.keyLight:hover {
+  background: #fff;
+}
+
+/* ── 모니터 공통 프레임 ── */
+
+.monitor {
+  border: 1px solid var(--ops-line-strong);
+  background: var(--ops-panel);
+  box-shadow: 0 26px 70px rgba(0, 0, 0, 0.55);
+}
+
+.monitorHead {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--ops-line);
+  background: var(--ops-housing);
+  font-family: var(--mono);
+  font-size: 11.5px;
+  letter-spacing: 0.1em;
+  color: var(--ops-dim);
+}
+
+.monitorHead b {
+  color: var(--ops-paper);
+  font-weight: 700;
+}
+
+.monitorTag {
+  margin-left: auto;
+  padding: 3px 8px;
+  border: 1px solid var(--ops-warn);
+  color: var(--ops-warn);
+  font-weight: 700;
+}
+
+.monitorFoot {
+  padding: 9px 16px;
+  border-top: 1px solid var(--ops-line);
+  color: var(--ops-faint);
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+}
+
+/* ── 히어로 신호 체인 ── */
+
+.chain {
+  display: grid;
+  gap: 0;
+  padding: clamp(16px, 2vw, 26px);
+}
+
+.chainRow {
+  position: relative;
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: center;
+  padding: 13px 4px;
+}
+
+.chainRow + .chainRow {
+  border-top: 1px dashed var(--ops-line);
+}
+
+.chainNode {
+  position: relative;
+  z-index: 1;
+  width: 12px;
+  height: 12px;
+  justify-self: center;
+  border: 1.5px solid var(--ops-faint);
+  border-radius: 50%;
+  background: var(--ops-panel);
+}
+
+.chainRow::before {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 18.5px;
+  width: 1px;
+  content: "";
+  background: var(--ops-line);
+}
+
+.chainRow:first-child::before { top: 50%; }
+.chainRow:last-child::before { bottom: 50%; }
+
+.chainPulse .chainNode {
+  animation: nodeFire 6s infinite;
+}
+
+.chainRow:nth-child(1) .chainNode { animation-delay: 0s; }
+.chainRow:nth-child(2) .chainNode { animation-delay: 1.2s; }
+.chainRow:nth-child(3) .chainNode { animation-delay: 2.4s; }
+.chainRow:nth-child(4) .chainNode { animation-delay: 3.6s; }
+.chainRow:nth-child(5) .chainNode { animation-delay: 4.8s; }
+
+@keyframes nodeFire {
+  0%, 22%, 100% {
+    border-color: var(--ops-faint);
+    background: var(--ops-panel);
+    box-shadow: none;
+  }
+  6%, 14% {
+    border-color: var(--ops-violet-bright);
+    background: var(--ops-violet-bright);
+    box-shadow: 0 0 12px 2px rgba(154, 100, 245, 0.6);
+  }
+}
+
+.chainCode {
+  display: block;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: var(--ops-faint);
+}
+
+.chainRow strong {
+  display: block;
+  margin-top: 2px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ops-paper);
+}
+
+.chainState {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: var(--ops-dim);
+}
+
+.chainStateOff {
+  color: var(--ops-warn);
+}
+
+/* ── 씬 공통 ── */
+
+.scene {
+  padding: clamp(64px, 11vh, 128px) 0;
+  border-top: 1px solid var(--ops-line);
+}
+
+.sceneHead {
+  max-width: 46rem;
+  margin-bottom: clamp(30px, 5vh, 54px);
+}
+
+.sceneHead h2 {
+  margin: 0;
+  font-size: clamp(30px, 4.2vw, 48px);
+  font-weight: 900;
+  line-height: 1.16;
+  letter-spacing: -0.03em;
+}
+
+.sceneHead h2 em {
+  display: block;
+  color: var(--ops-violet-bright);
+  font-style: normal;
+}
+
+.sceneHead p {
+  margin: 16px 0 0;
+  max-width: 62ch;
+  color: var(--ops-dim);
+  font-size: clamp(15px, 1.4vw, 17px);
+  line-height: 1.7;
+}
+
+/* ── 관제 월 ── */
+
+.wall {
+  display: grid;
+  grid-template-columns: minmax(0, 1.9fr) minmax(0, 1.1fr);
+  gap: clamp(14px, 1.8vw, 22px);
+  align-items: stretch;
+}
+
+.wallSide {
+  display: grid;
+  gap: clamp(14px, 1.8vw, 22px);
+  align-content: stretch;
+}
+
+.queue {
+  display: grid;
+}
+
+.queueMetrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  border-bottom: 1px solid var(--ops-line);
+}
+
+.queueMetrics span {
+  display: grid;
+  gap: 5px;
+  padding: 14px 16px;
+}
+
+.queueMetrics span + span {
+  border-left: 1px solid var(--ops-line);
+}
+
+.queueMetrics small {
+  color: var(--ops-faint);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.queueMetrics strong {
+  font-family: var(--mono);
+  font-size: 20px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--ops-paper);
+}
+
+.queueMetrics strong.off {
+  color: var(--ops-warn);
+}
+
+.queueRows {
+  display: grid;
+  align-content: start;
+  padding: 6px 0;
+}
+
+.queueRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: center;
+  padding: 14px 18px;
+}
+
+.queueRow + .queueRow {
+  border-top: 1px solid var(--ops-line);
+}
+
+.queueRow strong {
+  display: block;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.queueRow small {
+  display: block;
+  margin-top: 3px;
+  color: var(--ops-dim);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.queueStatus {
+  padding: 5px 10px;
+  border: 1px solid var(--ops-line-strong);
+  color: var(--ops-paper);
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+}
+
+.queueStatusHot {
+  border-color: var(--ops-violet-bright);
+  color: var(--ops-violet-bright);
+}
+
+.payPanel {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+  padding: clamp(16px, 2vw, 22px);
+}
+
+.payPanel svg {
+  width: 22px;
+  height: 22px;
+  margin-top: 2px;
+  color: var(--ops-warn);
+}
+
+.payPanel strong {
+  display: block;
+  font-size: 15.5px;
+  font-weight: 800;
+}
+
+.payPanel small {
+  display: block;
+  margin-top: 5px;
+  color: var(--ops-dim);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.schedule {
+  display: grid;
+  padding: 8px 0;
+}
+
+.scheduleRow {
+  display: grid;
+  grid-template-columns: 52px 1fr;
+  gap: 14px;
+  align-items: center;
+  padding: 11px 18px;
+}
+
+.scheduleRow + .scheduleRow {
+  border-top: 1px dashed var(--ops-line);
+}
+
+.scheduleRow span {
+  font-family: var(--mono);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--ops-faint);
+}
+
+.scheduleRow b {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--ops-dim);
+}
+
+/* ── 채널 스위처 ── */
+
+.channels {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 2.1fr);
+  gap: clamp(14px, 1.8vw, 22px);
+  align-items: stretch;
+}
+
+.channelKeys {
+  display: grid;
+  gap: 10px;
+  align-content: start;
+}
+
+.channelKey {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  min-height: 60px;
+  padding: 0 18px;
+  border: 1px solid var(--ops-line);
+  color: var(--ops-dim);
+  font-family: inherit;
+  text-align: left;
+  background: var(--ops-housing);
+  cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease, background-color 0.2s ease;
+}
+
+.channelKey:hover {
+  border-color: var(--ops-line-strong);
+  color: var(--ops-paper);
+}
+
+.channelKey b {
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  font-weight: 700;
+}
+
+.channelKey span {
+  font-size: 14.5px;
+  font-weight: 700;
+}
+
+.channelKey i {
+  width: 8px;
+  height: 8px;
+  border: 1.5px solid var(--ops-faint);
+  border-radius: 50%;
+}
+
+.channelKeyActive {
+  border-color: var(--ops-violet-bright);
+  color: var(--ops-paper);
+  background: var(--ops-violet-soft);
+}
+
+.channelKeyActive i {
+  border-color: var(--ops-violet-bright);
+  background: var(--ops-violet-bright);
+  box-shadow: 0 0 9px 1px rgba(154, 100, 245, 0.6);
+}
+
+.channelScreen {
+  display: grid;
+  grid-template-rows: auto 1fr;
+}
+
+.channelBody {
+  display: grid;
+  gap: clamp(18px, 2.6vw, 30px);
+  align-content: start;
+  padding: clamp(22px, 3vw, 38px);
+}
+
+.channelTitle {
+  margin: 0;
+  font-size: clamp(24px, 2.8vw, 34px);
+  font-weight: 900;
+  letter-spacing: -0.02em;
+}
+
+.channelTitle b {
+  display: block;
+  margin-bottom: 6px;
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: var(--ops-violet-bright);
+}
+
+.channelDesc {
+  margin: 0;
+  max-width: 58ch;
+  color: var(--ops-dim);
+  font-size: 15.5px;
+  line-height: 1.7;
+}
+
+.channelSplit {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  border: 1px solid var(--ops-line);
+  background: var(--ops-line);
+}
+
+.channelSplit > div {
+  display: grid;
+  gap: 8px;
+  align-content: start;
+  padding: 16px 18px;
+  background: var(--ops-panel-raised);
+}
+
+.channelSplit b {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: var(--ops-faint);
+}
+
+.channelSplit p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--ops-paper);
+}
+
+/* ── 콘솔 규정 ── */
+
+.rules {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(14px, 1.8vw, 22px);
+}
+
+.ruleList {
+  display: grid;
+  align-content: start;
+  padding: 6px 0;
+}
+
+.ruleRow {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
+  gap: 13px;
+  align-items: start;
+  padding: 14px 18px;
+  font-size: 14.5px;
+  line-height: 1.6;
+}
+
+.ruleRow + .ruleRow {
+  border-top: 1px solid var(--ops-line);
+}
+
+.ruleRow svg {
+  width: 16px;
+  height: 16px;
+  margin-top: 3px;
+}
+
+.ruleIn svg { color: var(--ops-ok); }
+.ruleOut svg { color: var(--ops-faint); }
+.ruleOut span { color: var(--ops-dim); }
+
+.rulesFoot {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+  margin-top: clamp(16px, 2.4vh, 24px);
+  padding: 16px 18px;
+  border: 1px dashed var(--ops-line-strong);
+  color: var(--ops-dim);
+  font-size: 13.5px;
+  line-height: 1.6;
+}
+
+.rulesFoot svg {
+  width: 17px;
+  height: 17px;
+  margin-top: 2px;
+  color: var(--ops-warn);
+}
+
+/* ── 상담 회선 ── */
+
+.uplink {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+  gap: clamp(28px, 4.5vw, 64px);
+  align-items: start;
+}
+
+.uplinkLog {
+  display: grid;
+}
+
+.logRow {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  gap: 16px;
+  padding: 18px;
+}
+
+.logRow + .logRow {
+  border-top: 1px solid var(--ops-line);
+}
+
+.logRow b {
+  font-family: var(--mono);
+  font-size: 13px;
+  letter-spacing: 0.1em;
+  color: var(--ops-violet-bright);
+}
+
+.logRow strong {
+  display: block;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.logRow small {
+  display: block;
+  margin-top: 5px;
+  color: var(--ops-dim);
+  font-size: 13.5px;
+  line-height: 1.6;
+}
+
+.uplinkActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: clamp(22px, 3.6vh, 34px);
+}
+
+/* ── 리빌 ── */
+
+.reveal {
+  opacity: 0;
+  transform: translateY(22px);
+  transition: opacity 0.7s var(--ease-out), transform 0.7s var(--ease-out);
+}
+
+.revealIn {
+  opacity: 1;
+  transform: none;
+}
+
+/* ── 모바일 독 ── */
+
+.dock {
+  position: fixed;
+  right: 10px;
+  bottom: max(10px, env(safe-area-inset-bottom));
+  left: 10px;
+  z-index: 60;
+  display: none;
+  gap: 8px;
+}
+
+.dock > * {
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+}
+
+.dockMain {
+  display: inline-flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  min-height: 52px;
+  border: 1px solid var(--ops-violet-bright);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 800;
+  background: var(--ops-violet);
+  cursor: pointer;
+}
+
+.dockSide {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  min-height: 52px;
+  border: 1px solid var(--ops-line-strong);
+  color: var(--ops-paper);
+  background: var(--ops-housing);
+}
+
+.dockSide svg {
+  width: 19px;
+  height: 19px;
+}
+
+/* ── 반응형 ── */
+
+@media (max-width: 1080px) {
+  .heroGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .wall {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .channels {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .channelKeys {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    scroll-snap-type: x mandatory;
+  }
+
+  .channelKey {
+    flex: 0 0 auto;
+    scroll-snap-align: start;
+    min-height: 52px;
+  }
+
+  .uplink {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 900px) {
+  .dock {
+    display: flex;
+  }
+
+  .page {
+    padding-bottom: 84px;
+  }
+}
+
+@media (max-width: 640px) {
+  .rules {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .queueMetrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .queueMetrics span:nth-child(n + 3) {
+    border-top: 1px solid var(--ops-line);
+  }
+
+  .queueMetrics span:nth-child(3) {
+    border-left: 0;
+  }
+
+  .channelSplit {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .railLamps span small {
+    display: none;
+  }
+
+  /* 390px: 레일은 램프와 클록만 남긴다 — 이름은 탑바 브랜드와 중복 */
+  .railName {
+    display: none;
+  }
+
+  .railInner {
+    gap: 10px;
+  }
+
+  .railLamps {
+    gap: 10px;
+  }
+}
+
+/* ── 모션 정지 ── */
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  .lampViolet,
+  .chainPulse .chainNode {
+    animation: none;
+  }
+
+  .chainPulse .chainRow:first-child .chainNode {
+    border-color: var(--ops-violet-bright);
+    background: var(--ops-violet-bright);
+  }
+
+  .key,
+  .channelKey {
+    transition: none;
+  }
+}

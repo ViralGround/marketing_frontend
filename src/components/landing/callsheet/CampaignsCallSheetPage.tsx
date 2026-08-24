@@ -5,7 +5,7 @@
  *
  * 축: "하나의 브리프가 두 데스크에서 어떻게 굴러가는가".
  * 공개 피드에서 조건을 고르는 순간부터 브랜드 운영 데스크와 크리에이터 작업
- * 데스크가 주고받는 실제 순서(지원 → 선정 → 제출 → 검수 → 성과 기록 → 정산)를
+ * 데스크가 주고받는 실제 순서(지원 → 선정 → 제출 → 검수 → 성과 기록)를
  * 제품 화면 그대로 설명한다.
  *
  * 데이터 계약(재스킨 대상 아님): GET /landing/featured-campaigns, 로딩/오류
@@ -156,7 +156,7 @@ export default function CampaignsCallSheetPage() {
               { label: "SCOPE", value: t("선정 공개 피드", "Curated public feed") },
               { label: "ACCESS", value: t("로그인 없이 열람", "Browse without login") },
               { label: "DESKS", value: t("브랜드 · 크리에이터", "Brand · creator") },
-              { label: "PAYMENT", value: t("기능 준비 중 (OFF)", "In preparation (OFF)") },
+              { label: "REVIEW", value: t("수정 요청 · 최종 검수", "Changes · final review") },
             ]}
             footer={t("표시 건수는 전체 모집 수가 아니라 현재 API 응답 범위입니다.", "The count describes this API response, not every open campaign.")}
           />
@@ -206,7 +206,7 @@ export default function CampaignsCallSheetPage() {
                         )}
                       </span>
                       <span className={styles.campaignName}><small>{campaign.brandName}</small><strong>{campaign.title}</strong></span>
-                      <span className={styles.campaignTerms}><small>{t("기본 보상", "Base reward")}</small><strong>₩{campaign.rewardAmount.toLocaleString("ko-KR")}</strong></span>
+                      <span className={styles.campaignTerms}><small>{t("작업 범위", "Work scope")}</small><strong>{t("공개 브리프", "Public brief")}</strong></span>
                       <span className={styles.campaignTerms}><small>{t("모집 / 지원", "Slots / applied")}</small><strong>{campaign.maxParticipants} / {campaign.applicationCount}</strong></span>
                       <span className={styles.campaignDeadline}>{deadlineLabel(campaign.deadline, t)}</span>
                       <ArrowUpRight className={styles.campaignArrow} aria-hidden="true" />
@@ -246,11 +246,11 @@ export default function CampaignsCallSheetPage() {
           <CallReveal>
             <CallRuleList
               items={[
-                { code: "01", title: t("조건은 지원 전에", "Terms up front"), body: t("보상·모집 인원·마감은 지원 전에 공개된 값 그대로 캠페인 상세에 남습니다.", "Reward, slots and deadline stay exactly as published before you apply."), meta: t("공개", "OPEN") },
+                { code: "01", title: t("조건은 지원 전에", "Terms up front"), body: t("작업 범위·모집 인원·마감은 지원 전에 공개된 값 그대로 캠페인 상세에 남습니다.", "Scope, slots, and deadline stay exactly as published before you apply."), meta: t("공개", "OPEN") },
                 { code: "02", title: t("수정 요청은 사유와 함께", "Change requests carry a reason"), body: t("무엇을 어떻게 고칠지 적어야 전달되고, 요청 사유는 지원 행에 그대로 남습니다.", "A written reason is required, and it stays on the application row."), meta: t("기록", "LOG") },
                 { code: "03", title: t("제출 이력은 회차로", "Every take is kept"), body: t("재제출할 때마다 회차와 검토 의견이 이력에 쌓입니다.", "Each resubmission adds a numbered take and its review note."), meta: t("이력", "TAKES") },
                 { code: "04", title: t("성과는 입력값만", "Only entered metrics"), body: t("조회·좋아요·댓글은 크리에이터가 입력한 실제 수치이며, 입력 전에는 미입력으로 둡니다.", "Views, likes and comments are creator-entered values; before that they read as not entered."), meta: t("실측", "REAL") },
-                { code: "05", title: t("결제·정산은 비활성", "Payments are off"), body: t("송금 안내를 하지 않습니다. 지급 방식과 일정은 참여 확정 시 운영팀이 개별 안내합니다.", "No transfer instructions. Method and schedule are shared individually once participation is confirmed."), meta: "OFF" },
+                { code: "05", title: t("완료 기준은 검수 기록으로", "Completion follows the review record"), body: t("수정 요청·재제출·최종 검수 결과를 같은 캠페인 이력에서 확인합니다.", "Change requests, resubmissions, and the final review result stay in one campaign history."), meta: t("검수", "REVIEW") },
               ]}
             />
           </CallReveal>
@@ -261,7 +261,7 @@ export default function CampaignsCallSheetPage() {
         <div className={styles.finalInner}>
           <CallReveal>
             <h2>{t("조건을 보고,", "Read the terms,")}<span>{t("맞는 한 편만.", "pick the right cut.")}</span></h2>
-            <p>{t("지원 전에 작업 범위·보상·마감을 확인하세요. 브랜드는 상담에서 운영 범위를 먼저 정할 수 있습니다.", "Review scope, reward and deadline before applying. Brands can define the operating scope during consultation.")}</p>
+            <p>{t("지원 전에 작업 범위·일정·검수 기준을 확인하세요. 브랜드는 상담에서 운영 범위를 먼저 정할 수 있습니다.", "Review scope, timeline, and review criteria before applying. Brands can define the operating scope during consultation.")}</p>
             <div className={styles.finalActions}>
               <CallActionLink href="/signup/creator" tone="light" onClick={() => trackEvent("cta_click", { location: "campaigns_final", target: "signup_creator" })}>{t("크리에이터 지원", "Apply as a creator")}</CallActionLink>
               <CallActionLink href="/business" tone="secondary" onClick={() => trackEvent("cta_click", { location: "campaigns_final", target: "business" })}>{t("브랜드 캠페인 문의", "Brand campaign inquiry")}</CallActionLink>

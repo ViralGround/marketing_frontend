@@ -13,7 +13,6 @@ import { useLang } from "@/lib/i18n";
 type Reel = { code: string; handle: string; viewsKo: string; viewsEn: string; likes: string };
 
 const REELS: Reel[] = [
-  { code: "DTpu_g6D3O1", handle: "reels_mon01", viewsKo: "451.7만", viewsEn: "4.5M", likes: "27,902" },
   { code: "DVpoahthmdk", handle: "min.__.ai", viewsKo: "485.4만", viewsEn: "4.9M", likes: "91,400" },
   { code: "DXhE_vZkorg", handle: "woong2.study", viewsKo: "33.3만", viewsEn: "333K", likes: "2,494" },
 ];
@@ -100,7 +99,7 @@ export default function ResultsShowcaseSection() {
           )}
         </p>
 
-        <div className="mx-auto mt-12 grid max-w-4xl gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mx-auto mt-12 grid max-w-3xl gap-6 sm:grid-cols-2">
           {REELS.map((r) => (
             <ReelCard key={r.code} reel={r} t={t} />
           ))}
